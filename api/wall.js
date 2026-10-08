@@ -124,23 +124,48 @@ async function deletePost(body) {
   return { status: 200, data: { ok: true } };
 }
 
-module.exports = async (req, res) => {
+// Csak a Node.js alap http-objektumait használja (a Vercel kényelmi segédfüggvényei nélkül).
+function send(res, status, data) {
+  res.statusCode = status;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
+  res.end(JSON.stringify(data));
+}
+
+// A kérés törzse JSON-ként (legfeljebb 10 KB).
+function readBody(req) {
+  if (req.body && typeof req.body === 'object') return Promise.resolve(req.body);
+  return new Promise(resolve => {
+    let raw = '';
+    req.setEncoding('utf8');
+    req.on('data', chunk => {
+      raw += chunk;
+      if (raw.length > 10000) req.destroy();
+    });
+    req.on('end', () => {
+      try { resolve(JSON.parse(raw || '{}')); } catch { resolve({}); }
+    });
+    req.on('error', () => resolve({}));
+  });
+}
+
+module.exports = async (req, res) => {
   if (!REDIS_URL || !REDIS_TOKEN) {
-    res.status(503).json({ error: 'not-configured' });
+    send(res, 503, { error: 'not-configured' });
     return;
   }
   try {
     if (req.method === 'GET') {
-      res.status(200).json({ posts: await listPosts(req.query.client) });
+      const client = new URL(req.url, 'http://localhost').searchParams.get('client');
+      send(res, 200, { posts: await listPosts(client) });
       return;
     }
     if (req.method !== 'POST') {
       res.setHeader('Allow', 'GET, POST');
-      res.status(405).json({ error: 'method-not-allowed' });
+      send(res, 405, { error: 'method-not-allowed' });
       return;
     }
-    const body = typeof req.body === 'object' && req.body ? req.body : {};
+    const body = await readBody(req);
     const ip = String(req.headers['x-forwarded-for'] || 'ismeretlen').split(',')[0].trim();
     let result;
     switch (body.action) {
@@ -150,9 +175,9 @@ module.exports = async (req, res) => {
       case 'checkAdmin': result = { status: isAdmin(body.adminKey) ? 200 : 403, data: { ok: isAdmin(body.adminKey) } }; break;
       default: result = { status: 400, data: { error: 'unknown-action' } };
     }
-    res.status(result.status).json(result.data);
+    send(res, result.status, result.data);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'server-error' });
+    send(res, 500, { error: 'server-error' });
   }
 };
