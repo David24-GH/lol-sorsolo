@@ -13,6 +13,7 @@
   const CDRAGON_ASSETS = `${CDRAGON}rcp-be-lol-game-data/global/default/`;
   const HISTORY_KEY = 'lolSorsolo.history';
   const SOUND_KEY = 'lolSorsolo.sound';
+  const VOLUME_KEY = 'lolSorsolo.volume';
   const LANE_KEY = 'lolSorsolo.lane';
   const HISTORY_MAX = 10;
   const FAV_KEY = 'lolSorsolo.favorites';
@@ -1167,15 +1168,41 @@
   sfx.preload = 'auto';
 
   let soundOn = true;
-  try { soundOn = localStorage.getItem(SOUND_KEY) !== 'off'; } catch { /* nem elérhető */ }
+  let volume = 1; // 0–1, a csúszka állása
+  try {
+    soundOn = localStorage.getItem(SOUND_KEY) !== 'off';
+    const saved = Number(localStorage.getItem(VOLUME_KEY));
+    if (localStorage.getItem(VOLUME_KEY) !== null && saved >= 0 && saved <= 1) volume = saved;
+  } catch { /* nem elérhető */ }
 
   function updateSoundBtn() {
     const btn = $('soundBtn');
+    const audible = soundOn && volume > 0;
     btn.setAttribute('aria-pressed', String(soundOn));
     btn.title = soundOn ? 'Hang kikapcsolása' : 'Hang bekapcsolása';
     btn.setAttribute('aria-label', btn.title);
-    $('soundOnIcon').hidden = !soundOn;
-    $('soundOffIcon').hidden = soundOn;
+    $('soundOnIcon').hidden = !audible;
+    $('soundOffIcon').hidden = audible;
+    $('volumeSlider').value = String(Math.round(volume * 100));
+    $('volumeValue').textContent = `${Math.round(volume * 100)}%`;
+  }
+
+  // Az effekthang mindig halkabb a champion hangjánál, a csúszka mindkettőt arányosan állítja.
+  function applyVolume() {
+    sfx.volume = 0.45 * volume;
+    voice.volume = volume;
+  }
+
+  function setVolume(percent) {
+    volume = Math.min(1, Math.max(0, percent / 100));
+    // Ha némítva volt, a csúszka elhúzása visszakapcsolja a hangot.
+    if (volume > 0 && !soundOn) {
+      soundOn = true;
+      try { localStorage.setItem(SOUND_KEY, 'on'); } catch { /* nem elérhető */ }
+    }
+    try { localStorage.setItem(VOLUME_KEY, String(volume)); } catch { /* nem elérhető */ }
+    applyVolume();
+    updateSoundBtn();
   }
 
   function preloadSounds(champ) {
@@ -1188,8 +1215,7 @@
   function playSounds() {
     if (!soundOn) return;
     // Mint a champion-választásnál: a champion saját effekthangja és alatta a hangja.
-    sfx.volume = 0.45;
-    voice.volume = 1;
+    applyVolume();
     sfx.currentTime = 0;
     voice.currentTime = 0;
     sfx.play().catch(() => {});
@@ -1712,8 +1738,10 @@
     soundOn = !soundOn;
     try { localStorage.setItem(SOUND_KEY, soundOn ? 'on' : 'off'); } catch { /* nem elérhető */ }
     if (!soundOn) stopSounds();
+    if (soundOn && volume === 0) setVolume(50);
     updateSoundBtn();
   });
+  $('volumeSlider').addEventListener('input', e => setVolume(Number(e.target.value)));
   $('reveal').addEventListener('click', hideReveal);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') hideReveal(); });
   window.addEventListener('resize', () => {
