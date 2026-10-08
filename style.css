@@ -57,32 +57,59 @@ body {
 .filters { text-align: center; }
 
 .role-buttons {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 56px));
   justify-content: center;
-  gap: 8px;
+  gap: clamp(4px, 1.5vw, 10px);
 }
 
 .role-btn {
-  font: inherit;
-  font-size: 0.9rem;
-  padding: 6px 14px;
-  border: 1px solid var(--gold-dark);
-  background: transparent;
-  color: var(--muted);
-  border-radius: 999px;
+  aspect-ratio: 1;
+  width: 100%;
+  padding: 14%;
+  border: 2px solid var(--gold-dark);
+  background: rgba(10, 20, 40, 0.6);
+  border-radius: 50%;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
+.role-btn img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.85;
+  transition: filter 0.15s, opacity 0.15s;
+}
+
+/* Ha van kiválasztott szerepkör, a többi elszürkül. */
+.role-buttons.has-selection .role-btn img {
+  filter: grayscale(1) brightness(0.75);
+  opacity: 0.55;
+}
+
+.role-btn:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-2px); }
+.role-btn:hover:not(:disabled) img { opacity: 0.85; }
+
 .role-btn[aria-pressed="true"] {
-  background: linear-gradient(180deg, #1e3a5a, #12263d);
-  border-color: var(--gold);
+  background: radial-gradient(circle, #1e3a5a, #0a1428 80%);
+  border-color: var(--gold-light);
+  box-shadow: 0 0 14px rgba(200, 170, 110, 0.55);
+}
+
+.role-buttons .role-btn[aria-pressed="true"] img { filter: none; opacity: 1; }
+
+.role-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.role-btn.no-icon {
+  font: inherit;
+  font-size: 0.6rem;
+  padding: 2px;
   color: var(--gold-light);
 }
 
-.role-btn:hover { border-color: var(--gold); }
-.role-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.role-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 
 .count {
   margin: 10px 0 0;

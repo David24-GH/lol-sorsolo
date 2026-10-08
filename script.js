@@ -3,6 +3,7 @@
 
   const DDRAGON = 'https://ddragon.leagueoflegends.com';
   const LOCALE = 'hu_HU';
+  const ROLE_ICON_BASE = 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champion-details/global/default/';
   const HISTORY_KEY = 'lolSorsolo.history';
   const HISTORY_MAX = 10;
   const SPIN_MS = 5500;
@@ -75,8 +76,15 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'role-btn';
-      btn.textContent = role.label;
+      btn.title = role.label;
+      btn.setAttribute('aria-label', role.label);
       btn.setAttribute('aria-pressed', 'false');
+      const img = document.createElement('img');
+      img.src = `${ROLE_ICON_BASE}role-icon-${role.tag.toLowerCase()}.png`;
+      img.alt = '';
+      // Ha az ikon nem tölt be, a szerepkör neve jelenik meg helyette.
+      img.addEventListener('error', () => { btn.classList.add('no-icon'); btn.textContent = role.label; });
+      btn.appendChild(img);
       btn.addEventListener('click', () => {
         if (spinning) return;
         if (activeRoles.has(role.tag)) activeRoles.delete(role.tag);
@@ -89,6 +97,7 @@
   }
 
   function applyFilter() {
+    $('roleButtons').classList.toggle('has-selection', activeRoles.size > 0);
     if (activeRoles.size === 0) {
       pool = champions;
       $('champCount').textContent = `Mind a ${pool.length} champion a keréken van · válassz szerepkört a szűréshez`;
