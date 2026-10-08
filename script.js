@@ -76,12 +76,13 @@
   };
 
   // A pool, boots és keystones mező vagy egy lista, vagy profilonként ({ ad, ap, tank }) külön lista.
-  // pool: a tárgyak fontossági sorrendben; az első kettő mindig bekerül, a többi véletlenszerűen.
+  // pool: a tárgyak vásárlási sorrendben; az első kettő mindig bekerül, a többiből véletlenszerűen
+  // választ, de a kiválasztottakat is ebben a sorrendben adja vissza.
   const BUILDS = [
     {
       id: 'ap', name: 'Teljes AP', color: '#5b2f9e',
       desc: 'Minden pont varázserőbe: egy kombó, és a célpont már nincs is.',
-      pool: [6655, 4645, 3089, 3135, 3157, 3165, 4646, 3137, 3100, 3118],
+      pool: [6655, 4645, 4646, 3118, 3100, 3089, 3165, 3157, 3137, 3135],
       boots: [3020],
       keystones: ['Electrocute', 'ArcaneComet', 'DarkHarvest', 'FirstStrike'],
       ok: p => p.ap,
@@ -89,7 +90,7 @@
     {
       id: 'aponhit', name: 'AP on-hit', color: '#7a3c8f',
       desc: 'Varázserő és támadási sebesség: minden ütésed egy kis varázslat.',
-      pool: [3115, 3124, 4633, 3089, 3135, 3100, 3157, 4645, 3116],
+      pool: [3115, 3124, 4633, 3116, 3100, 4645, 3089, 3157, 3135],
       boots: [3006, 3020],
       keystones: ['LethalTempo', 'PressTheAttack', 'HailOfBlades'],
       ok: p => (p.ap && p.attack >= 6) || AP_ONHIT_EXTRA.has(p.id),
@@ -97,7 +98,7 @@
     {
       id: 'aptank', name: 'AP tank', color: '#3d4f9e',
       desc: 'Szívós vagy, mégis fáj: tankolás varázserővel megfűszerezve.',
-      pool: [6653, 4633, 3116, 8010, 3157, 3068, 4401, 2502, 3075],
+      pool: [6653, 4633, 3068, 3116, 8010, 4401, 3075, 2502, 3157],
       boots: [3047, 3111],
       keystones: ['Conqueror', 'GraspOfTheUndying', 'PhaseRush', 'Aftershock'],
       ok: p => p.magic >= 5 && p.defense >= 5,
@@ -105,7 +106,7 @@
     {
       id: 'lethality', name: 'Lethality', color: '#8f2a2a',
       desc: 'Páncéltörés és kitörő sebzés: vadászd le a puha célpontokat.',
-      pool: [3142, 6697, 6698, 6696, 3814, 6694, 6676, 3156],
+      pool: [3142, 6697, 6698, 6696, 3814, 6676, 6694, 3156],
       boots: [3158, 3047],
       keystones: ['Electrocute', 'DarkHarvest', 'FirstStrike', 'HailOfBlades'],
       ok: p => p.ad,
@@ -113,7 +114,7 @@
     {
       id: 'crit', name: 'Kritikus csapás', color: '#b5652a',
       desc: 'Minden ütés kritikus: lassan indul, de a végén minden olvad tőle.',
-      pool: [3031, 6672, 3046, 3036, 3094, 3072, 6676, 3095, 3026, 3033],
+      pool: [6672, 3031, 3095, 3094, 3046, 6676, 3036, 3033, 3072, 3026],
       boots: [3006],
       keystones: ['LethalTempo', 'PressTheAttack', 'FleetFootwork', 'HailOfBlades'],
       ok: p => p.ad && (p.has('Marksman') || p.attack >= 7),
@@ -121,7 +122,7 @@
     {
       id: 'onhit', name: 'On-hit', color: '#9e7a2a',
       desc: 'Gyors ütések ráadás-sebzéssel: a hosszú harcok királya vagy.',
-      pool: [3153, 3091, 3124, 3302, 6672, 6673, 3026, 3139],
+      pool: [3153, 3124, 3091, 3302, 6672, 3139, 6673, 3026],
       boots: [3006],
       keystones: ['LethalTempo', 'PressTheAttack', 'Conqueror'],
       ok: p => p.ad && (p.has('Marksman') || p.has('Fighter') || p.attack >= 7),
@@ -129,7 +130,7 @@
     {
       id: 'bruiser', name: 'Bruiser', color: '#7a4a2a',
       desc: 'Sebzés és túlélés egyensúlya: a csatatér közepén a helyed.',
-      pool: [3078, 3053, 3071, 6333, 3748, 6610, 3181, 3161, 3073, 3065],
+      pool: [3078, 6610, 3071, 3161, 3073, 3748, 3181, 3053, 6333, 3065],
       boots: [3047, 3111],
       keystones: ['Conqueror', 'GraspOfTheUndying', 'PhaseRush'],
       ok: p => p.melee && p.attack >= 5 && (p.has('Fighter') || p.has('Tank') || p.has('Assassin')),
@@ -137,7 +138,7 @@
     {
       id: 'tank', name: 'Teljes tank', color: '#2f6b4f',
       desc: 'Csak életerő és páncél: sebzés nélkül is te leszel a csapat fala.',
-      pool: [3084, 3068, 3075, 4401, 3143, 2502, 6665, 3110, 3065],
+      pool: [3084, 3068, 6665, 3075, 4401, 3143, 2502, 3110, 3065],
       boots: [3047, 3111],
       keystones: ['GraspOfTheUndying', 'Aftershock', 'Guardian'],
       ok: p => p.has('Tank') || p.has('Fighter') || (p.has('Support') && p.melee),
@@ -145,7 +146,7 @@
     {
       id: 'heartsteel', name: 'HP-halmozás', color: '#2a7a6b',
       desc: 'Acélos szív és Warmog: nőj óriásira, és üss a saját életerőddel.',
-      pool: [3084, 3083, 6665, 3065, 2502, 3068, 3143, 4401],
+      pool: [3084, 3083, 3068, 6665, 3065, 2502, 3143, 4401],
       boots: [3047, 3111],
       keystones: ['GraspOfTheUndying', 'Aftershock'],
       ok: p => (p.has('Tank') || p.has('Fighter')) && p.defense >= 5,
@@ -153,7 +154,7 @@
     {
       id: 'lifesteal', name: 'Vámpír', color: '#7a1f3d',
       desc: 'Életlopás mindenből: amíg ütsz, addig nem halsz meg.',
-      pool: [3072, 3074, 6673, 3153, 6610, 6333, 3031, 3036],
+      pool: [3153, 3074, 3072, 6673, 6610, 3031, 6333, 3036],
       boots: [3008],
       keystones: ['Conqueror', 'FleetFootwork', 'LethalTempo'],
       ok: p => p.ad,
@@ -161,7 +162,7 @@
     {
       id: 'enchanter', name: 'Enchanter', color: '#2a8f8a',
       desc: 'Pajzsok és gyógyítás: a csapatod lesz a fegyvered.',
-      pool: [6617, 3107, 3504, 6616, 6620, 6621, 3222, 2065, 4005],
+      pool: [6617, 6620, 3504, 6616, 2065, 6621, 3107, 3222, 4005],
       boots: [3158, 3009],
       keystones: ['SummonAery', 'Guardian', 'UnsealedSpellbook'],
       ok: p => p.has('Support') && p.magic >= 5,
@@ -170,9 +171,9 @@
       id: 'tear', name: 'Mana-halmozás', color: '#2a5f9e',
       desc: 'Könnycsepp-tárgyakra építesz: lassan éled, de a végén hatalmas.',
       pool: {
-        ap: [3003, 6655, 3089, 3135, 3157, 4645, 3165],
-        ad: [3004, 3071, 6694, 3036, 6676, 3142, 3161],
-        tank: [3119, 3084, 3068, 3075, 4401, 2502, 3143],
+        ap: [3003, 6655, 4645, 3089, 3165, 3157, 3135],
+        ad: [3004, 3071, 3161, 3142, 6676, 3036, 6694],
+        tank: [3119, 3084, 3068, 3075, 4401, 3143, 2502],
       },
       boots: { ap: [3020], ad: [3158], tank: [3047] },
       keystones: { ap: ['ArcaneComet', 'PhaseRush'], ad: ['Conqueror', 'FleetFootwork'], tank: ['GraspOfTheUndying'] },
@@ -182,9 +183,9 @@
       id: 'ms', name: 'Mozgási sebesség', color: '#1f7a9e',
       desc: 'Senki nem ér utol: te leszel a leggyorsabb a pályán.',
       pool: {
-        ad: [3142, 3046, 6631, 3078, 6672, 6610],
-        ap: [3152, 4629, 2065, 4646, 6655, 3089],
-        tank: [3742, 4401, 3050, 3068, 3084, 3143],
+        ad: [3142, 6631, 3078, 3046, 6610, 6672],
+        ap: [3152, 4646, 4629, 2065, 6655, 3089],
+        tank: [3742, 3068, 3050, 4401, 3084, 3143],
       },
       boots: [3009],
       keystones: ['PhaseRush', 'FleetFootwork', 'HailOfBlades'],
@@ -194,9 +195,9 @@
       id: 'haste', name: 'Képesség-gyorsítás', color: '#4a6b9e',
       desc: 'Szinte nincs töltési idő: képesség képesség hátán.',
       pool: {
-        ad: [3071, 3161, 3073, 6694, 6333, 6610, 3142],
-        ap: [4629, 3118, 6653, 3165, 3137, 6655, 3157],
-        tank: [3110, 3050, 2504, 3068, 6665, 4401, 3084],
+        ad: [3071, 3161, 3073, 6610, 3142, 6333, 6694],
+        ap: [3118, 4629, 6655, 6653, 3165, 3157, 3137],
+        tank: [3068, 3110, 6665, 3050, 4401, 3084, 2504],
       },
       boots: [3158],
       keystones: ['ArcaneComet', 'UnsealedSpellbook', 'PhaseRush', 'Conqueror'],
@@ -207,9 +208,9 @@
 
   // Ha a build saját tárgyai elfogynak (pl. kivettek egy tárgyat a játékból), ezekből pótol.
   const FALLBACK_POOL = {
-    ad: [3031, 6672, 3072, 3036, 3046, 3153, 6673, 3071, 6333, 3026],
-    ap: [3089, 6655, 4645, 3135, 3157, 3165, 4646, 3116, 3100],
-    tank: [3084, 3068, 3075, 4401, 3143, 2502, 6665, 3110, 3065, 3083],
+    ad: [6672, 3153, 3031, 3071, 3046, 3072, 6673, 6333, 3036, 3026],
+    ap: [6655, 4645, 4646, 3100, 3116, 3089, 3165, 3157, 3135],
+    tank: [3084, 3068, 6665, 3075, 4401, 3143, 3083, 2502, 3110, 3065],
   };
   // Ezekből a csoportokból egyszerre csak egy tárgy lehet nálad.
   const ITEM_GROUPS = [
@@ -286,7 +287,12 @@
       }
       out.push(it);
     }
-    return out;
+    // Vásárlási sorrend: előbb a build saját tárgyai a megadott sorrendben, utána a pótlások.
+    const rank = id => {
+      const i = pool.indexOf(id);
+      return i >= 0 ? i : pool.length + fallback.indexOf(id);
+    };
+    return out.sort((a, b) => rank(a.id) - rank(b.id));
   }
 
   function spellsFor(laneId, build) {
@@ -340,8 +346,13 @@
     } else if (boots) {
       boots = { ...boots, note: 'Cipő' };
     }
-    if (boots) items.push(boots);
-    items.push(...chooseItems(byKind(build.pool), FALLBACK_POOL[p.kind], lane.items, p.melee));
+    const core = chooseItems(byKind(build.pool), FALLBACK_POOL[p.kind], lane.items, p.melee);
+    // A cipő általában az első tárgy után jön; supportnál és a gyorsaság buildnél már előtte.
+    const bootsFirst = laneId === 'support' || build.id === 'ms';
+    if (boots && bootsFirst) items.push(boots);
+    if (core.length) items.push(core[0]);
+    if (boots && !bootsFirst) items.push(boots);
+    items.push(...core.slice(1));
 
     return {
       build,
