@@ -2065,6 +2065,13 @@
     if (!editor.champ) return setStatus('edStatus', 'Válassz championt!', 'error');
     if (!editor.lane) return setStatus('edStatus', 'Válassz lane-t!', 'error');
     if (editor.items.length < 3) return setStatus('edStatus', 'Válassz legalább 3 tárgyat!', 'error');
+    // A játékban support nélkül nincs support tárgy, jungle-ben pedig nincs Sújtás-tárgy (pet) nélkül.
+    if (editor.lane === 'support' && !editor.items.some(it => it.kind === 'support')) {
+      return setStatus('edStatus', 'Support buildbe kötelező egy support tárgy (pl. Világatlasz vagy a fejlesztései). A „Kezdő, support, jungle” szűrőnél találod.', 'error');
+    }
+    if (editor.lane === 'jungle' && !editor.items.some(it => it.kind === 'jungle')) {
+      return setStatus('edStatus', 'Jungle buildbe kötelező egy Sújtás-tárgy (jungle pet: Tűzkaromkölyök, Szélvándorfióka vagy Mohatipró-palánta). A „Kezdő, support, jungle” szűrőnél találod.', 'error');
+    }
     if (!IDEA_ENDPOINT) return setStatus('edStatus', 'A javaslatok küldése most nincs bekapcsolva.', 'error');
 
     const l = LANE_BY_ID.get(editor.lane);
