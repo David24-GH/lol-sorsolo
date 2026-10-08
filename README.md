@@ -38,6 +38,18 @@ Bármely statikus tárhelyen működik. Feltölteni ezeket a fájlokat kell: `in
 **Netlify**
 Húzd rá a mappát a https://app.netlify.com/drop oldalra.
 
+## Ötletek fogadása (Formspree)
+
+Az **Ötletek** fülön a látogatók javaslatokat küldhetnek. Alapból ezek csak az adott böngészőben tárolódnak. Hogy minden látogató ötlete hozzád érkezzen:
+
+1. Regisztrálj ingyen a https://formspree.io oldalon, és hozz létre egy új űrlapot (*New Form*).
+2. Másold ki az űrlap címét, pl. `https://formspree.io/f/abcdwxyz`.
+3. Írd be a `script.js` elején az `IDEA_ENDPOINT` értékének:
+   ```js
+   const IDEA_ENDPOINT = 'https://formspree.io/f/abcdwxyz';
+   ```
+4. Töltsd fel újra az oldalt. Az ötletek ezután e-mailben és a Formspree felületén is megjelennek (kategória, javaslat, név).
+
 ## Jogi nyilatkozat
 
 A LoL Champion Sorsoló nem a Riot Games terméke, és nem tükrözi a Riot Games vagy a League of Legends létrehozásában és kezelésében hivatalosan részt vevő személyek nézeteit. A League of Legends és a Riot Games a Riot Games, Inc. védjegyei vagy bejegyzett védjegyei.

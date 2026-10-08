@@ -17,6 +17,10 @@
   const HISTORY_MAX = 10;
   const FAV_KEY = 'lolSorsolo.favorites';
   const FAV_MAX = 30;
+  // Az Ötletek űrlap ide küldi a javaslatokat (pl. 'https://formspree.io/f/abcdwxyz').
+  // Ha üres, az ötletek csak a böngészőben tárolódnak. Lásd: README.md.
+  const IDEA_ENDPOINT = '';
+  const IDEA_KEY = 'lolSorsolo.ideas';
   const CHAMP_SPIN_MS = 5500;
   const BUILD_SPIN_MS = 4500;
   const REVEAL_MS = 5000;
@@ -1343,8 +1347,10 @@
     activeTab = tab;
     $('historyTab').setAttribute('aria-selected', String(tab === 'history'));
     $('favTab').setAttribute('aria-selected', String(tab === 'fav'));
+    $('ideaTab').setAttribute('aria-selected', String(tab === 'idea'));
     $('historyPanel').hidden = tab !== 'history';
     $('favPanel').hidden = tab !== 'fav';
+    $('ideaPanel').hidden = tab !== 'idea';
     renderLists();
   }
 
@@ -1431,6 +1437,101 @@
     return li;
   }
 
+  // ---------- Ötletek ----------
+  // A javaslatok mindig elmentődnek a böngészőben is; ha van IDEA_ENDPOINT, oda is elküldi őket.
+  let ideas = (() => {
+    try {
+      const arr = JSON.parse(localStorage.getItem(IDEA_KEY) || '[]');
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  function writeIdeas() {
+    try { localStorage.setItem(IDEA_KEY, JSON.stringify(ideas)); } catch { /* nem elérhető */ }
+  }
+
+  function renderIdeas() {
+    $('ideaSaved').hidden = ideas.length === 0;
+    $('ideaSaved').querySelector('h4').textContent = IDEA_ENDPOINT
+      ? 'Általad elküldött ötletek'
+      : 'Ebben a böngészőben mentett ötletek';
+    $('ideaList').replaceChildren(...ideas.map(idea => {
+      const li = document.createElement('li');
+      const meta = `${idea.category} · ${new Date(idea.date).toLocaleDateString('hu-HU')}${idea.name ? ` · ${idea.name}` : ''}`;
+      li.append(textEl('small', meta), textEl('p', idea.text));
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'link-btn';
+      del.textContent = 'Törlés';
+      del.addEventListener('click', () => {
+        ideas = ideas.filter(x => x.id !== idea.id);
+        writeIdeas();
+        renderIdeas();
+      });
+      li.appendChild(del);
+      return li;
+    }));
+  }
+
+  function setIdeaStatus(text, kind) {
+    const el = $('ideaStatus');
+    el.textContent = text;
+    el.className = `idea-status${kind ? ` ${kind}` : ''}`;
+  }
+
+  async function submitIdea(event) {
+    event.preventDefault();
+    const form = $('ideaForm');
+    const text = $('ideaText').value.trim();
+    if (text.length < 5) {
+      setIdeaStatus('Írj legalább pár szót a javaslatodról!', 'error');
+      $('ideaText').focus();
+      return;
+    }
+    // Ha a rejtett mező ki van töltve, valószínűleg bot küldte: csendben eldobjuk.
+    if (form.elements._gotcha.value) return;
+
+    const idea = {
+      id: newEntryId(),
+      category: $('ideaCategory').value,
+      text,
+      name: $('ideaName').value.trim(),
+      date: new Date().toISOString(),
+    };
+
+    if (IDEA_ENDPOINT) {
+      $('ideaSubmit').disabled = true;
+      setIdeaStatus('Küldés…');
+      try {
+        const res = await fetch(IDEA_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ kategoria: idea.category, javaslat: idea.text, nev: idea.name || '-' }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+      } catch (err) {
+        console.warn(err);
+        setIdeaStatus('Nem sikerült elküldeni. Ellenőrizd az internetkapcsolatot, és próbáld újra.', 'error');
+        $('ideaSubmit').disabled = false;
+        return;
+      }
+      $('ideaSubmit').disabled = false;
+    }
+
+    ideas = [idea, ...ideas].slice(0, 50);
+    writeIdeas();
+    renderIdeas();
+    form.reset();
+    updateIdeaCounter();
+    setIdeaStatus(IDEA_ENDPOINT ? 'Köszönjük, megkaptuk az ötletedet!' : 'Elmentve! Köszönöm az ötletet.', 'ok');
+  }
+
+  function updateIdeaCounter() {
+    $('ideaCounter').textContent = `${$('ideaText').value.length} / 1000`;
+  }
+
   // ---------- Indítás ----------
   spinBtn.addEventListener('click', spinChampion);
   buildSpinBtn.addEventListener('click', spinBuild);
@@ -1438,6 +1539,9 @@
   $('retryBtn').addEventListener('click', loadData);
   $('historyTab').addEventListener('click', () => setTab('history'));
   $('favTab').addEventListener('click', () => setTab('fav'));
+  $('ideaTab').addEventListener('click', () => setTab('idea'));
+  $('ideaForm').addEventListener('submit', submitIdea);
+  $('ideaText').addEventListener('input', updateIdeaCounter);
   $('favBtn').addEventListener('click', () => { if (currentEntryId) toggleFavorite(currentEntryId); });
   $('clearHistory').addEventListener('click', () => {
     history = [];
@@ -1460,6 +1564,7 @@
 
   renderLaneButtons();
   renderRoleButtons();
+  renderIdeas();
   updateSoundBtn();
   updateSpinState();
   champWheel.resize();

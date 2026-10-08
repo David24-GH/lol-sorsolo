@@ -107,6 +107,7 @@
           <div class="tabs" role="tablist" aria-label="Buildek">
             <button type="button" class="tab" role="tab" id="historyTab" aria-selected="true" aria-controls="historyPanel">Előzmények</button>
             <button type="button" class="tab" role="tab" id="favTab" aria-selected="false" aria-controls="favPanel">Kedvencek</button>
+            <button type="button" class="tab" role="tab" id="ideaTab" aria-selected="false" aria-controls="ideaPanel">Ötletek</button>
           </div>
           <button type="button" class="link-btn" id="clearHistory">Törlés</button>
         </div>
@@ -119,6 +120,38 @@
         <div role="tabpanel" id="favPanel" aria-labelledby="favTab" hidden>
           <ol class="history-list" id="favList"></ol>
           <p class="history-empty" id="favEmpty">Még nincs kedvenc build. A build kártyán vagy az előzményekben a ☆ gombbal mentheted ide a jól bevált buildeket.</p>
+        </div>
+
+        <div role="tabpanel" id="ideaPanel" aria-labelledby="ideaTab" hidden>
+          <p class="idea-intro">Van egy ötleted, hogyan lehetne jobb a sorsoló? Írd meg!</p>
+          <form class="idea-form" id="ideaForm" novalidate>
+            <label for="ideaCategory">Kategória</label>
+            <select id="ideaCategory" name="kategoria">
+              <option>Új funkció</option>
+              <option>Build javaslat</option>
+              <option>Hiba</option>
+              <option>Egyéb</option>
+            </select>
+
+            <label for="ideaText">Javaslat</label>
+            <textarea id="ideaText" name="javaslat" rows="4" maxlength="1000" required
+              placeholder="Pl. legyen ARAM mód, vagy Yasuo kapjon tank buildet…"></textarea>
+            <p class="idea-counter" id="ideaCounter">0 / 1000</p>
+
+            <label for="ideaName">Neved <span>(nem kötelező)</span></label>
+            <input type="text" id="ideaName" name="nev" maxlength="60" autocomplete="nickname">
+
+            <!-- Spam elleni csapda: ember nem látja, botok kitöltik. -->
+            <input type="text" name="_gotcha" class="trap" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+            <button type="submit" class="ghost-btn" id="ideaSubmit">Ötlet elküldése</button>
+            <p class="idea-status" id="ideaStatus" role="status"></p>
+          </form>
+
+          <div class="idea-saved" id="ideaSaved" hidden>
+            <h4>Ebben a böngészőben mentett ötletek</h4>
+            <ol class="idea-list" id="ideaList"></ol>
+          </div>
         </div>
       </section>
     </aside>

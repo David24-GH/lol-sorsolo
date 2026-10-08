@@ -575,7 +575,111 @@ body {
 /* ---------- Fülek és kedvencek ---------- */
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
+}
+
+/* ---------- Ötletek ---------- */
+.idea-intro {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.idea-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.idea-form label {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--gold-light);
+}
+
+.idea-form label span { color: var(--muted); }
+
+.idea-form select,
+.idea-form textarea,
+.idea-form input[type="text"] {
+  width: 100%;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(1, 10, 19, 0.6);
+  color: var(--gold-light);
+}
+
+.idea-form textarea { resize: vertical; min-height: 90px; }
+
+.idea-form select:focus,
+.idea-form textarea:focus,
+.idea-form input[type="text"]:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.idea-counter {
+  margin: 0;
+  align-self: flex-end;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.idea-form .ghost-btn { margin-top: 10px; }
+
+/* Spam-csapda mező: képernyőn kívül, de nem display:none, hogy a botok kitöltsék. */
+.trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.idea-status { margin: 6px 0 0; min-height: 1.2em; font-size: 0.85rem; }
+.idea-status.ok { color: var(--blue); }
+.idea-status.error { color: var(--error); }
+
+.idea-saved {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.idea-saved h4 {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: var(--gold-light);
+}
+
+.idea-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.idea-list li {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(1, 10, 19, 0.45);
+}
+
+.idea-list small { color: var(--blue); font-size: 0.75rem; }
+
+.idea-list p {
+  margin: 2px 0 4px;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .tab {
