@@ -483,38 +483,8 @@ body {
   color: var(--text);
 }
 
-.shard-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--border);
-}
-
-.shard-title {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--gold-light);
-}
-
-.shard {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.shard img {
-  width: 24px;
-  height: 24px;
-  padding: 2px;
-  border-radius: 50%;
-  background: rgba(1, 10, 19, 0.7);
-  border: 1px solid var(--gold-dark);
-}
-
-.shard div { display: flex; flex-direction: column; line-height: 1.2; }
-.shard span { font-size: 0.85rem; }
-.shard small { font-size: 0.72rem; color: var(--muted); }
+/* A shard ikonok kisebbek (32 px), ezért kis belső margóval férnek a körbe. */
+.rune-row.shard-row img { padding: 5px; border-color: var(--gold-dark); }
 
 .muted { color: var(--muted); }
 

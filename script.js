@@ -950,19 +950,20 @@
 
   function shardListEl(shards) {
     const wrap = document.createElement('div');
-    wrap.className = 'shard-list';
-    wrap.appendChild(textEl('p', 'Alap értékek', 'shard-title'));
+    wrap.className = 'rune-tree';
+    const head = document.createElement('div');
+    head.className = 'rune-tree-head';
+    head.appendChild(textEl('span', 'Alap értékek'));
+    const row = document.createElement('div');
+    row.className = 'rune-row shard-row';
     for (const s of shards) {
-      const row = document.createElement('div');
-      row.className = 'shard';
       const img = document.createElement('img');
       img.src = s.icon;
-      img.alt = '';
-      const text = document.createElement('div');
-      text.append(textEl('span', s.name), textEl('small', `${s.slot} · ${s.desc}`));
-      row.append(img, text);
-      wrap.appendChild(row);
+      img.alt = s.name;
+      img.title = `${s.name} (${s.desc})`;
+      row.appendChild(img);
     }
+    wrap.append(head, row);
     return wrap;
   }
 
