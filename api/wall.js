@@ -10,7 +10,7 @@
 //   KV_REST_API_URL / KV_REST_API_TOKEN (vagy UPSTASH_REDIS_REST_URL / _TOKEN) – az Upstash integráció adja
 //   ADMIN_KEY – a moderáláshoz használt titkos kód
 
-const crypto = require('crypto');
+import crypto from 'node:crypto';
 
 const PAGE_SIZE = 50;
 const MAX_POSTS = 200;
@@ -149,7 +149,7 @@ function readBody(req) {
   });
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (!REDIS_URL || !REDIS_TOKEN) {
     send(res, 503, { error: 'not-configured' });
     return;
@@ -180,4 +180,4 @@ module.exports = async (req, res) => {
     console.error(err);
     send(res, 500, { error: 'server-error' });
   }
-};
+}
