@@ -92,7 +92,9 @@
     {
       id: 'ap', name: 'Teljes AP', color: '#5b2f9e',
       desc: 'Minden pont varázserőbe: egy kombó, és a célpont már nincs is.',
-      pool: [6655, 4645, 4646, 3118, 3100, 3089, 3165, 3157, 3137, 3135],
+      pool: [6655, 4645, 4646, 3118, 3100, 3165, 3157, 3137, 3135],
+      // Rabadon mindig az utolsó tárgy, lane-től függetlenül.
+      last: 3089,
       boots: [3020],
       keystones: ['Electrocute', 'ArcaneComet', 'DarkHarvest', 'FirstStrike'],
       shards: [5008, 5008, 5001],
@@ -119,7 +121,8 @@
     {
       id: 'lethality', name: 'Lethality', color: '#8f2a2a',
       desc: 'Páncéltörés és kitörő sebzés: vadászd le a puha célpontokat.',
-      pool: [3142, 6697, 6698, 6696, 3814, 6676, 6694, 3156],
+      // Az első tárgy mindig Gőg (Hubris).
+      pool: [6697, 3142, 6698, 6696, 3814, 6676, 6694, 3156],
       boots: [3158, 3047],
       keystones: ['Electrocute', 'DarkHarvest', 'FirstStrike', 'HailOfBlades'],
       shards: [5008, 5008, 5001],
@@ -204,13 +207,15 @@
     {
       id: 'ms', name: 'Mozgási sebesség', color: '#1f7a9e',
       desc: 'Senki nem ér utol: te leszel a leggyorsabb a pályán.',
+      // Holtak vértje mindig benne van az extra futásért.
       pool: {
-        ad: [3142, 6631, 3078, 3046, 6610, 6672],
-        ap: [3152, 4646, 4629, 2065, 6655, 3089],
+        ad: [3142, 3742, 6631, 3078, 3046, 6610, 6672],
+        ap: [3152, 3742, 4646, 4629, 2065, 6655, 3089],
         tank: [3742, 3068, 3050, 4401, 3084, 3143],
       },
       boots: [3009],
-      keystones: ['PhaseRush', 'FleetFootwork', 'HailOfBlades'],
+      // Viharos lendület: a legtöbb mozgási sebességet adó fő rúna.
+      keystones: ['PhaseRush'],
       shards: [5008, 5010, 5013],
       ok: () => true,
     },
@@ -298,11 +303,18 @@
 
   const getItem = id => itemData.get(String(id)) || null;
 
-  function chooseItems(pool, fallback, count, melee) {
+  // lastId: ha meg van adva (és elérhető), ez mindig bekerül, utolsó tárgyként.
+  function chooseItems(pool, fallback, count, melee, lastId) {
     const order = [...pool.slice(0, 2), ...shuffle(pool.slice(2)), ...shuffle(fallback)];
     const out = [];
     const seen = new Set();
     const usedGroups = new Set();
+    const last = lastId ? getItem(lastId) : null;
+    if (last) {
+      seen.add(last.id);
+      (itemGroups.get(last.id) || []).forEach(g => usedGroups.add(g));
+      count -= 1;
+    }
     for (const id of order) {
       if (out.length >= count) break;
       if (seen.has(id)) continue;
@@ -320,7 +332,9 @@
       const i = pool.indexOf(id);
       return i >= 0 ? i : pool.length + fallback.indexOf(id);
     };
-    return out.sort((a, b) => rank(a.id) - rank(b.id));
+    out.sort((a, b) => rank(a.id) - rank(b.id));
+    if (last) out.push(last);
+    return out;
   }
 
   function spellsFor(laneId, build) {
@@ -382,7 +396,7 @@
     } else if (boots) {
       boots = { ...boots, note: 'Cipő' };
     }
-    const core = chooseItems(byKind(build.pool), FALLBACK_POOL[p.kind], lane.items, p.melee);
+    const core = chooseItems(byKind(build.pool), FALLBACK_POOL[p.kind], lane.items, p.melee, build.last);
     // A cipő általában az első tárgy után jön; supportnál és a gyorsaság buildnél már előtte.
     const bootsFirst = laneId === 'support' || build.id === 'ms';
     if (boots && bootsFirst) items.push(boots);
