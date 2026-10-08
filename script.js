@@ -14,7 +14,9 @@
   const HISTORY_KEY = 'lolSorsolo.history';
   const SOUND_KEY = 'lolSorsolo.sound';
   const LANE_KEY = 'lolSorsolo.lane';
-  const HISTORY_MAX = 15;
+  const HISTORY_MAX = 10;
+  const FAV_KEY = 'lolSorsolo.favorites';
+  const FAV_MAX = 30;
   const CHAMP_SPIN_MS = 5500;
   const BUILD_SPIN_MS = 4500;
   const REVEAL_MS = 5000;
@@ -659,7 +661,7 @@
         .map(s => [s.id, { id: s.id, name: s.name }]));
       $('versionInfo').textContent = `Adatok: Riot Data Dragon, ${version} verzió · ${champions.length} champion`;
       applyFilter();
-      renderHistory();
+      renderLists();
     } catch (err) {
       console.error(err);
       $('champCount').textContent = '';
@@ -853,7 +855,7 @@
     if (buildWheel.spinning) return;
     currentChamp = null;
     currentEntryId = null;
-    renderHistory();
+    renderLists();
     $('champBanner').hidden = true;
     $('buildStage').hidden = true;
     $('buildResult').hidden = true;
@@ -1190,9 +1192,9 @@
   // ugyanúgy vissza lehessen hívni.
   const newEntryId = () => `${Date.now().toString(36)}-${randomInt(1e6).toString(36)}`;
 
-  function readHistory() {
+  function readList(key) {
     try {
-      const arr = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
       if (!Array.isArray(arr)) return [];
       // A legelső verzió csak champion id-ket tárolt, a korábbiak azonosító nélküliek.
       return arr
@@ -1208,7 +1210,7 @@
     try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); } catch { /* nem elérhető */ }
   }
 
-  let history = readHistory();
+  let history = readList(HISTORY_KEY).slice(0, HISTORY_MAX);
   let currentEntryId = null; // a most megjelenített bejegyzés
 
   function addChampionEntry(champId, laneId) {
@@ -1216,7 +1218,7 @@
     history = [entry, ...history].slice(0, HISTORY_MAX);
     currentEntryId = entry.id;
     writeHistory(history);
-    renderHistory();
+    renderLists();
   }
 
   function addBuildEntry(champId, laneId, full) {
@@ -1232,7 +1234,7 @@
       currentEntryId = entry.id;
     }
     writeHistory(history);
-    renderHistory();
+    renderLists();
   }
 
   function serializeBuild(full) {
@@ -1287,7 +1289,7 @@
 
   function recallEntry(id) {
     if (champWheel.spinning || buildWheel.spinning) return;
-    const entry = history.find(e => e.id === id);
+    const entry = history.find(e => e.id === id) || favorites.find(e => e.id === id);
     const champ = entry && champions.find(c => c.id === entry.c);
     if (!champ) return;
     // A régi bejegyzésekben nincs lane: ilyenkor a mostani (vagy a Mid) lesz.
@@ -1309,60 +1311,124 @@
       $('buildTicker').textContent = build.name;
     }
     writeHistory(history);
-    renderHistory();
+    writeFavorites();
+    renderLists();
   }
 
-  function renderHistory() {
+  // ---------- Kedvencek ----------
+  // Ugyanolyan bejegyzések, mint az előzményekben, ugyanazzal az azonosítóval,
+  // így látszik, hogy egy előzmény már kedvenc-e.
+  let favorites = readList(FAV_KEY);
+  let activeTab = 'history';
+
+  function writeFavorites() {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(favorites)); } catch { /* nem elérhető */ }
+  }
+
+  const isFavorite = id => favorites.some(f => f.id === id);
+
+  function toggleFavorite(id) {
+    if (isFavorite(id)) {
+      favorites = favorites.filter(f => f.id !== id);
+    } else {
+      const entry = history.find(e => e.id === id);
+      if (!entry || !entry.b || !entry.full) return;
+      favorites = [JSON.parse(JSON.stringify(entry)), ...favorites].slice(0, FAV_MAX);
+    }
+    writeFavorites();
+    renderLists();
+  }
+
+  function setTab(tab) {
+    activeTab = tab;
+    $('historyTab').setAttribute('aria-selected', String(tab === 'history'));
+    $('favTab').setAttribute('aria-selected', String(tab === 'fav'));
+    $('historyPanel').hidden = tab !== 'history';
+    $('favPanel').hidden = tab !== 'fav';
+    renderLists();
+  }
+
+  function renderLists() {
     const byId = new Map(champions.map(c => [c.id, c]));
-    const entries = history.filter(e => byId.has(e.c));
-    $('historyList').replaceChildren(...entries.map(e => {
-      const c = byId.get(e.c);
-      const li = document.createElement('li');
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'history-entry';
-      if (e.id === currentEntryId) btn.setAttribute('aria-current', 'true');
-      const build = BUILD_BY_ID.get(e.b);
-      btn.title = 'Kattints a visszahíváshoz';
+    const hist = history.filter(e => byId.has(e.c));
+    const favs = favorites.filter(e => byId.has(e.c));
+    $('historyList').replaceChildren(...hist.map(e => entryCardEl(e, byId.get(e.c))));
+    $('favList').replaceChildren(...favs.map(e => entryCardEl(e, byId.get(e.c))));
+    $('historyEmpty').hidden = hist.length > 0;
+    $('favEmpty').hidden = favs.length > 0;
+    $('historyTab').textContent = `Előzmények (${hist.length})`;
+    $('favTab').textContent = `Kedvencek (${favs.length})`;
+    $('clearHistory').hidden = activeTab !== 'history' || hist.length === 0;
 
-      const head = document.createElement('div');
-      head.className = 'history-head-row';
-      const img = document.createElement('img');
-      img.src = iconUrl(c.id);
-      img.alt = '';
-      img.loading = 'lazy';
-      const text = document.createElement('div');
-      text.appendChild(textEl('span', c.name));
-      const l = LANE_BY_ID.get(e.l);
-      const details = [l && l.label, build ? build.name : 'Nincs még build'].filter(Boolean);
-      text.appendChild(textEl('small', details.join(' · ')));
-      head.append(img, text);
-      btn.appendChild(head);
+    // A build kártyán lévő csillag az éppen látható buildre vonatkozik.
+    const current = history.find(e => e.id === currentEntryId) || favorites.find(e => e.id === currentEntryId);
+    const favBtn = $('favBtn');
+    favBtn.hidden = !current || !current.full;
+    const fav = current && isFavorite(current.id);
+    favBtn.setAttribute('aria-pressed', String(!!fav));
+    favBtn.querySelector('.star').textContent = fav ? '★' : '☆';
+    favBtn.querySelector('.fav-label').textContent = fav ? 'Kedvenc' : 'Kedvencekhez';
+  }
 
-      if (e.full) {
-        const icons = document.createElement('div');
-        icons.className = 'history-items';
-        const ids = [...(e.full.starter ? [e.full.starter] : []), ...e.full.items.filter(x => x.note).map(x => x.id),
-          ...e.full.items.filter(x => !x.note).map(x => x.id)];
-        for (const id of ids) {
-          const it = getItem(id);
-          if (!it) continue;
-          const ic = document.createElement('img');
-          ic.src = itemIconUrl(id);
-          ic.alt = '';
-          ic.title = it.name;
-          ic.loading = 'lazy';
-          icons.appendChild(ic);
-        }
-        btn.appendChild(icons);
+  function entryCardEl(e, c) {
+    const li = document.createElement('li');
+    li.className = 'entry-item';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'history-entry';
+    if (e.id === currentEntryId) btn.setAttribute('aria-current', 'true');
+    const build = BUILD_BY_ID.get(e.b);
+    btn.title = 'Kattints a visszahíváshoz';
+
+    const head = document.createElement('div');
+    head.className = 'history-head-row';
+    const img = document.createElement('img');
+    img.src = iconUrl(c.id);
+    img.alt = '';
+    img.loading = 'lazy';
+    const text = document.createElement('div');
+    text.appendChild(textEl('span', c.name));
+    const l = LANE_BY_ID.get(e.l);
+    const details = [l && l.label, build ? build.name : 'Nincs még build'].filter(Boolean);
+    text.appendChild(textEl('small', details.join(' · ')));
+    head.append(img, text);
+    btn.appendChild(head);
+
+    if (e.full) {
+      const icons = document.createElement('div');
+      icons.className = 'history-items';
+      const ids = [...(e.full.starter ? [e.full.starter] : []), ...e.full.items.filter(x => x.note).map(x => x.id),
+        ...e.full.items.filter(x => !x.note).map(x => x.id)];
+      for (const id of ids) {
+        const it = getItem(id);
+        if (!it) continue;
+        const ic = document.createElement('img');
+        ic.src = itemIconUrl(id);
+        ic.alt = '';
+        ic.title = it.name;
+        ic.loading = 'lazy';
+        icons.appendChild(ic);
       }
+      btn.appendChild(icons);
+    }
 
-      btn.addEventListener('click', () => recallEntry(e.id));
-      li.appendChild(btn);
-      return li;
-    }));
-    $('historyEmpty').hidden = entries.length > 0;
-    $('clearHistory').hidden = entries.length === 0;
+    btn.addEventListener('click', () => recallEntry(e.id));
+    li.appendChild(btn);
+
+    // Csillag: kedvencekhez adás / eltávolítás (csak kész buildnél).
+    if (e.b && e.full) {
+      const fav = isFavorite(e.id);
+      const star = document.createElement('button');
+      star.type = 'button';
+      star.className = 'entry-star';
+      star.textContent = fav ? '★' : '☆';
+      star.setAttribute('aria-pressed', String(fav));
+      star.title = fav ? 'Eltávolítás a kedvencek közül' : 'Mentés a kedvencek közé';
+      star.setAttribute('aria-label', star.title);
+      star.addEventListener('click', () => toggleFavorite(e.id));
+      li.appendChild(star);
+    }
+    return li;
   }
 
   // ---------- Indítás ----------
@@ -1370,11 +1436,13 @@
   buildSpinBtn.addEventListener('click', spinBuild);
   $('newChampBtn').addEventListener('click', leaveBuildStage);
   $('retryBtn').addEventListener('click', loadData);
+  $('historyTab').addEventListener('click', () => setTab('history'));
+  $('favTab').addEventListener('click', () => setTab('fav'));
+  $('favBtn').addEventListener('click', () => { if (currentEntryId) toggleFavorite(currentEntryId); });
   $('clearHistory').addEventListener('click', () => {
     history = [];
-    currentEntryId = null;
     writeHistory(history);
-    renderHistory();
+    renderLists();
   });
   $('soundBtn').addEventListener('click', () => {
     soundOn = !soundOn;

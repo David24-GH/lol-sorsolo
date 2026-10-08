@@ -82,7 +82,12 @@
           <p class="hint">Pörgesd meg a build kereket!</p>
         </div>
         <div class="build-card" id="buildCard" hidden>
-          <p class="result-label">A buildod</p>
+          <div class="build-card-head">
+            <p class="result-label">A buildod</p>
+            <button type="button" class="fav-btn" id="favBtn" aria-pressed="false">
+              <span class="star" aria-hidden="true">☆</span><span class="fav-label">Kedvencekhez</span>
+            </button>
+          </div>
           <h2 id="buildName"></h2>
           <p class="build-desc" id="buildDesc"></p>
 
@@ -99,11 +104,22 @@
 
       <section class="history">
         <div class="history-head">
-          <h3>Előzmények</h3>
+          <div class="tabs" role="tablist" aria-label="Buildek">
+            <button type="button" class="tab" role="tab" id="historyTab" aria-selected="true" aria-controls="historyPanel">Előzmények</button>
+            <button type="button" class="tab" role="tab" id="favTab" aria-selected="false" aria-controls="favPanel">Kedvencek</button>
+          </div>
           <button type="button" class="link-btn" id="clearHistory">Törlés</button>
         </div>
-        <ol class="history-list" id="historyList"></ol>
-        <p class="history-empty" id="historyEmpty">Itt jelennek meg a korábbi sorsolások.</p>
+
+        <div role="tabpanel" id="historyPanel" aria-labelledby="historyTab">
+          <ol class="history-list" id="historyList"></ol>
+          <p class="history-empty" id="historyEmpty">Itt jelennek meg a korábbi sorsolások.</p>
+        </div>
+
+        <div role="tabpanel" id="favPanel" aria-labelledby="favTab" hidden>
+          <ol class="history-list" id="favList"></ol>
+          <p class="history-empty" id="favEmpty">Még nincs kedvenc build. A build kártyán vagy az előzményekben a ☆ gombbal mentheted ide a jól bevált buildeket.</p>
+        </div>
       </section>
     </aside>
   </main>

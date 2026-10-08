@@ -540,8 +540,10 @@ body {
 
 .history-head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: 6px;
 }
 
 .history-head h3 {
@@ -569,6 +571,76 @@ body {
   flex-direction: column;
   gap: 8px;
 }
+
+/* ---------- Fülek és kedvencek ---------- */
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  font: inherit;
+  font-size: clamp(0.78rem, 3vw, 0.9rem);
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tab:hover { color: var(--gold-light); }
+.tab[aria-selected="true"] { color: var(--gold-light); border-color: var(--gold-dark); background: rgba(30, 58, 90, 0.5); }
+.tab:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.build-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 3px 10px;
+  border: 1px solid var(--gold-dark);
+  border-radius: 999px;
+  background: none;
+  color: var(--gold);
+  cursor: pointer;
+}
+
+.fav-btn .star { font-size: 1rem; line-height: 1; }
+.fav-btn:hover { border-color: var(--gold); color: var(--gold-light); }
+.fav-btn[aria-pressed="true"] { background: rgba(200, 170, 110, 0.15); border-color: var(--gold); color: var(--gold-light); }
+.fav-btn[hidden] { display: none; }
+
+.entry-item { position: relative; }
+
+.entry-star {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--gold-dark);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.entry-star:hover { color: var(--gold); background: rgba(200, 170, 110, 0.1); }
+.entry-star[aria-pressed="true"] { color: var(--gold-light); }
+.entry-star:focus-visible { outline: 2px solid var(--blue); }
 
 /* Minden bejegyzés egy külön, kattintható kártya. */
 .history-entry {
