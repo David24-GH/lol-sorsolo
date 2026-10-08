@@ -1460,8 +1460,8 @@
     const byId = new Map(champions.map(c => [c.id, c]));
     const hist = history.filter(e => byId.has(e.c));
     const favs = favorites.filter(e => byId.has(e.c));
-    $('historyList').replaceChildren(...hist.map(e => entryCardEl(e, byId.get(e.c))));
-    $('favList').replaceChildren(...favs.map(e => entryCardEl(e, byId.get(e.c))));
+    $('historyList').replaceChildren(...hist.map(e => entryCardEl(e, byId.get(e.c), true)));
+    $('favList').replaceChildren(...favs.map(e => entryCardEl(e, byId.get(e.c), false)));
     $('historyEmpty').hidden = hist.length > 0;
     $('favEmpty').hidden = favs.length > 0;
     $('historyTab').textContent = `Előzmények (${hist.length})`;
@@ -1478,7 +1478,14 @@
     favBtn.querySelector('.fav-label').textContent = fav ? 'Kedvenc' : 'Kedvencekhez';
   }
 
-  function entryCardEl(e, c) {
+  // Egy bejegyzés törlése az előzményekből (a kedvencekben lévő másolata megmarad).
+  function deleteHistoryEntry(id) {
+    history = history.filter(e => e.id !== id);
+    writeHistory(history);
+    renderLists();
+  }
+
+  function entryCardEl(e, c, inHistory) {
     const li = document.createElement('li');
     li.className = 'entry-item';
     const btn = document.createElement('button');
@@ -1535,6 +1542,17 @@
       star.setAttribute('aria-label', star.title);
       star.addEventListener('click', () => toggleFavorite(e.id));
       li.appendChild(star);
+    }
+
+    if (inHistory) {
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'entry-delete';
+      del.title = 'Törlés az előzményekből';
+      del.setAttribute('aria-label', `${c.name}${build ? ` (${build.name})` : ''} törlése az előzményekből`);
+      del.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      del.addEventListener('click', () => deleteHistoryEntry(e.id));
+      li.appendChild(del);
     }
     return li;
   }

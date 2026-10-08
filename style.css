@@ -824,6 +824,29 @@ body {
 .entry-star[aria-pressed="true"] { color: var(--gold-light); }
 .entry-star:focus-visible { outline: 2px solid var(--blue); }
 
+/* Szemetes: a csillag alatt, a kártya jobb szélén. */
+.entry-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.entry-star + .entry-delete { top: 38px; }
+.entry-delete svg { display: block; width: 100%; height: 100%; }
+.entry-delete:hover { color: var(--error); background: rgba(224, 85, 85, 0.12); }
+.entry-delete:focus-visible { outline: 2px solid var(--blue); }
+
+/* Hely a jobb oldali gomboknak, hogy ne takarják a szöveget és az ikonokat. */
+.entry-item .history-entry { padding-right: 42px; }
+
 /* Minden bejegyzés egy külön, kattintható kártya. */
 .history-entry {
   display: flex;
