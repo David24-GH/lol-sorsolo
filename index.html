@@ -14,6 +14,10 @@
 </head>
 <body>
   <header class="site-header">
+    <button type="button" class="sound-btn" id="soundBtn" aria-pressed="true">
+      <svg id="soundOnIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg id="soundOffIcon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
     <h1>LoL Champion Sorsoló</h1>
     <p class="subtitle">Pörgesd meg a kereket, és játssz azzal, akit a sors kioszt!</p>
   </header>
@@ -71,6 +75,21 @@
     <p>A LoL Champion Sorsoló nem a Riot Games terméke, és nem tükrözi a Riot Games vagy a League of Legends létrehozásában és kezelésében hivatalosan részt vevő személyek nézeteit. A League of Legends és a Riot Games a Riot Games, Inc. védjegyei vagy bejegyzett védjegyei.</p>
     <p id="versionInfo"></p>
   </footer>
+
+  <div class="reveal" id="reveal" hidden>
+    <div class="reveal-rays" aria-hidden="true"></div>
+    <div class="reveal-content">
+      <div class="reveal-frame">
+        <img id="revealSplash" alt="">
+      </div>
+      <p class="reveal-label">A te championod</p>
+      <h2 class="reveal-name" id="revealName"></h2>
+      <p class="reveal-title" id="revealTitle"></p>
+      <p class="reveal-hint">Kattints a bezáráshoz</p>
+    </div>
+  </div>
+
+  <canvas class="fx" id="fx" aria-hidden="true"></canvas>
 
   <script src="script.js"></script>
 </body>

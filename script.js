@@ -4,6 +4,11 @@
   const DDRAGON = 'https://ddragon.leagueoflegends.com';
   const LOCALE = 'hu_HU';
   const ROLE_ICON_BASE = 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champion-details/global/default/';
+  // A champion-választás hangjai (angol), a champion numerikus kulcsa alapján.
+  const CDRAGON_AUDIO = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/';
+  const SOUND_KEY = 'lolSorsolo.sound';
+  const REVEAL_MS = 5000;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const HISTORY_KEY = 'lolSorsolo.history';
   const HISTORY_MAX = 10;
   const SPIN_MS = 5500;
@@ -33,6 +38,8 @@
   const activeRoles = new Set(); // üres = minden champion a keréken van
   let rotation = 0;         // a kerék aktuális elforgatása radiánban
   let spinning = false;
+  let highlightIdx = -1;    // a nyertes szelet kiemelése
+  let highlightAlpha = 0;
 
   // ---------- Adatok ----------
   async function loadChampions() {
@@ -43,7 +50,7 @@
       version = versions[0];
       const data = await fetchJson(`${DDRAGON}/cdn/${version}/data/${LOCALE}/champion.json`);
       champions = Object.values(data.data)
-        .map(c => ({ id: c.id, name: c.name, title: c.title, tags: c.tags }))
+        .map(c => ({ id: c.id, key: c.key, name: c.name, title: c.title, tags: c.tags }))
         .sort((a, b) => a.name.localeCompare(b.name, 'hu'));
       $('versionInfo').textContent = `Adatok: Riot Data Dragon, ${version} verzió · ${champions.length} champion`;
       applyFilter();
@@ -108,6 +115,7 @@
     }
     spinBtn.disabled = spinning || pool.length === 0;
     rotation = 0;
+    highlightIdx = -1;
     ticker.innerHTML = '&nbsp;';
     drawWheel();
   }
@@ -177,6 +185,20 @@
         ctx.restore();
       }
     }
+
+    if (highlightIdx >= 0 && highlightIdx < n) {
+      // A nyertes szelet felvillan és arany keretet kap.
+      const start = highlightIdx * seg - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, r, start, start + seg);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(240, 230, 210, ${highlightAlpha})`;
+      ctx.fill();
+      ctx.strokeStyle = '#f0e6d2';
+      ctx.lineWidth = Math.max(2, w / 250);
+      ctx.stroke();
+    }
     ctx.restore();
 
     // Belső arany gyűrű a gomb körül
@@ -210,9 +232,11 @@
     spinning = true;
     spinBtn.disabled = true;
     setRoleButtonsDisabled(true);
+    highlightIdx = -1;
 
     const seg = (Math.PI * 2) / n;
     const winner = randomInt(n);
+    preloadSounds(pool[winner]);
     // Véletlen eltolás a szeleten belül, hogy ne mindig középen álljon meg.
     const jitter = (Math.random() - 0.5) * seg * 0.7;
     const targetMod = mod(-((winner + 0.5) * seg + jitter), Math.PI * 2);
@@ -247,8 +271,181 @@
     spinning = false;
     spinBtn.disabled = pool.length === 0;
     setRoleButtonsDisabled(false);
+    playSounds();
+    flashWinner(pool.indexOf(champ));
+    burstFromWheel();
+    showReveal(champ);
     showResult(champ);
     addToHistory(champ.id);
+  }
+
+  // ---------- Hangok ----------
+  const voice = new Audio();
+  const sfx = new Audio();
+  voice.preload = 'auto';
+  sfx.preload = 'auto';
+
+  let soundOn = true;
+  try { soundOn = localStorage.getItem(SOUND_KEY) !== 'off'; } catch { /* nem elérhető */ }
+
+  function updateSoundBtn() {
+    const btn = $('soundBtn');
+    btn.setAttribute('aria-pressed', String(soundOn));
+    btn.title = soundOn ? 'Hang kikapcsolása' : 'Hang bekapcsolása';
+    btn.setAttribute('aria-label', btn.title);
+    $('soundOnIcon').hidden = !soundOn;
+    $('soundOffIcon').hidden = soundOn;
+  }
+
+  function preloadSounds(champ) {
+    voice.src = `${CDRAGON_AUDIO}champion-choose-vo/${champ.key}.ogg`;
+    sfx.src = `${CDRAGON_AUDIO}champion-sfx-audios/${champ.key}.ogg`;
+    voice.load();
+    sfx.load();
+  }
+
+  function playSounds() {
+    if (!soundOn) return;
+    // Mint a champion-választásnál: a champion saját effekthangja és alatta a hangja.
+    sfx.volume = 0.45;
+    voice.volume = 1;
+    sfx.currentTime = 0;
+    voice.currentTime = 0;
+    sfx.play().catch(() => {});
+    voice.play().catch(() => {});
+  }
+
+  function stopSounds() {
+    voice.pause();
+    sfx.pause();
+  }
+
+  // ---------- Effektek ----------
+  function flashWinner(idx) {
+    highlightIdx = idx;
+    if (reducedMotion) {
+      highlightAlpha = 0.35;
+      drawWheel();
+      return;
+    }
+    const t0 = performance.now();
+    const DURATION = 2400;
+    function frame(now) {
+      if (highlightIdx !== idx || spinning) return;
+      const t = Math.min(1, (now - t0) / DURATION);
+      // Négyszer felvillan, majd halvány kiemelésben marad.
+      const pulse = (Math.sin(t * Math.PI * 8 - Math.PI / 2) + 1) / 2;
+      highlightAlpha = 0.25 + pulse * 0.45 * (1 - t);
+      drawWheel();
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const fxCanvas = $('fx');
+  const fx = fxCanvas.getContext('2d');
+  let particles = [];
+  let fxRunning = false;
+  const PARTICLE_COLORS = ['#f0e6d2', '#c8aa6e', '#e8c77a', '#0ac8b9', '#5be0d6', '#ffffff'];
+
+  function resizeFx() {
+    const dpr = window.devicePixelRatio || 1;
+    fxCanvas.width = Math.round(window.innerWidth * dpr);
+    fxCanvas.height = Math.round(window.innerHeight * dpr);
+    fx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function burst(x, y, count, speed) {
+    if (reducedMotion) return;
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const v = speed * (0.35 + Math.random() * 0.65);
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * v,
+        vy: Math.sin(angle) * v - speed * 0.25,
+        size: 2 + Math.random() * 4,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.3,
+        life: 1,
+        decay: 0.008 + Math.random() * 0.012,
+        color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
+        spark: Math.random() < 0.4,
+      });
+    }
+    if (!fxRunning) {
+      fxRunning = true;
+      requestAnimationFrame(stepFx);
+    }
+  }
+
+  function stepFx() {
+    fx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    particles = particles.filter(p => p.life > 0);
+    for (const p of particles) {
+      p.vy += 0.12;
+      p.vx *= 0.985;
+      p.vy *= 0.985;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.life -= p.decay;
+      fx.globalAlpha = Math.max(0, p.life);
+      fx.fillStyle = p.color;
+      if (p.spark) {
+        fx.shadowColor = p.color;
+        fx.shadowBlur = 12;
+        fx.beginPath();
+        fx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2);
+        fx.fill();
+        fx.shadowBlur = 0;
+      } else {
+        fx.save();
+        fx.translate(p.x, p.y);
+        fx.rotate(p.rot);
+        fx.fillRect(-p.size, -p.size * 0.4, p.size * 2, p.size * 0.8);
+        fx.restore();
+      }
+    }
+    fx.globalAlpha = 1;
+    if (particles.length) {
+      requestAnimationFrame(stepFx);
+    } else {
+      fxRunning = false;
+    }
+  }
+
+  function burstFromWheel() {
+    const rect = canvas.getBoundingClientRect();
+    burst(rect.left + rect.width / 2, rect.top + 8, 70, 9);
+  }
+
+  let revealTimer = 0;
+
+  function showReveal(champ) {
+    const reveal = $('reveal');
+    $('revealSplash').src = splashUrl(champ.id);
+    $('revealSplash').alt = champ.name;
+    $('revealName').textContent = champ.name;
+    $('revealTitle').textContent = champ.title;
+    reveal.hidden = false;
+    reveal.classList.remove('show');
+    void reveal.offsetWidth;
+    reveal.classList.add('show');
+    burst(window.innerWidth / 2, window.innerHeight * 0.45, 160, 14);
+    setTimeout(() => {
+      if (!reveal.hidden) burst(window.innerWidth / 2, window.innerHeight * 0.45, 90, 10);
+    }, 450);
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(hideReveal, REVEAL_MS);
+  }
+
+  function hideReveal() {
+    clearTimeout(revealTimer);
+    const reveal = $('reveal');
+    if (reveal.hidden) return;
+    reveal.classList.remove('show');
+    reveal.hidden = true;
   }
 
   function setRoleButtonsDisabled(disabled) {
@@ -324,9 +521,19 @@
     writeHistory(history);
     renderHistory();
   });
-  window.addEventListener('resize', resizeCanvas);
+  $('soundBtn').addEventListener('click', () => {
+    soundOn = !soundOn;
+    try { localStorage.setItem(SOUND_KEY, soundOn ? 'on' : 'off'); } catch { /* nem elérhető */ }
+    if (!soundOn) stopSounds();
+    updateSoundBtn();
+  });
+  $('reveal').addEventListener('click', hideReveal);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideReveal(); });
+  window.addEventListener('resize', () => { resizeCanvas(); resizeFx(); });
 
   renderRoleButtons();
+  updateSoundBtn();
   resizeCanvas();
+  resizeFx();
   loadChampions();
 })();

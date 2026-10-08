@@ -5,6 +5,10 @@ Szerencsekerék, ami véletlenszerűen kisorsol egy League of Legends championt.
 - A championok listája és képei a Riot hivatalos [Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon) szolgáltatásából töltődnek be, így az új championok automatikusan megjelennek.
 - Szűrés szerepkörre (Harcos, Tank, Mágus, Orgyilkos, Lövész, Támogató).
 - Az utolsó 10 sorsolás a böngészőben megmarad.
+- Sorsoláskor megszólal a champion angol nyelvű választási hangja és effektje (mint a champion-választásnál), a hang a jobb felső gombbal kikapcsolható.
+- Látványos eredmény: teljes képernyős bemutató, fénysugarak, csillogás és részecske-effekt.
+
+A szerepkör-ikonok és a hangok a [CommunityDragon](https://www.communitydragon.org/) oldalról töltődnek be.
 
 Tisztán statikus oldal (HTML + CSS + JS), nincs build lépés és nincs függőség.
 
