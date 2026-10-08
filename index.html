@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoL Champion Sorsoló</title>
+  <meta name="description" content="Pörgesd meg a szerencsekereket, és sorsolj egy véletlenszerű League of Legends championt! Szűrés szerepkörre, előzmények.">
+  <meta property="og:title" content="LoL Champion Sorsoló">
+  <meta property="og:description" content="Pörgesd meg a kereket, és sorsolj egy véletlenszerű League of Legends championt!">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#0a1428">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%230a1428' stroke='%23c8aa6e' stroke-width='5'/%3E%3Cpath d='M32 6v52M6 32h52M14 14l36 36M50 14L14 50' stroke='%23c8aa6e' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%23c8aa6e'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>LoL Champion Sorsoló</h1>
+    <p class="subtitle">Pörgesd meg a kereket, és játssz azzal, akit a sors kioszt!</p>
+  </header>
+
+  <main class="layout">
+    <section class="wheel-panel" aria-label="Szerencsekerék">
+      <div class="filters" role="group" aria-label="Szerepkörök">
+        <div class="role-buttons" id="roleButtons"></div>
+        <p class="count" id="champCount">Championok betöltése…</p>
+      </div>
+
+      <div class="wheel-wrap">
+        <div class="pointer" aria-hidden="true"></div>
+        <canvas id="wheel" aria-hidden="true"></canvas>
+        <button class="spin-btn" id="spinBtn" type="button" disabled>PÖRGETÉS</button>
+      </div>
+
+      <p class="ticker" id="ticker" aria-hidden="true">&nbsp;</p>
+
+      <div class="error" id="errorBox" hidden>
+        <p id="errorText"></p>
+        <button type="button" id="retryBtn">Újrapróbálás</button>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <section class="result" id="result" aria-live="polite">
+        <div class="result-placeholder" id="resultPlaceholder">
+          <p>Még nincs kisorsolt champion.</p>
+          <p class="hint">Nyomd meg a <strong>PÖRGETÉS</strong> gombot!</p>
+        </div>
+        <div class="result-card" id="resultCard" hidden>
+          <img id="resultSplash" alt="">
+          <div class="result-info">
+            <p class="result-label">A te championod:</p>
+            <h2 id="resultName"></h2>
+            <p class="result-title" id="resultTitle"></p>
+            <div class="result-tags" id="resultTags"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="history">
+        <div class="history-head">
+          <h3>Előzmények</h3>
+          <button type="button" class="link-btn" id="clearHistory">Törlés</button>
+        </div>
+        <ol class="history-list" id="historyList"></ol>
+        <p class="history-empty" id="historyEmpty">Itt jelennek meg a korábbi sorsolások.</p>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <p>A LoL Champion Sorsoló nem a Riot Games terméke, és nem tükrözi a Riot Games vagy a League of Legends létrehozásában és kezelésében hivatalosan részt vevő személyek nézeteit. A League of Legends és a Riot Games a Riot Games, Inc. védjegyei vagy bejegyzett védjegyei.</p>
+    <p id="versionInfo"></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
