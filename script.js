@@ -616,6 +616,7 @@
   let itemData = new Map();   // megvásárolható tárgyak: id -> { id, name }
   let bootUpgrade = new Map(); // cipő id -> fejlesztett cipő id
   let itemGroups = new Map();  // tárgy id -> az egymást kizáró csoportjai
+  let editorItems = [];        // a build-javasló választható tárgyai
   let runeTrees = [];
   let spellData = new Map();
   let shardSlots = [];        // [{ label, shards: [{ id, name, desc, icon }] }]
@@ -720,6 +721,35 @@
       }
     }
     for (const [group, ids] of Object.entries(MANUAL_GROUPS)) ids.forEach(id => addGroup(id, group));
+
+    // A build-javasló választható tárgyai: csak végleges tárgyak (és a 2. szintű cipők),
+    // alapanyagok, italok, őrök és championhoz kötött tárgyak nélkül.
+    const bootIds = new Set([...[...boots].map(Number), ...bootUpgrade.values()]);
+    const seenNames = new Set();
+    editorItems = entries
+      .filter(([id, it]) => (!it.into || !it.into.length || boots.has(id))
+        && (it.tags || []).length
+        && !(it.tags || []).some(t => t === 'Consumable' || t === 'Trinket')
+        && !it.requiredChampion && !it.requiredAlly && id !== '1001')
+      .sort(([a], [b]) => Number(a) - Number(b))
+      // A játékban van néhány azonos nevű változat (pl. jungle petek): csak egyet mutat.
+      .filter(([, it]) => !seenNames.has(it.name) && seenNames.add(it.name))
+      .map(([id, it]) => {
+        const tags = it.tags || [];
+        const has = (...t) => t.some(x => tags.includes(x));
+        const kind = bootIds.has(Number(id)) ? 'boots'
+          : has('GoldPer') ? 'support'
+            : has('Jungle') ? 'jungle'
+              : has('Lane') ? 'starter' : null;
+        const cats = new Set(['all']);
+        if (kind === 'boots') cats.add('boots');
+        if (kind === 'support' || kind === 'jungle' || kind === 'starter') cats.add('special');
+        if (!kind && has('Damage', 'CriticalStrike', 'AttackSpeed', 'ArmorPenetration', 'OnHit', 'LifeSteal')) cats.add('ad');
+        if (!kind && has('SpellDamage', 'MagicPenetration')) cats.add('ap');
+        if (!kind && has('Armor', 'SpellBlock', 'MagicResist', 'Health')) cats.add('def');
+        return { id: Number(id), name: it.name, kind, cats };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'hu'));
   }
 
   function loadShards(perks, styles) {
@@ -1663,7 +1693,7 @@
   function setIdeaStatus(text, kind) {
     const el = $('ideaStatus');
     el.textContent = text;
-    el.className = `idea-status${kind ? ` ${kind}` : ''}`;
+    el.className = `idea-status${kind ? ` is-${kind}` : ''}`;
   }
 
   async function submitIdea(event) {
@@ -1717,6 +1747,358 @@
     $('ideaCounter').textContent = `${$('ideaText').value.length} / 1000`;
   }
 
+  // ---------- Build-javasló ----------
+  // A felhasználó ikononként összerakja a saját buildjét (tárgyak, rúnák, varázslatok),
+  // és ugyanoda küldi, ahová az ötletek is mennek (IDEA_ENDPOINT).
+  const ITEM_FILTERS = [
+    { id: 'all', label: 'Mind' },
+    { id: 'boots', label: 'Cipők' },
+    { id: 'ad', label: 'Fizikai' },
+    { id: 'ap', label: 'Varázs' },
+    { id: 'def', label: 'Védekező' },
+    { id: 'special', label: 'Kezdő, support, jungle' },
+  ];
+  // Ezekből a fajtákból egy buildben csak egy lehet.
+  const KIND_LABEL = { boots: 'cipő', support: 'support tárgy', jungle: 'jungle pet', starter: 'kezdő tárgy' };
+
+  const editor = {
+    champ: null, lane: null, items: [],
+    primary: null, keystone: null, primaryRunes: [null, null, null],
+    secondary: null, secondaryRunes: [null, null, null], secondaryOrder: [],
+    shards: [null, null, null], spells: [],
+    filter: 'all', search: '',
+  };
+  let editorReturnFocus = null;
+
+  const findRune = (tree, key) => tree && tree.slots.flat().find(r => r.key === key);
+  const maxItemsFor = laneId => (laneId === 'bot' ? 7 : 6);
+
+  function openEditor(prefill) {
+    if (!champions.length) return;
+    fillChampSelect();
+    if (prefill) {
+      if (prefill.champ) editor.champ = prefill.champ;
+      if (prefill.lane) editor.lane = prefill.lane;
+    }
+    if (!editor.lane && lane) editor.lane = lane;
+    setStatus('edStatus', '');
+    renderEditor();
+    editorReturnFocus = document.activeElement;
+    $('buildEditor').hidden = false;
+    document.body.classList.add('no-scroll');
+    $('editorClose').focus();
+  }
+
+  function closeEditor() {
+    if ($('buildEditor').hidden) return;
+    $('buildEditor').hidden = true;
+    document.body.classList.remove('no-scroll');
+    if (editorReturnFocus) editorReturnFocus.focus();
+  }
+
+  function resetEditor() {
+    Object.assign(editor, {
+      champ: null, items: [],
+      primary: null, keystone: null, primaryRunes: [null, null, null],
+      secondary: null, secondaryRunes: [null, null, null], secondaryOrder: [],
+      shards: [null, null, null], spells: [],
+    });
+    ['edTitle', 'edNote', 'edItemSearch'].forEach(id => { $(id).value = ''; });
+    editor.search = '';
+    setStatus('edStatus', '');
+    renderEditor();
+  }
+
+  function fillChampSelect() {
+    const sel = $('edChamp');
+    if (sel.options.length > 1) return;
+    sel.replaceChildren(new Option('Válassz championt…', ''), ...champions.map(c => new Option(c.name, c.id)));
+  }
+
+  function renderEditor() {
+    // Champion és lane
+    $('edChamp').value = editor.champ ? editor.champ.id : '';
+    $('edChampIcon').hidden = !editor.champ;
+    if (editor.champ) $('edChampIcon').src = iconUrl(editor.champ.id);
+    $('edLanes').replaceChildren(...LANES.map(l => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ed-lane';
+      b.setAttribute('aria-pressed', String(editor.lane === l.id));
+      const img = document.createElement('img');
+      img.src = laneIconUrl(l);
+      img.alt = '';
+      b.append(img, textEl('span', l.label));
+      b.addEventListener('click', () => setEditorLane(l.id));
+      return b;
+    }));
+    renderEditorItems();
+    renderEditorRunes();
+    renderEditorSpells();
+  }
+
+  function setEditorLane(laneId) {
+    editor.lane = laneId;
+    const max = maxItemsFor(laneId);
+    if (editor.items.length > max) {
+      editor.items = editor.items.slice(0, max);
+      setStatus('edItemMsg', `${LANE_BY_ID.get(laneId).label} lane-en legfeljebb ${max} tárgy fér el, a többit kivettem.`, 'error');
+    }
+    renderEditor();
+  }
+
+  // Miért nem lehet hozzáadni egy tárgyat? (null = hozzáadható)
+  function itemBlockReason(it) {
+    if (editor.items.some(x => x.id === it.id)) return 'Már benne van.';
+    const max = maxItemsFor(editor.lane);
+    if (editor.items.length >= max) return `Legfeljebb ${max} tárgy fér el.`;
+    if (it.kind && editor.items.some(x => x.kind === it.kind)) return `Csak egy ${KIND_LABEL[it.kind]} lehet a buildben.`;
+    const groups = itemGroups.get(it.id) || [];
+    const clash = editor.items.find(x => (itemGroups.get(x.id) || []).some(g => groups.includes(g)));
+    if (clash) return `Nem vehető meg együtt ezzel: ${clash.name}.`;
+    return null;
+  }
+
+  function renderEditorItems() {
+    const max = maxItemsFor(editor.lane);
+    $('edItemCount').textContent = `(${editor.items.length} / ${max})`;
+
+    $('edSlots').replaceChildren(...Array.from({ length: max }, (_, i) => {
+      const li = document.createElement('li');
+      const it = editor.items[i];
+      if (!it) {
+        li.className = 'ed-slot empty';
+        li.textContent = String(i + 1);
+        return li;
+      }
+      li.className = 'ed-slot';
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.title = `${it.name} – kattints a kivételhez`;
+      b.setAttribute('aria-label', `${i + 1}. ${it.name} kivétele`);
+      const img = document.createElement('img');
+      img.src = itemIconUrl(it.id);
+      img.alt = '';
+      b.appendChild(img);
+      b.addEventListener('click', () => {
+        editor.items = editor.items.filter(x => x.id !== it.id);
+        setStatus('edItemMsg', '');
+        renderEditorItems();
+      });
+      li.appendChild(b);
+      return li;
+    }));
+
+    $('edItemFilters').replaceChildren(...ITEM_FILTERS.map(f => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ed-filter';
+      b.textContent = f.label;
+      b.setAttribute('aria-pressed', String(editor.filter === f.id));
+      b.addEventListener('click', () => {
+        editor.filter = f.id;
+        renderEditorItems();
+      });
+      return b;
+    }));
+
+    const q = normalize(editor.search);
+    const shown = editorItems.filter(it => it.cats.has(editor.filter) && (!q || normalize(it.name).includes(q)));
+    $('edItemGrid').replaceChildren(...shown.map(it => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ed-item';
+      const chosen = editor.items.some(x => x.id === it.id);
+      const reason = chosen ? null : itemBlockReason(it);
+      if (chosen) b.classList.add('is-chosen');
+      else if (reason) b.classList.add('is-blocked');
+      b.title = reason && !chosen ? `${it.name} – ${reason}` : it.name;
+      b.setAttribute('aria-label', b.title);
+      b.setAttribute('aria-pressed', String(chosen));
+      const img = document.createElement('img');
+      img.src = itemIconUrl(it.id);
+      img.alt = '';
+      img.loading = 'lazy';
+      b.appendChild(img);
+      b.addEventListener('click', () => toggleEditorItem(it));
+      return b;
+    }));
+    if (!shown.length) $('edItemGrid').replaceChildren(textEl('p', 'Nincs ilyen tárgy.', 'editor-hint'));
+  }
+
+  function toggleEditorItem(it) {
+    if (editor.items.some(x => x.id === it.id)) {
+      editor.items = editor.items.filter(x => x.id !== it.id);
+      setStatus('edItemMsg', '');
+    } else {
+      const reason = itemBlockReason(it);
+      if (reason) {
+        setStatus('edItemMsg', `${it.name}: ${reason}`, 'error');
+        return;
+      }
+      editor.items.push(it);
+      setStatus('edItemMsg', '');
+    }
+    renderEditorItems();
+  }
+
+  function runeButton(rune, selected, onClick, big) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = `ed-rune${big ? ' keystone' : ''}`;
+    b.title = rune.name;
+    b.setAttribute('aria-label', rune.name);
+    b.setAttribute('aria-pressed', String(selected));
+    const img = document.createElement('img');
+    img.src = rune.icon.startsWith('http') ? rune.icon : runeIconUrl(rune.icon);
+    img.alt = '';
+    b.appendChild(img);
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function treeButtons(selectedKey, exclude, onPick) {
+    return runeTrees.filter(t => t.key !== exclude).map(t => {
+      const b = runeButton(t, t.key === selectedKey, () => onPick(t.key));
+      b.classList.add('tree');
+      return b;
+    });
+  }
+
+  function runeRow(runes, selectedKey, onPick, big) {
+    const row = document.createElement('div');
+    row.className = 'ed-rune-row';
+    row.append(...runes.map(r => runeButton(r, r.key === selectedKey, () => onPick(r.key), big)));
+    return row;
+  }
+
+  function renderEditorRunes() {
+    const primary = runeTrees.find(t => t.key === editor.primary);
+    const secondary = runeTrees.find(t => t.key === editor.secondary);
+
+    $('edPrimaryTrees').replaceChildren(...treeButtons(editor.primary, null, key => {
+      if (key === editor.primary) return;
+      Object.assign(editor, { primary: key, keystone: null, primaryRunes: [null, null, null] });
+      // A másodlagos ág nem lehet ugyanaz, mint a fő ág.
+      if (editor.secondary === key) Object.assign(editor, { secondary: null, secondaryRunes: [null, null, null], secondaryOrder: [] });
+      renderEditorRunes();
+    }));
+    $('edPrimaryRows').replaceChildren(...(primary ? [
+      runeRow(primary.slots[0], editor.keystone, key => { editor.keystone = key; renderEditorRunes(); }, true),
+      ...primary.slots.slice(1).map((slot, i) => runeRow(slot, editor.primaryRunes[i], key => {
+        editor.primaryRunes[i] = key;
+        renderEditorRunes();
+      })),
+    ] : [textEl('p', 'Válassz egy fő ágat!', 'editor-hint')]));
+
+    $('edSecondaryTrees').replaceChildren(...treeButtons(editor.secondary, editor.primary, key => {
+      if (key === editor.secondary) return;
+      Object.assign(editor, { secondary: key, secondaryRunes: [null, null, null], secondaryOrder: [] });
+      renderEditorRunes();
+    }));
+    $('edSecondaryRows').replaceChildren(...(secondary ? secondary.slots.slice(1).map((slot, i) => runeRow(slot, editor.secondaryRunes[i], key => {
+      // Két sorból választható egy-egy rúna; egy harmadik sor a legrégebbi választást váltja.
+      editor.secondaryRunes[i] = key;
+      editor.secondaryOrder = [...editor.secondaryOrder.filter(r => r !== i), i];
+      if (editor.secondaryOrder.length > 2) {
+        const drop = editor.secondaryOrder.shift();
+        editor.secondaryRunes[drop] = null;
+      }
+      renderEditorRunes();
+    })) : [textEl('p', 'Válassz egy másodlagos ágat!', 'editor-hint')]));
+
+    $('edShardRows').replaceChildren(...shardSlots.map((slot, i) => {
+      const row = runeRow(slot.shards.map(s => ({ key: String(s.id), name: `${s.name} (${s.desc})`, icon: s.icon })),
+        editor.shards[i] ? String(editor.shards[i]) : null,
+        key => { editor.shards[i] = Number(key); renderEditorRunes(); });
+      row.classList.add('shard');
+      return row;
+    }));
+
+    const keystone = findRune(primary, editor.keystone);
+    $('edRuneName').textContent = keystone ? `Fő rúna: ${keystone.name}` : '';
+  }
+
+  function renderEditorSpells() {
+    $('edSpellCount').textContent = `(${editor.spells.length} / 2)`;
+    $('edSpells').replaceChildren(...[...spellData.values()].map(s => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ed-spell';
+      b.title = s.name;
+      b.setAttribute('aria-pressed', String(editor.spells.includes(s.id)));
+      const img = document.createElement('img');
+      img.src = spellIconUrl(s.id);
+      img.alt = '';
+      b.append(img, textEl('span', s.name));
+      b.addEventListener('click', () => {
+        if (editor.spells.includes(s.id)) editor.spells = editor.spells.filter(x => x !== s.id);
+        // Kettőnél több nem lehet: a harmadik a legrégebbit váltja.
+        else editor.spells = [...editor.spells, s.id].slice(-2);
+        renderEditorSpells();
+      });
+      return b;
+    }));
+  }
+
+  // Olvasható összefoglaló a beküldéshez.
+  function editorSummary() {
+    const primary = runeTrees.find(t => t.key === editor.primary);
+    const secondary = runeTrees.find(t => t.key === editor.secondary);
+    const names = (tree, keys) => keys.map(k => findRune(tree, k)).filter(Boolean).map(r => r.name);
+    const runeParts = [];
+    if (primary) runeParts.push(`${primary.name}: ${names(primary, [editor.keystone, ...editor.primaryRunes]).join(', ') || '-'}`);
+    if (secondary) runeParts.push(`${secondary.name}: ${names(secondary, editor.secondaryRunes).join(', ') || '-'}`);
+    const shards = editor.shards.map((id, i) => {
+      const s = shardSlots[i] && shardSlots[i].shards.find(x => x.id === id);
+      return s ? s.name : null;
+    }).filter(Boolean);
+    return {
+      targyak: editor.items.map((it, i) => `${i + 1}. ${it.name}`).join('\n'),
+      runak: runeParts.join('\n') || '-',
+      alap_ertekek: shards.join(', ') || '-',
+      idezoi_varazslatok: editor.spells.map(id => (spellData.get(id) || {}).name).filter(Boolean).join(', ') || '-',
+    };
+  }
+
+  async function submitBuildSuggestion() {
+    if (!editor.champ) return setStatus('edStatus', 'Válassz championt!', 'error');
+    if (!editor.lane) return setStatus('edStatus', 'Válassz lane-t!', 'error');
+    if (editor.items.length < 3) return setStatus('edStatus', 'Válassz legalább 3 tárgyat!', 'error');
+    if (!IDEA_ENDPOINT) return setStatus('edStatus', 'A javaslatok küldése most nincs bekapcsolva.', 'error');
+
+    const l = LANE_BY_ID.get(editor.lane);
+    $('edSubmit').disabled = true;
+    setStatus('edStatus', 'Küldés…');
+    try {
+      const res = await fetch(IDEA_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          kategoria: 'Build javaslat',
+          champion: `${editor.champ.name} (${l.label})`,
+          build_neve: $('edTitle').value.trim() || '-',
+          ...editorSummary(),
+          megjegyzes: $('edNote').value.trim() || '-',
+          nev: $('edName').value.trim() || '-',
+        }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      setStatus('edStatus', 'Köszönjük, megkaptuk a buildedet!', 'ok');
+    } catch (err) {
+      console.warn(err);
+      setStatus('edStatus', 'Nem sikerült elküldeni. Ellenőrizd az internetkapcsolatot, és próbáld újra.', 'error');
+    } finally {
+      $('edSubmit').disabled = false;
+    }
+  }
+
+  function setStatus(id, text, kind) {
+    const el = $(id);
+    el.textContent = text;
+    el.className = `${id === 'edItemMsg' ? 'editor-msg' : 'idea-status'}${kind ? ` is-${kind}` : ''}`;
+  }
+
   // ---------- Indítás ----------
   spinBtn.addEventListener('click', spinChampion);
   buildSpinBtn.addEventListener('click', spinBuild);
@@ -1746,7 +2128,26 @@
   });
   $('volumeSlider').addEventListener('input', e => setVolume(Number(e.target.value)));
   $('reveal').addEventListener('click', hideReveal);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideReveal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    hideReveal();
+    closeEditor();
+  });
+  $('openEditor').addEventListener('click', () => openEditor());
+  $('suggestForChamp').addEventListener('click', () => openEditor({ champ: currentChamp, lane }));
+  $('editorClose').addEventListener('click', closeEditor);
+  // A sötét háttérre kattintva is bezárul.
+  $('buildEditor').addEventListener('click', e => { if (e.target === $('buildEditor')) closeEditor(); });
+  $('edReset').addEventListener('click', resetEditor);
+  $('edSubmit').addEventListener('click', submitBuildSuggestion);
+  $('edChamp').addEventListener('change', e => {
+    editor.champ = champions.find(c => c.id === e.target.value) || null;
+    renderEditor();
+  });
+  $('edItemSearch').addEventListener('input', e => {
+    editor.search = e.target.value;
+    renderEditorItems();
+  });
   window.addEventListener('resize', () => {
     champWheel.resize();
     buildWheel.resize();

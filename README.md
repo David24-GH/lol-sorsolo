@@ -39,6 +39,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 - **Előzmények**: az utolsó 10 sorsolás, kattintásra pontosan visszahívható (ugyanaz a build, rúnák, tárgyak).
 - **Kedvencek**: a jól bevált buildek ☆ csillaggal elmenthetők (legfeljebb 30).
 - **Ötletek**: javaslat-űrlap a további fejlesztésekhez (lásd lent: [Ötletek fogadása](#ötletek-fogadása-formspree)).
+- **Build javaslása**: a látogatók ikononként összerakhatják a saját buildjüket – champion, lane, tárgyak sorrendben, teljes rúnaoldal alap értékekkel, idézői varázslatok –, és elküldhetik. A szerkesztő a játék szabályait követi (ADC-n 7 tárgyhely, egy cipő / support tárgy / jungle pet, egymást kizáró tárgyak, szabályos rúnaoldal). Az Ötletek fülről, illetve a build kártyáról (előre kitöltve) nyitható meg, és ugyanoda érkezik, ahová az ötletek.
 
 Az előzmények és a kedvencek a böngészőben tárolódnak (`localStorage`).
 

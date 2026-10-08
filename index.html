@@ -119,6 +119,8 @@
 
           <h3 class="build-section">Tárgyak vásárlási sorrendben</h3>
           <ol class="item-list" id="buildItems"></ol>
+
+          <button type="button" class="ghost-btn suggest-btn" id="suggestForChamp">Saját build javaslása ehhez a championhoz</button>
         </div>
       </section>
 
@@ -143,6 +145,10 @@
         </div>
 
         <div role="tabpanel" id="ideaPanel" aria-labelledby="ideaTab" hidden>
+          <div class="suggest-cta">
+            <p>Van egy jól bevált buildod? Rakd össze ikononként, és küldd el!</p>
+            <button type="button" class="ghost-btn" id="openEditor">Build javaslása</button>
+          </div>
           <p class="idea-intro">Van egy ötleted, hogyan lehetne jobb a sorsoló? Írd meg!</p>
           <form class="idea-form" id="ideaForm" novalidate>
             <label for="ideaCategory">Kategória</label>
@@ -181,6 +187,79 @@
     <p>A LoL Champion Sorsoló nem a Riot Games terméke, és nem tükrözi a Riot Games vagy a League of Legends létrehozásában és kezelésében hivatalosan részt vevő személyek nézeteit. A League of Legends és a Riot Games a Riot Games, Inc. védjegyei vagy bejegyzett védjegyei.</p>
     <p id="versionInfo"></p>
   </footer>
+
+  <!-- Build-javasló: a felhasználó ikononként összerakja a saját buildjét, és elküldi. -->
+  <div class="editor" id="buildEditor" role="dialog" aria-modal="true" aria-labelledby="editorTitle" hidden>
+    <div class="editor-panel">
+      <header class="editor-head">
+        <h2 id="editorTitle">Build javaslása</h2>
+        <button type="button" class="editor-close" id="editorClose" aria-label="Bezárás">×</button>
+      </header>
+
+      <div class="editor-body">
+        <section class="editor-section">
+          <h3>1. Champion és lane</h3>
+          <div class="editor-row">
+            <img class="editor-champ-icon" id="edChampIcon" alt="" hidden>
+            <label class="visually-hidden" for="edChamp">Champion</label>
+            <select id="edChamp"></select>
+          </div>
+          <div class="ed-lanes" id="edLanes" role="group" aria-label="Lane"></div>
+          <label class="visually-hidden" for="edTitle">A build neve</label>
+          <input type="text" id="edTitle" maxlength="60" placeholder="A build neve (nem kötelező), pl. „Crit Garen”">
+        </section>
+
+        <section class="editor-section">
+          <h3>2. Tárgyak <span id="edItemCount"></span></h3>
+          <p class="editor-hint">Kattints a tárgyakra a vásárlási sorrendben. Egy kijelölt tárgyra kattintva kiveheted.</p>
+          <ol class="ed-slots" id="edSlots"></ol>
+          <div class="ed-filters" id="edItemFilters" role="group" aria-label="Tárgy kategóriák"></div>
+          <label class="visually-hidden" for="edItemSearch">Tárgy keresése</label>
+          <input type="text" id="edItemSearch" placeholder="Tárgy keresése…" autocomplete="off">
+          <div class="ed-item-grid" id="edItemGrid"></div>
+          <p class="editor-msg" id="edItemMsg" role="status"></p>
+        </section>
+
+        <section class="editor-section">
+          <h3>3. Rúnák</h3>
+          <div class="ed-runes">
+            <div class="ed-rune-col">
+              <p class="ed-sub">Fő ág</p>
+              <div class="ed-trees" id="edPrimaryTrees" role="group" aria-label="Fő rúnaág"></div>
+              <div id="edPrimaryRows"></div>
+            </div>
+            <div class="ed-rune-col">
+              <p class="ed-sub">Másodlagos ág <span>(2 rúna, külön sorból)</span></p>
+              <div class="ed-trees" id="edSecondaryTrees" role="group" aria-label="Másodlagos rúnaág"></div>
+              <div id="edSecondaryRows"></div>
+            </div>
+          </div>
+          <p class="ed-sub">Alap értékek</p>
+          <div id="edShardRows"></div>
+          <p class="editor-msg" id="edRuneName"></p>
+        </section>
+
+        <section class="editor-section">
+          <h3>4. Idézői varázslatok <span id="edSpellCount"></span></h3>
+          <div class="ed-spells" id="edSpells" role="group" aria-label="Idézői varázslatok"></div>
+        </section>
+
+        <section class="editor-section">
+          <h3>5. Megjegyzés és küldés</h3>
+          <label class="visually-hidden" for="edNote">Megjegyzés</label>
+          <textarea id="edNote" rows="3" maxlength="600" placeholder="Miért jó ez a build? Mire figyeljen, aki kipróbálja? (nem kötelező)"></textarea>
+          <label class="visually-hidden" for="edName">Neved</label>
+          <input type="text" id="edName" maxlength="40" autocomplete="nickname" placeholder="Neved (nem kötelező)">
+        </section>
+      </div>
+
+      <footer class="editor-foot">
+        <p class="idea-status" id="edStatus" role="status"></p>
+        <button type="button" class="link-btn" id="edReset">Újrakezdés</button>
+        <button type="button" class="ghost-btn" id="edSubmit">Javaslat elküldése</button>
+      </footer>
+    </div>
+  </div>
 
   <div class="reveal" id="reveal" hidden>
     <div class="reveal-rays" aria-hidden="true"></div>
