@@ -1,42 +1,67 @@
 # LoL Champion Sorsoló
 
-Szerencsekerék, ami véletlenszerűen kisorsol egy League of Legends championt.
+Szerencsekerék a League of Legendshez: válaszd ki a lane-ed, pörgesd ki a championod, majd egy második keréken egy hozzá illő **fun buildet** – teljes rúnaoldallal, idézői varázslatokkal és tárgyakkal vásárlási sorrendben.
 
-- A championok listája és képei a Riot hivatalos [Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon) szolgáltatásából töltődnek be, így az új championok automatikusan megjelennek.
-- Szűrés szerepkörre (Harcos, Tank, Mágus, Orgyilkos, Lövész, Támogató).
-- Az utolsó 10 sorsolás a böngészőben megmarad.
-- Sorsoláskor megszólal a champion angol nyelvű választási hangja és effektje (mint a champion-választásnál), a hang a jobb felső gombbal kikapcsolható.
-- Látványos eredmény: teljes képernyős bemutató, fénysugarak, csillogás és részecske-effekt.
-- Az elején kiválasztod a lane-ed (Top, Jungle, Mid, ADC, Support), és a végén a lane-nek megfelelő **teljes buildet** kapsz: idézői varázslatok, rúnaoldal és tárgyak.
-  - Top / Jungle: cipő + 5 tárgy (jungle-ben kezdő pet tárggyal és Sújtással)
-  - Mid: fejlesztett cipő + 5 tárgy
-  - ADC: cipő + 6 tárgy (7 tárgy)
-  - Support: support tárgy (a Világatlasz végső fejlesztése) + cipő + 4 tárgy
-- A kisorsolt champion fejlécként megmarad, alatta egy második kerék jelenik meg **fun buildekkel** (pl. Teljes AP, Lethality, Kritikus csapás, Mozgási sebesség). Minden champion csak olyan buildeket kap, amivel játszható: ezt a Riot adataiból (sebzéstípus, szerepkör, harctávolság) számolja ki, néhány kézi javítással. A buildekhez tartozó tárgyak az aktuális patch tárgylistájából jönnek.
+Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs telepítendő függőség, bármilyen statikus tárhelyen fut.
 
-A szerepkör-ikonok és a hangok a [CommunityDragon](https://www.communitydragon.org/) oldalról töltődnek be.
+## Funkciók
 
-Tisztán statikus oldal (HTML + CSS + JS), nincs build lépés és nincs függőség.
+### Champion kerék
+- **Lane-választás** (Top, Jungle, Mid, ADC, Support) a pörgetés előtt; az oldal megjegyzi.
+- Az adott lane-en **játszhatatlan championok kimaradnak** a kerékről (pl. Yuumi jungle-ben).
+- **Szűrés szerepkörre** a játék ikonjaival (Harcos, Tank, Mágus, Orgyilkos, Lövész, Támogató); több is kijelölhető.
+- Mindig friss champion lista: a Riot hivatalos adataiból töltődik be, az új championok maguktól megjelennek.
+- Sorsoláskor megszólal a champion **angol nyelvű választási hangja**, mint a játékban (kikapcsolható).
+- Látványos eredmény: teljes képernyős bemutató, fénysugarak, csillogás, részecske-effekt.
+
+### Fun build kerék
+- A kisorsolt champion **fejlécként** megmarad, alatta egy második kerék jelenik meg.
+- 14 build típus: Teljes AP, AP on-hit, AP tank, Lethality, Kritikus csapás, On-hit, Bruiser, Teljes tank, HP-halmozás, Vámpír, Enchanter, Mana-halmozás, Mozgási sebesség, Képesség-gyorsítás.
+- Minden champion **csak olyan buildet kap, amivel játszható** – a Riot adataiból (sebzéstípus, szerepkör, harctávolság) számolva, kézi javításokkal.
+
+### Teljes build a lane szerint
+| Lane | Tárgyak |
+|---|---|
+| Top | cipő + 5 tárgy |
+| Jungle | kezdő pet tárgy + cipő + 5 tárgy, Sújtás |
+| Mid | fejlesztett cipő + 5 tárgy |
+| ADC | cipő + 6 tárgy (7 tárgy) |
+| Support | support tárgy + cipő + 4 tárgy |
+
+- **Idézői varázslatok** a lane és a build szerint.
+- **Rúnaoldal**: a buildhez illő fő rúna, teljes és szabályos oldal, plusz az **alap értékek** (shardok).
+- **Tárgyak vásárlási sorrendben**; a speciális tárgyak (kezdő pet, support tárgy, cipő) külön, elválasztva.
+- A tárgyak az aktuális patch tárgylistájából jönnek: ha egy tárgyat kivesznek a játékból, magától kimarad.
+
+### Előzmények, kedvencek, ötletek
+- **Előzmények**: az utolsó 10 sorsolás, kattintásra pontosan visszahívható (ugyanaz a build, rúnák, tárgyak).
+- **Kedvencek**: a jól bevált buildek ☆ csillaggal elmenthetők (legfeljebb 30).
+- **Ötletek**: javaslat-űrlap a további fejlesztésekhez (lásd lent: [Ötletek fogadása](#ötletek-fogadása-formspree)).
+
+Az előzmények és a kedvencek a böngészőben tárolódnak (`localStorage`).
 
 ## Helyi futtatás
+
+Windows alatt a mellékelt kis szerverrel:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File serve.ps1
 ```
 
-Majd: http://localhost:8792
+Majd nyisd meg: http://localhost:8792
 
-## Feltöltés weboldalra
+Bármilyen más statikus szerver is jó, pl. `npx serve .` vagy `python -m http.server`.
 
-Bármely statikus tárhelyen működik. Feltölteni ezeket a fájlokat kell: `index.html`, `style.css`, `script.js` (a `serve.ps1` csak helyi teszteléshez kell).
+## Közzététel weboldalként
+
+Feltölteni ezeket a fájlokat kell: `index.html`, `style.css`, `script.js` (a `serve.ps1` csak helyi teszteléshez kell).
 
 **GitHub Pages**
-1. Hozz létre egy új repót a GitHubon (pl. `lol-sorsolo`), és töltsd fel ezt a mappát.
-2. Repó → *Settings* → *Pages* → *Source*: `Deploy from a branch`, branch: `main`, mappa: `/ (root)`.
+1. A tároló oldalán: *Settings* → *Pages*.
+2. *Source*: `Deploy from a branch`, branch: `main`, mappa: `/ (root)` → *Save*.
 3. Pár perc múlva elérhető: `https://<felhasznalonev>.github.io/lol-sorsolo/`
 
-**Netlify**
-Húzd rá a mappát a https://app.netlify.com/drop oldalra.
+**Netlify**: húzd rá a mappát a https://app.netlify.com/drop oldalra.
 
 ## Ötletek fogadása (Formspree)
 
@@ -49,6 +74,39 @@ Az **Ötletek** fülön a látogatók javaslatokat küldhetnek. Alapból ezek cs
    const IDEA_ENDPOINT = 'https://formspree.io/f/abcdwxyz';
    ```
 4. Töltsd fel újra az oldalt. Az ötletek ezután e-mailben és a Formspree felületén is megjelennek (kategória, javaslat, név).
+
+## Testreszabás
+
+A szabályok mind a `script.js` elején, jól elkülönítve találhatók:
+
+| Mit | Hol |
+|---|---|
+| Lane-enként kizárt championok | `LANE_BANS` |
+| Build típusok (tárgyak sorrendje, cipő, fő rúnák, alap értékek, kinek jár) | `BUILDS` |
+| Kézi javítások a champion profilokhoz (pl. ki számít AP-nak / AD-nak) | `AP_EXTRA`, `AP_EXCLUDE`, `AD_EXTRA`, `AD_EXCLUDE`, `CRIT_EXTRA`, `AP_ONHIT_EXTRA`, `INFO_FIX` |
+| Tárgyszám lane-enként | `LANES` |
+| Support tárgy és jungle pet a build szerint | `SUPPORT_ITEM`, `JUNGLE_PET` |
+| Egymást kizáró tárgyak | `ITEM_GROUPS` |
+
+## Felépítés
+
+```
+index.html   az oldal szerkezete
+style.css    megjelenés (sötét, LoL-stílusú téma, mobilon is)
+script.js    adatbetöltés, kerekek, build-összeállítás, előzmények, kedvencek, ötletek
+serve.ps1    kis helyi szerver teszteléshez (Windows PowerShell)
+```
+
+## Adatforrások
+
+- [Riot Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon) – championok, tárgyak, rúnák, idézői varázslatok, képek (magyarul).
+- [CommunityDragon](https://www.communitydragon.org/) – szerepkör- és lane-ikonok, a rúnák alap értékei, a champion-választás hangjai.
+
+Az oldal futás közben tölti be az adatokat, ezért internetkapcsolat kell hozzá.
+
+## Licenc
+
+Minden jog fenntartva. A kód megtekinthető, de engedély nélkül nem használható fel.
 
 ## Jogi nyilatkozat
 
