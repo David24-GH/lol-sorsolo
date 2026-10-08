@@ -1,15 +1,35 @@
 (() => {
   'use strict';
 
+  // ---------- Nyelv ----------
+  // A választott nyelv megmarad; első látogatáskor a böngésző nyelve dönt.
+  const LANG_KEY = 'lolSorsolo.lang';
+  const RESUME_KEY = 'lolSorsolo.resume';
+  const LANG = (() => {
+    try {
+      const saved = localStorage.getItem(LANG_KEY);
+      if (saved === 'hu' || saved === 'en') return saved;
+    } catch { /* nem elérhető */ }
+    return (navigator.language || '').toLowerCase().startsWith('hu') ? 'hu' : 'en';
+  })();
+  const TEXT = window.LOL_TEXT[LANG];
+  const t = (key, ...args) => {
+    const v = key in TEXT ? TEXT[key] : window.LOL_TEXT.hu[key];
+    if (v === undefined) return key;
+    return typeof v === 'function' ? v(...args) : v;
+  };
+  const SORT_LOCALE = LANG;
+  const DATE_LOCALE = LANG === 'hu' ? 'hu-HU' : 'en-US';
+
   const DDRAGON = 'https://ddragon.leagueoflegends.com';
-  const LOCALE = 'hu_HU';
+  const LOCALE = LANG === 'hu' ? 'hu_HU' : 'en_US';
   const CDRAGON = 'https://raw.communitydragon.org/latest/plugins/';
   const ROLE_ICON_BASE = `${CDRAGON}rcp-fe-lol-champion-details/global/default/`;
   const LANE_ICON_BASE = `${CDRAGON}rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/`;
   // A champion-választás hangjai (angol), a champion numerikus kulcsa alapján.
   const CDRAGON_AUDIO = `${CDRAGON}rcp-be-lol-game-data/global/default/v1/`;
-  // A rúnaoldal alap értékei (shardok) magyarul; a Data Dragon ezeket nem tartalmazza.
-  const CDRAGON_DATA_HU = `${CDRAGON}rcp-be-lol-game-data/global/hu_hu/v1/`;
+  // A rúnaoldal alap értékei (shardok) a választott nyelven; a Data Dragon ezeket nem tartalmazza.
+  const CDRAGON_DATA = `${CDRAGON}rcp-be-lol-game-data/global/${LANG === 'hu' ? 'hu_hu' : 'default'}/v1/`;
   const CDRAGON_ASSETS = `${CDRAGON}rcp-be-lol-game-data/global/default/`;
   const HISTORY_KEY = 'lolSorsolo.history';
   const SOUND_KEY = 'lolSorsolo.sound';
@@ -27,14 +47,8 @@
   const REVEAL_MS = 5000;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const ROLES = [
-    { tag: 'Fighter', label: 'Harcos' },
-    { tag: 'Tank', label: 'Tank' },
-    { tag: 'Mage', label: 'Mágus' },
-    { tag: 'Assassin', label: 'Orgyilkos' },
-    { tag: 'Marksman', label: 'Lövész' },
-    { tag: 'Support', label: 'Támogató' },
-  ];
+  const ROLES = ['Fighter', 'Tank', 'Mage', 'Assassin', 'Marksman', 'Support']
+    .map(tag => ({ tag, label: t(`role.${tag}`) }));
   const ROLE_LABEL = Object.fromEntries(ROLES.map(r => [r.tag, r.label]));
 
   // items: hány tárgy jár a cipőn / support tárgyon felül.
@@ -234,6 +248,9 @@
       ok: () => true,
     },
   ];
+  // Más nyelven a buildek neve és leírása az i18n.js-ből jön.
+  const BUILD_TEXT = (window.LOL_BUILD_TEXT || {})[LANG];
+  if (BUILD_TEXT) BUILDS.forEach(b => { if (BUILD_TEXT[b.id]) [b.name, b.desc] = BUILD_TEXT[b.id]; });
   const BUILD_BY_ID = new Map(BUILDS.map(b => [b.id, b]));
 
   // Ha a build saját tárgyai elfogynak (pl. kivettek egy tárgyat a játékból), ezekből pótol.
@@ -388,14 +405,14 @@
     }
     if (laneId === 'support') {
       const sup = getItem(pick(asList(SUPPORT_ITEM[build.id] || SUPPORT_BY_KIND[p.kind])));
-      if (sup) items.push({ ...sup, note: 'Support tárgy' });
+      if (sup) items.push({ ...sup, note: 'support' });
     }
     let boots = getItem(pick(byKind(build.boots)));
     const upgraded = boots && laneId === 'mid' && getItem(bootUpgrade.get(boots.id));
     if (upgraded) {
-      boots = { ...upgraded, note: 'Fejlesztett cipő' };
+      boots = { ...upgraded, note: 'bootsUp' };
     } else if (boots) {
-      boots = { ...boots, note: 'Cipő' };
+      boots = { ...boots, note: 'boots' };
     }
     const core = chooseItems(byKind(build.pool), FALLBACK_POOL[p.kind], lane.items, p.melee, build.last);
     // A cipő általában az első tárgy után jön; supportnál és a gyorsaság buildnél már előtte.
@@ -411,10 +428,15 @@
       spells: spellsFor(laneId, build),
       runes: runePage(byKind(build.keystones)),
       shards: statShards(byKind(build.shards)),
-      starter: starter && { ...starter, note: 'Kezdő tárgy' },
+      starter: starter && { ...starter, note: 'starter' },
       items,
     };
   }
+
+  // A tárgyak megjegyzése egy kulcs (support, boots, bootsUp, starter); a régi
+  // előzményekben még magyar szövegként van elmentve.
+  const LEGACY_NOTE = { 'Support tárgy': 'support', 'Cipő': 'boots', 'Fejlesztett cipő': 'bootsUp', 'Kezdő tárgy': 'starter' };
+  const noteKey = note => LEGACY_NOTE[note] || note;
 
   // ---------- Kerék ----------
   const mod = (a, m) => ((a % m) + m) % m;
@@ -664,14 +686,14 @@
   // ---------- Adatok ----------
   async function loadData() {
     showError(null);
-    $('champCount').textContent = 'Championok betöltése…';
+    $('champCount').textContent = t('count.loading');
     try {
       const versions = await fetchJson(`${DDRAGON}/api/versions.json`);
       version = versions[0];
       const data = path => `${DDRAGON}/cdn/${version}/data/${LOCALE}/${path}`;
       // A tárgyak, rúnák és varázslatok nélkül is működik a sorsolás, csak a build lesz hiányos.
       const optional = p => fetchJson(data(p)).catch(err => { console.warn(err); return null; });
-      const cdragon = p => fetchJson(CDRAGON_DATA_HU + p).catch(err => { console.warn(err); return null; });
+      const cdragon = p => fetchJson(CDRAGON_DATA + p).catch(err => { console.warn(err); return null; });
       const [champJson, itemJson, runeJson, spellJson, perkJson, styleJson] = await Promise.all([
         fetchJson(data('champion.json')),
         optional('item.json'),
@@ -686,7 +708,7 @@
           id: c.id, key: c.key, name: c.name, title: c.title, tags: c.tags,
           info: c.info, partype: c.partype, range: c.stats.attackrange,
         }))
-        .sort((a, b) => a.name.localeCompare(b.name, 'hu'));
+        .sort((a, b) => a.name.localeCompare(b.name, SORT_LOCALE));
       loadItems(itemJson ? itemJson.data : {});
       runeTrees = (runeJson || []).map(t => ({
         key: t.key, name: t.name, icon: t.icon,
@@ -695,13 +717,14 @@
       spellData = new Map(Object.values(spellJson ? spellJson.data : {})
         .filter(s => s.modes.includes('CLASSIC'))
         .map(s => [s.id, { id: s.id, name: s.name }]));
-      $('versionInfo').textContent = `Adatok: Riot Data Dragon, ${version} verzió · ${champions.length} champion`;
+      $('versionInfo').textContent = t('version', version, champions.length);
       applyFilter();
       renderLists();
+      resumeAfterLanguageSwitch();
     } catch (err) {
       console.error(err);
       $('champCount').textContent = '';
-      showError('Nem sikerült betölteni a championok listáját. Ellenőrizd az internetkapcsolatot, majd próbáld újra.');
+      showError(t('error.load'));
     }
   }
 
@@ -760,7 +783,7 @@
         if (!kind && has('Armor', 'SpellBlock', 'MagicResist', 'Health')) cats.add('def');
         return { id: Number(id), name: it.name, kind, cats };
       })
-      .sort((a, b) => a.name.localeCompare(b.name, 'hu'));
+      .sort((a, b) => a.name.localeCompare(b.name, SORT_LOCALE));
   }
 
   function loadShards(perks, styles) {
@@ -861,14 +884,14 @@
     const bans = lane ? LANE_BANS[lane] : new Set();
     const playable = champions.filter(c => !bans.has(c.id));
     const banned = champions.length - playable.length;
-    const banNote = banned ? ` · ${banned} kizárva, mert ${LANE_BY_ID.get(lane).label} lane-en nem játszható` : '';
+    const banNote = banned ? t('count.banned', banned, LANE_BY_ID.get(lane).label) : '';
     if (activeRoles.size === 0) {
       pool = playable;
-      $('champCount').textContent = `${pool.length} champion a keréken${banNote}`;
+      $('champCount').textContent = t('count.wheel', pool.length) + banNote;
     } else {
-      pool = playable.filter(c => c.tags.some(t => activeRoles.has(t)));
+      pool = playable.filter(c => c.tags.some(tag => activeRoles.has(tag)));
       const labels = ROLES.filter(r => activeRoles.has(r.tag)).map(r => r.label).join(', ');
-      $('champCount').textContent = `${pool.length} champion a keréken (${labels})${banNote}`;
+      $('champCount').textContent = t('count.wheel', pool.length, labels) + banNote;
     }
     champWheel.setItems(pool);
     updateSpinState();
@@ -878,7 +901,7 @@
     $('laneButtons').classList.toggle('has-selection', !!lane);
     spinBtn.disabled = !champWheel.spinning && (pool.length === 0 || !lane);
     if (!champWheel.spinning) {
-      $('ticker').textContent = lane ? ' ' : 'Válaszd ki a lane-ed a pörgetéshez!';
+      $('ticker').textContent = lane ? ' ' : t('ticker.needLane');
     }
   }
 
@@ -905,13 +928,13 @@
       .map(c => ({ c, name: normalize(c.name), id: normalize(c.id) }))
       .filter(x => x.name.includes(q) || x.id.includes(q))
       // Előre azok, akiknek a neve a beírt szöveggel kezdődik.
-      .sort((a, b) => (b.name.startsWith(q) - a.name.startsWith(q)) || a.c.name.localeCompare(b.c.name, 'hu'))
+      .sort((a, b) => (b.name.startsWith(q) - a.name.startsWith(q)) || a.c.name.localeCompare(b.c.name, SORT_LOCALE))
       .slice(0, SUGGEST_MAX)
       .map(x => x.c);
     suggestIdx = suggestions.length ? 0 : -1;
 
     if (!suggestions.length) {
-      list.replaceChildren(textEl('li', 'Nincs ilyen champion.', 'suggest-empty'));
+      list.replaceChildren(textEl('li', t('search.none'), 'suggest-empty'));
     } else {
       list.replaceChildren(...suggestions.map((c, i) => {
         const li = document.createElement('li');
@@ -974,7 +997,7 @@
   function pickChampion(champ) {
     if (champWheel.spinning) return;
     if (!lane) {
-      $('searchHint').textContent = 'Előbb válaszd ki fent a lane-ed!';
+      $('searchHint').textContent = t('search.needLane');
       return;
     }
     $('champSearch').value = '';
@@ -990,9 +1013,9 @@
   // ---------- Champion sorsolás ----------
   // Pörgés közben a középső gomb a kihagyás gombja.
   function setSkipMode(btn, on) {
-    btn.textContent = on ? 'KIHAGYÁS' : 'PÖRGETÉS';
+    btn.textContent = on ? t('skip') : t('spin');
     btn.classList.toggle('is-skip', on);
-    btn.setAttribute('aria-label', on ? 'Animáció kihagyása' : 'Pörgetés');
+    btn.setAttribute('aria-label', on ? t('skip.aria') : t('spin.aria'));
   }
 
   function spinChampion() {
@@ -1007,7 +1030,7 @@
       playSounds();
       burstFromWheel(champWheel.canvas);
       showReveal({
-        label: `A te championod · ${LANE_BY_ID.get(lane).label}`,
+        label: t('reveal.champ', LANE_BY_ID.get(lane).label),
         name: champ.name,
         title: champ.title,
         splash: splashUrl(champ.id),
@@ -1040,7 +1063,7 @@
     $('buildTicker').innerHTML = '&nbsp;';
 
     const builds = buildsFor(champ);
-    $('buildCount').textContent = `${builds.length} játszható build ${champ.name} (${l.label}) számára`;
+    $('buildCount').textContent = t('build.count', builds.length, champ.name, l.label);
     buildWheel.resize();
     buildWheel.setItems(builds);
     window.scrollTo({ top: 0 });
@@ -1112,7 +1135,7 @@
       );
       if (full.shards.length) runesEl.appendChild(shardListEl(full.shards));
     } else {
-      runesEl.replaceChildren(textEl('p', 'A rúnák most nem érhetők el.', 'muted'));
+      runesEl.replaceChildren(textEl('p', t('runes.na'), 'muted'));
     }
 
     const { special, core } = splitItems(full);
@@ -1124,13 +1147,13 @@
       img.alt = '';
       const text = document.createElement('div');
       text.appendChild(textEl('span', it.name));
-      if (it.note) text.appendChild(textEl('small', it.note));
+      if (it.note) text.appendChild(textEl('small', t(`note.${noteKey(it.note)}`)));
       li.append(img, text);
       // A speciális tárgyak (kezdő pet, support tárgy, cipő) szaggatott vonallal elválasztva, felül.
       if (i === special.length - 1 && core.length) li.className = 'special-last';
       return li;
     }));
-    if (!list.length) $('buildItems').replaceChildren(textEl('li', 'A tárgyak most nem érhetők el.', 'muted'));
+    if (!list.length) $('buildItems').replaceChildren(textEl('li', t('items.na'), 'muted'));
 
     card.classList.remove('pop');
     void card.offsetWidth;
@@ -1172,7 +1195,7 @@
     wrap.className = 'rune-tree';
     const head = document.createElement('div');
     head.className = 'rune-tree-head';
-    head.appendChild(textEl('span', 'Alap értékek'));
+    head.appendChild(textEl('span', t('sec.shards')));
     const row = document.createElement('div');
     row.className = 'rune-row shard-row';
     for (const s of shards) {
@@ -1235,7 +1258,7 @@
     const btn = $('soundBtn');
     const audible = soundOn && volume > 0;
     btn.setAttribute('aria-pressed', String(soundOn));
-    btn.title = soundOn ? 'Hang kikapcsolása' : 'Hang bekapcsolása';
+    btn.title = soundOn ? t('sound.off') : t('sound.on');
     btn.setAttribute('aria-label', btn.title);
     $('soundOnIcon').hidden = !audible;
     $('soundOffIcon').hidden = audible;
@@ -1463,7 +1486,7 @@
 
   function serializeBuild(full) {
     return {
-      items: full.items.map(it => ({ id: it.id, note: it.note || null })),
+      items: full.items.map(it => ({ id: it.id, note: it.note ? noteKey(it.note) : null })),
       starter: full.starter ? full.starter.id : null,
       spells: full.spells.map(s => s.id),
       runes: full.runes && {
@@ -1506,12 +1529,13 @@
       spells: saved.spells.map(id => spellData.get(id)).filter(Boolean),
       runes,
       shards: statShards(saved.shards),
-      starter: saved.starter ? withNote(saved.starter, 'Kezdő tárgy') : null,
-      items: saved.items.map(x => withNote(x.id, x.note)).filter(Boolean),
+      starter: saved.starter ? withNote(saved.starter, 'starter') : null,
+      items: saved.items.map(x => withNote(x.id, x.note && noteKey(x.note))).filter(Boolean),
     };
   }
 
-  function recallEntry(id) {
+  // silent: hang nélkül (nyelvváltás utáni visszaállításnál).
+  function recallEntry(id, silent = false) {
     if (champWheel.spinning || buildWheel.spinning) return;
     const entry = history.find(e => e.id === id) || favorites.find(e => e.id === id);
     const champ = entry && champions.find(c => c.id === entry.c);
@@ -1521,7 +1545,7 @@
     setLane(entry.l);
     // Visszahíváskor is megszólal a champion hangja, mint a sorsolásnál.
     preloadSounds(champ);
-    playSounds();
+    if (!silent) playSounds();
     enterBuildStage(champ);
     currentEntryId = entry.id;
 
@@ -1585,8 +1609,8 @@
     $('favList').replaceChildren(...favs.map(e => entryCardEl(e, byId.get(e.c), false)));
     $('historyEmpty').hidden = hist.length > 0;
     $('favEmpty').hidden = favs.length > 0;
-    $('historyTab').textContent = `Előzmények (${hist.length})`;
-    $('favTab').textContent = `Kedvencek (${favs.length})`;
+    $('historyTab').textContent = t('tab.history', hist.length);
+    $('favTab').textContent = t('tab.fav', favs.length);
     $('clearHistory').hidden = activeTab !== 'history' || hist.length === 0;
 
     // A build kártyán lévő csillag az éppen látható buildre vonatkozik.
@@ -1596,7 +1620,7 @@
     const fav = current && isFavorite(current.id);
     favBtn.setAttribute('aria-pressed', String(!!fav));
     favBtn.querySelector('.star').textContent = fav ? '★' : '☆';
-    favBtn.querySelector('.fav-label').textContent = fav ? 'Kedvenc' : 'Kedvencekhez';
+    favBtn.querySelector('.fav-label').textContent = fav ? t('fav.is') : t('fav.add');
   }
 
   // Egy bejegyzés törlése az előzményekből (a kedvencekben lévő másolata megmarad).
@@ -1614,7 +1638,7 @@
     btn.className = 'history-entry';
     if (e.id === currentEntryId) btn.setAttribute('aria-current', 'true');
     const build = BUILD_BY_ID.get(e.b);
-    btn.title = 'Kattints a visszahíváshoz';
+    btn.title = t('entry.recall');
 
     const head = document.createElement('div');
     head.className = 'history-head-row';
@@ -1625,7 +1649,7 @@
     const text = document.createElement('div');
     text.appendChild(textEl('span', c.name));
     const l = LANE_BY_ID.get(e.l);
-    const details = [l && l.label, build ? build.name : 'Nincs még build'].filter(Boolean);
+    const details = [l && l.label, build ? build.name : t('entry.noBuild')].filter(Boolean);
     text.appendChild(textEl('small', details.join(' · ')));
     head.append(img, text);
     btn.appendChild(head);
@@ -1659,7 +1683,7 @@
       star.className = 'entry-star';
       star.textContent = fav ? '★' : '☆';
       star.setAttribute('aria-pressed', String(fav));
-      star.title = fav ? 'Eltávolítás a kedvencek közül' : 'Mentés a kedvencek közé';
+      star.title = fav ? t('entry.favRemove') : t('entry.favAdd');
       star.setAttribute('aria-label', star.title);
       star.addEventListener('click', () => toggleFavorite(e.id));
       li.appendChild(star);
@@ -1669,8 +1693,8 @@
       const del = document.createElement('button');
       del.type = 'button';
       del.className = 'entry-delete';
-      del.title = 'Törlés az előzményekből';
-      del.setAttribute('aria-label', `${c.name}${build ? ` (${build.name})` : ''} törlése az előzményekből`);
+      del.title = t('entry.delete');
+      del.setAttribute('aria-label', t('entry.deleteAria', `${c.name}${build ? ` (${build.name})` : ''}`));
       del.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       del.addEventListener('click', () => deleteHistoryEntry(e.id));
       li.appendChild(del);
@@ -1695,17 +1719,20 @@
 
   function renderIdeas() {
     $('ideaSaved').hidden = ideas.length === 0;
-    $('ideaSaved').querySelector('h4').textContent = IDEA_ENDPOINT
-      ? 'Általad elküldött ötletek'
-      : 'Ebben a böngészőben mentett ötletek';
+    $('ideaSaved').querySelector('h4').textContent = IDEA_ENDPOINT ? t('idea.sentList') : t('idea.localList');
+    // A kategória magyarul van elmentve (ez az űrlap értéke); a felirat a választott nyelven.
+    const catLabel = cat => {
+      const opt = [...$('ideaCategory').options].find(o => o.value === cat);
+      return opt ? opt.textContent : cat;
+    };
     $('ideaList').replaceChildren(...ideas.map(idea => {
       const li = document.createElement('li');
-      const meta = `${idea.category} · ${new Date(idea.date).toLocaleDateString('hu-HU')}${idea.name ? ` · ${idea.name}` : ''}`;
+      const meta = `${catLabel(idea.category)} · ${new Date(idea.date).toLocaleDateString(DATE_LOCALE)}${idea.name ? ` · ${idea.name}` : ''}`;
       li.append(textEl('small', meta), textEl('p', idea.text));
       const del = document.createElement('button');
       del.type = 'button';
       del.className = 'link-btn';
-      del.textContent = 'Törlés';
+      del.textContent = t('idea.delete');
       del.addEventListener('click', () => {
         ideas = ideas.filter(x => x.id !== idea.id);
         writeIdeas();
@@ -1727,7 +1754,7 @@
     const form = $('ideaForm');
     const text = $('ideaText').value.trim();
     if (text.length < 5) {
-      setIdeaStatus('Írj legalább pár szót a javaslatodról!', 'error');
+      setIdeaStatus(t('idea.tooShort'), 'error');
       $('ideaText').focus();
       return;
     }
@@ -1744,17 +1771,17 @@
 
     if (IDEA_ENDPOINT) {
       $('ideaSubmit').disabled = true;
-      setIdeaStatus('Küldés…');
+      setIdeaStatus(t('idea.sending'));
       try {
         const res = await fetch(IDEA_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ kategoria: idea.category, javaslat: idea.text, nev: idea.name || '-' }),
+          body: JSON.stringify({ kategoria: idea.category, javaslat: idea.text, nev: idea.name || '-', nyelv: LANG }),
         });
         if (!res.ok) throw new Error(String(res.status));
       } catch (err) {
         console.warn(err);
-        setIdeaStatus('Nem sikerült elküldeni. Ellenőrizd az internetkapcsolatot, és próbáld újra.', 'error');
+        setIdeaStatus(t('idea.failed'), 'error');
         $('ideaSubmit').disabled = false;
         return;
       }
@@ -1766,7 +1793,7 @@
     renderIdeas();
     form.reset();
     updateIdeaCounter();
-    setIdeaStatus(IDEA_ENDPOINT ? 'Köszönjük, megkaptuk az ötletedet!' : 'Elmentve! Köszönöm az ötletet.', 'ok');
+    setIdeaStatus(IDEA_ENDPOINT ? t('idea.thanks') : t('idea.saved'), 'ok');
   }
 
   function updateIdeaCounter() {
@@ -1776,16 +1803,10 @@
   // ---------- Build-javasló ----------
   // A felhasználó ikononként összerakja a saját buildjét (tárgyak, rúnák, varázslatok),
   // és ugyanoda küldi, ahová az ötletek is mennek (IDEA_ENDPOINT).
-  const ITEM_FILTERS = [
-    { id: 'all', label: 'Mind' },
-    { id: 'boots', label: 'Cipők' },
-    { id: 'ad', label: 'Fizikai' },
-    { id: 'ap', label: 'Varázs' },
-    { id: 'def', label: 'Védekező' },
-    { id: 'special', label: 'Kezdő, support, jungle' },
-  ];
-  // Ezekből a fajtákból egy buildben csak egy lehet.
-  const KIND_LABEL = { boots: 'cipő', support: 'support tárgy', jungle: 'jungle pet', starter: 'kezdő tárgy' };
+  const ITEM_FILTERS = ['all', 'boots', 'ad', 'ap', 'def', 'special']
+    .map(id => ({ id, label: t(`filter.${id}`) }));
+  // Ezekből a fajtákból (boots, support, jungle, starter) egy buildben csak egy lehet.
+  const kindLabel = kind => t(`kind.${kind}`);
 
   const editor = {
     champ: null, lane: null, items: [],
@@ -1838,7 +1859,7 @@
   function fillChampSelect() {
     const sel = $('edChamp');
     if (sel.options.length > 1) return;
-    sel.replaceChildren(new Option('Válassz championt…', ''), ...champions.map(c => new Option(c.name, c.id)));
+    sel.replaceChildren(new Option(t('ed.pickChamp'), ''), ...champions.map(c => new Option(c.name, c.id)));
   }
 
   function renderEditor() {
@@ -1868,20 +1889,20 @@
     const max = maxItemsFor(laneId);
     if (editor.items.length > max) {
       editor.items = editor.items.slice(0, max);
-      setStatus('edItemMsg', `${LANE_BY_ID.get(laneId).label} lane-en legfeljebb ${max} tárgy fér el, a többit kivettem.`, 'error');
+      setStatus('edItemMsg', t('ed.laneLimit', LANE_BY_ID.get(laneId).label, max), 'error');
     }
     renderEditor();
   }
 
   // Miért nem lehet hozzáadni egy tárgyat? (null = hozzáadható)
   function itemBlockReason(it) {
-    if (editor.items.some(x => x.id === it.id)) return 'Már benne van.';
+    if (editor.items.some(x => x.id === it.id)) return t('ed.already');
     const max = maxItemsFor(editor.lane);
-    if (editor.items.length >= max) return `Legfeljebb ${max} tárgy fér el.`;
-    if (it.kind && editor.items.some(x => x.kind === it.kind)) return `Csak egy ${KIND_LABEL[it.kind]} lehet a buildben.`;
+    if (editor.items.length >= max) return t('ed.max', max);
+    if (it.kind && editor.items.some(x => x.kind === it.kind)) return t('ed.onlyOne', kindLabel(it.kind));
     const groups = itemGroups.get(it.id) || [];
     const clash = editor.items.find(x => (itemGroups.get(x.id) || []).some(g => groups.includes(g)));
-    if (clash) return `Nem vehető meg együtt ezzel: ${clash.name}.`;
+    if (clash) return t('ed.clash', clash.name);
     return null;
   }
 
@@ -1900,8 +1921,8 @@
       li.className = 'ed-slot';
       const b = document.createElement('button');
       b.type = 'button';
-      b.title = `${it.name} – kattints a kivételhez`;
-      b.setAttribute('aria-label', `${i + 1}. ${it.name} kivétele`);
+      b.title = t('ed.slotTitle', it.name);
+      b.setAttribute('aria-label', t('ed.slotRemove', i + 1, it.name));
       const img = document.createElement('img');
       img.src = itemIconUrl(it.id);
       img.alt = '';
@@ -1949,7 +1970,7 @@
       b.addEventListener('click', () => toggleEditorItem(it));
       return b;
     }));
-    if (!shown.length) $('edItemGrid').replaceChildren(textEl('p', 'Nincs ilyen tárgy.', 'editor-hint'));
+    if (!shown.length) $('edItemGrid').replaceChildren(textEl('p', t('ed.noItem'), 'editor-hint'));
   }
 
   function toggleEditorItem(it) {
@@ -2015,7 +2036,7 @@
         editor.primaryRunes[i] = key;
         renderEditorRunes();
       })),
-    ] : [textEl('p', 'Válassz egy fő ágat!', 'editor-hint')]));
+    ] : [textEl('p', t('ed.pickPrimary'), 'editor-hint')]));
 
     $('edSecondaryTrees').replaceChildren(...treeButtons(editor.secondary, editor.primary, key => {
       if (key === editor.secondary) return;
@@ -2031,7 +2052,7 @@
         editor.secondaryRunes[drop] = null;
       }
       renderEditorRunes();
-    })) : [textEl('p', 'Válassz egy másodlagos ágat!', 'editor-hint')]));
+    })) : [textEl('p', t('ed.pickSecondary'), 'editor-hint')]));
 
     $('edShardRows').replaceChildren(...shardSlots.map((slot, i) => {
       const row = runeRow(slot.shards.map(s => ({ key: String(s.id), name: `${s.name} (${s.desc})`, icon: s.icon })),
@@ -2042,7 +2063,7 @@
     }));
 
     const keystone = findRune(primary, editor.keystone);
-    $('edRuneName').textContent = keystone ? `Fő rúna: ${keystone.name}` : '';
+    $('edRuneName').textContent = keystone ? t('ed.keystone', keystone.name) : '';
   }
 
   function renderEditorSpells() {
@@ -2088,21 +2109,21 @@
   }
 
   async function submitBuildSuggestion() {
-    if (!editor.champ) return setStatus('edStatus', 'Válassz championt!', 'error');
-    if (!editor.lane) return setStatus('edStatus', 'Válassz lane-t!', 'error');
-    if (editor.items.length < 3) return setStatus('edStatus', 'Válassz legalább 3 tárgyat!', 'error');
+    if (!editor.champ) return setStatus('edStatus', t('ed.needChamp'), 'error');
+    if (!editor.lane) return setStatus('edStatus', t('ed.needLane'), 'error');
+    if (editor.items.length < 3) return setStatus('edStatus', t('ed.needItems'), 'error');
     // A játékban support nélkül nincs support tárgy, jungle-ben pedig nincs Sújtás-tárgy (pet) nélkül.
     if (editor.lane === 'support' && !editor.items.some(it => it.kind === 'support')) {
-      return setStatus('edStatus', 'Support buildbe kötelező egy support tárgy (pl. Világatlasz vagy a fejlesztései). A „Kezdő, support, jungle” szűrőnél találod.', 'error');
+      return setStatus('edStatus', t('ed.needSupport'), 'error');
     }
     if (editor.lane === 'jungle' && !editor.items.some(it => it.kind === 'jungle')) {
-      return setStatus('edStatus', 'Jungle buildbe kötelező egy Sújtás-tárgy (jungle pet: Tűzkaromkölyök, Szélvándorfióka vagy Mohatipró-palánta). A „Kezdő, support, jungle” szűrőnél találod.', 'error');
+      return setStatus('edStatus', t('ed.needJungle'), 'error');
     }
-    if (!IDEA_ENDPOINT) return setStatus('edStatus', 'A javaslatok küldése most nincs bekapcsolva.', 'error');
+    if (!IDEA_ENDPOINT) return setStatus('edStatus', t('ed.disabled'), 'error');
 
     const l = LANE_BY_ID.get(editor.lane);
     $('edSubmit').disabled = true;
-    setStatus('edStatus', 'Küldés…');
+    setStatus('edStatus', t('idea.sending'));
     try {
       const res = await fetch(IDEA_ENDPOINT, {
         method: 'POST',
@@ -2114,13 +2135,14 @@
           ...editorSummary(),
           megjegyzes: $('edNote').value.trim() || '-',
           nev: $('edName').value.trim() || '-',
+          nyelv: LANG,
         }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      setStatus('edStatus', 'Köszönjük, megkaptuk a buildedet!', 'ok');
+      setStatus('edStatus', t('ed.thanks'), 'ok');
     } catch (err) {
       console.warn(err);
-      setStatus('edStatus', 'Nem sikerült elküldeni. Ellenőrizd az internetkapcsolatot, és próbáld újra.', 'error');
+      setStatus('edStatus', t('idea.failed'), 'error');
     } finally {
       $('edSubmit').disabled = false;
     }
@@ -2132,7 +2154,52 @@
     el.className = `${id === 'edItemMsg' ? 'editor-msg' : 'idea-status'}${kind ? ` is-${kind}` : ''}`;
   }
 
+  // ---------- Nyelvváltás ----------
+  // A HTML-ben megjelölt szövegek lefordítása. Ha az elemben más elem is van
+  // (pl. egy "(nem kötelező)" span), csak az első szövegrészét cseréli.
+  function applyStaticText() {
+    document.documentElement.lang = LANG;
+    document.title = t('meta.title');
+    document.querySelector('meta[name="description"]').content = t('meta.desc');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const text = t(el.dataset.i18n);
+      const node = el.children.length
+        ? [...el.childNodes].find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim())
+        : null;
+      if (node) node.textContent = `${text} `;
+      else el.textContent = text;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+    document.querySelectorAll('.lang-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+  }
+
+  // Az új nyelvhez az adatokat (championok, tárgyak, rúnák) is újra kell tölteni,
+  // ezért az oldal újratöltődik; az épp látott build és a fül megmarad.
+  function setLanguage(newLang) {
+    if (newLang === LANG || champWheel.spinning || buildWheel.spinning) return;
+    try {
+      localStorage.setItem(LANG_KEY, newLang);
+      sessionStorage.setItem(RESUME_KEY, JSON.stringify({ entry: currentChamp ? currentEntryId : null, tab: activeTab }));
+    } catch { /* nem elérhető */ }
+    document.body.classList.add('lang-switching');
+    location.reload();
+  }
+
+  function resumeAfterLanguageSwitch() {
+    let state = null;
+    try {
+      state = JSON.parse(sessionStorage.getItem(RESUME_KEY) || 'null');
+      sessionStorage.removeItem(RESUME_KEY);
+    } catch { /* nem elérhető */ }
+    if (!state) return;
+    if (['history', 'fav', 'idea'].includes(state.tab)) setTab(state.tab);
+    if (state.entry) recallEntry(state.entry, true);
+  }
+
   // ---------- Indítás ----------
+  applyStaticText();
+  document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => setLanguage(b.dataset.lang)));
   spinBtn.addEventListener('click', spinChampion);
   buildSpinBtn.addEventListener('click', spinBuild);
   $('newChampBtn').addEventListener('click', leaveBuildStage);

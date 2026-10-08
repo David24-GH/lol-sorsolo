@@ -923,15 +923,51 @@ body {
   color: var(--muted);
 }
 
-/* ---------- Hang gomb ---------- */
+/* ---------- Jobb felső eszközök: nyelv és hang ---------- */
 .site-header { position: relative; }
 
-.sound-control {
+.header-tools {
   position: absolute;
   top: 16px;
   right: 16px;
   z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
+
+.lang-switch { display: flex; gap: 6px; }
+
+.lang-btn {
+  display: block;
+  width: 36px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid var(--gold-dark);
+  border-radius: 4px;
+  overflow: hidden;
+  background: none;
+  cursor: pointer;
+  opacity: 0.5;
+  filter: grayscale(0.6);
+  transition: opacity 0.15s, filter 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.lang-btn svg { display: block; width: 100%; height: 100%; }
+.lang-btn:hover { opacity: 0.9; filter: none; }
+
+.lang-btn[aria-pressed="true"] {
+  opacity: 1;
+  filter: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(200, 170, 110, 0.45);
+  cursor: default;
+}
+
+body.lang-switching { cursor: progress; }
+body.lang-switching main { opacity: 0.6; transition: opacity 0.2s; }
+
+.sound-control { position: relative; }
 
 .sound-btn {
   display: block;
@@ -1526,6 +1562,7 @@ body.no-scroll { overflow: hidden; }
   .banner-icon { width: 64px; height: 64px; }
   .ghost-btn { width: 100%; }
   .site-header { padding-top: 58px; }
-  .sound-control { top: 10px; right: 12px; }
+  .header-tools { top: 10px; right: 12px; gap: 10px; }
+  .lang-btn { width: 33px; height: 22px; }
   .sound-btn { width: 38px; height: 38px; padding: 8px; }
 }

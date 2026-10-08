@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LoL Champion Sorsoló</title>
-  <meta name="description" content="Pörgesd meg a szerencsekereket, és sorsolj egy véletlenszerű League of Legends championt! Szűrés szerepkörre, előzmények.">
+  <meta name="description" content="Pörgesd meg a szerencsekereket, és sorsolj egy véletlenszerű League of Legends championt és hozzá illő fun buildet!">
   <meta property="og:title" content="LoL Champion Sorsoló">
   <meta property="og:description" content="Pörgesd meg a kereket, és sorsolj egy véletlenszerű League of Legends championt!">
   <meta property="og:type" content="website">
@@ -13,83 +13,94 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- A szövegek fordítása: data-i18n = szöveg, data-i18n-ph = placeholder, data-i18n-aria = aria-label (lásd i18n.js). -->
   <header class="site-header">
-    <div class="sound-control">
-      <button type="button" class="sound-btn" id="soundBtn" aria-pressed="true">
-        <svg id="soundOnIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <!-- Némítva / 0%: az áthúzott hangszóró. A sötét alsó vonal elválasztja a ferde vonalat az ikontól. -->
-        <svg id="soundOffIcon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 3l18 18" fill="none" stroke="#0a1428" stroke-width="5" stroke-linecap="round"/><path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-      <!-- Hangerő: csak akkor jelenik meg, ha az egér a gomb fölött van (vagy billentyűzettel rá lépnek). -->
-      <div class="volume-pop">
-        <div class="volume-box">
-          <input type="range" id="volumeSlider" min="0" max="100" step="5" value="100" aria-label="Hangerő">
-          <span class="volume-value" id="volumeValue">100%</span>
+    <div class="header-tools">
+      <div class="lang-switch" role="group" aria-label="Nyelv / Language">
+        <button type="button" class="lang-btn" data-lang="hu" lang="hu" title="Magyar" aria-label="Magyar" aria-pressed="true">
+          <svg viewBox="0 0 3 2" preserveAspectRatio="none" aria-hidden="true"><rect width="3" height="2" fill="#477050"/><rect width="3" height="1.3333" fill="#fff"/><rect width="3" height="0.6667" fill="#ce2939"/></svg>
+        </button>
+        <button type="button" class="lang-btn" data-lang="en" lang="en" title="English" aria-label="English" aria-pressed="false">
+          <svg viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><clipPath id="ukClip"><path d="M30,15h30v15zv15h-30zh-30v-15zv-15h30z"/></clipPath><path d="M0,0v30h60v-30z" fill="#012169"/><path d="M0,0 60,30M60,0 0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 60,30M60,0 0,30" clip-path="url(#ukClip)" stroke="#c8102e" stroke-width="4"/><path d="M30,0v30M0,15h60" stroke="#fff" stroke-width="10"/><path d="M30,0v30M0,15h60" stroke="#c8102e" stroke-width="6"/></svg>
+        </button>
+      </div>
+      <div class="sound-control">
+        <button type="button" class="sound-btn" id="soundBtn" aria-pressed="true">
+          <svg id="soundOnIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <!-- Némítva / 0%: az áthúzott hangszóró. A sötét alsó vonal elválasztja a ferde vonalat az ikontól. -->
+          <svg id="soundOffIcon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 3l18 18" fill="none" stroke="#0a1428" stroke-width="5" stroke-linecap="round"/><path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <!-- Hangerő: csak akkor jelenik meg, ha az egér a gomb fölött van (vagy billentyűzettel rá lépnek). -->
+        <div class="volume-pop">
+          <div class="volume-box">
+            <input type="range" id="volumeSlider" min="0" max="100" step="5" value="100" aria-label="Hangerő" data-i18n-aria="sound.volume">
+            <span class="volume-value" id="volumeValue">100%</span>
+          </div>
         </div>
       </div>
     </div>
-    <h1>LoL Champion Sorsoló</h1>
-    <p class="subtitle">Pörgesd meg a kereket, és játssz azzal, akit a sors kioszt!</p>
+    <h1 data-i18n="meta.title">LoL Champion Sorsoló</h1>
+    <p class="subtitle" data-i18n="header.subtitle">Pörgesd meg a kereket, és játssz azzal, akit a sors kioszt!</p>
   </header>
 
   <section class="champ-banner" id="champBanner" aria-live="polite" hidden>
     <div class="banner-content">
       <img class="banner-icon" id="bannerIcon" alt="">
       <div class="banner-text">
-        <p class="result-label">A te championod</p>
+        <p class="result-label" data-i18n="banner.label">A te championod</p>
         <h2 id="bannerName"></h2>
         <p class="result-title" id="bannerTitle"></p>
         <div class="result-tags" id="bannerTags"></div>
       </div>
-      <button type="button" class="ghost-btn" id="newChampBtn">Új champion</button>
+      <button type="button" class="ghost-btn" id="newChampBtn" data-i18n="banner.new">Új champion</button>
     </div>
   </section>
 
   <main class="layout">
-    <section class="wheel-panel" id="champStage" aria-label="Champion kerék">
+    <section class="wheel-panel" id="champStage" aria-label="Champion kerék" data-i18n-aria="stage.champ">
       <div class="lane-picker" role="group" aria-label="Lane">
-        <p class="step-label">Melyik lane-en játszol?</p>
+        <p class="step-label" data-i18n="lane.question">Melyik lane-en játszol?</p>
         <div class="lane-buttons" id="laneButtons"></div>
       </div>
 
       <div class="champ-search">
-        <label class="step-label" for="champSearch">Válassz név alapján <span>(vagy pörgess lent)</span></label>
+        <label class="step-label" for="champSearch" data-i18n="search.label">Válassz név alapján <span data-i18n="search.or">(vagy pörgess lent)</span></label>
         <div class="search-box">
           <input type="text" id="champSearch" role="combobox" aria-autocomplete="list" aria-expanded="false"
-            aria-controls="champSuggest" placeholder="Pl. Ahri, Lee Sin, Kai'Sa…" autocomplete="off" spellcheck="false">
-          <ul class="suggest-list" id="champSuggest" role="listbox" aria-label="Championok" hidden></ul>
+            aria-controls="champSuggest" placeholder="Pl. Ahri, Lee Sin, Kai'Sa…" data-i18n-ph="search.placeholder" autocomplete="off" spellcheck="false">
+          <ul class="suggest-list" id="champSuggest" role="listbox" aria-label="Championok" data-i18n-aria="search.list" hidden></ul>
         </div>
         <p class="search-hint" id="searchHint" role="status"></p>
       </div>
 
-      <div class="filters" role="group" aria-label="Szerepkörök">
-        <p class="step-label">Szűrés szerepkörre <span>(nem kötelező)</span></p>
+      <div class="filters" role="group" aria-label="Szerepkörök" data-i18n-aria="roles.group">
+        <p class="step-label" data-i18n="roles.label">Szűrés szerepkörre <span data-i18n="common.optional">(nem kötelező)</span></p>
         <div class="role-buttons" id="roleButtons"></div>
-        <p class="count" id="champCount">Championok betöltése…</p>
+        <p class="count" id="champCount" data-i18n="count.loading">Championok betöltése…</p>
       </div>
 
       <div class="wheel-wrap">
         <div class="pointer" aria-hidden="true"></div>
         <canvas id="wheel" aria-hidden="true"></canvas>
-        <button class="spin-btn" id="spinBtn" type="button" disabled>PÖRGETÉS</button>
+        <button class="spin-btn" id="spinBtn" type="button" data-i18n="spin" disabled>PÖRGETÉS</button>
       </div>
 
       <p class="ticker" id="ticker" aria-hidden="true">&nbsp;</p>
 
       <div class="error" id="errorBox" hidden>
         <p id="errorText"></p>
-        <button type="button" id="retryBtn">Újrapróbálás</button>
+        <button type="button" id="retryBtn" data-i18n="retry">Újrapróbálás</button>
       </div>
     </section>
 
-    <section class="wheel-panel" id="buildStage" aria-label="Build kerék" hidden>
+    <section class="wheel-panel" id="buildStage" aria-label="Build kerék" data-i18n-aria="stage.build" hidden>
       <h2 class="stage-title">Fun build</h2>
       <p class="count" id="buildCount"></p>
 
       <div class="wheel-wrap">
         <div class="pointer" aria-hidden="true"></div>
         <canvas id="buildWheel" aria-hidden="true"></canvas>
-        <button class="spin-btn" id="buildSpinBtn" type="button">PÖRGETÉS</button>
+        <button class="spin-btn" id="buildSpinBtn" type="button" data-i18n="spin">PÖRGETÉS</button>
       </div>
 
       <p class="ticker" id="buildTicker" aria-hidden="true">&nbsp;</p>
@@ -98,79 +109,80 @@
     <aside class="side-panel">
       <section class="result" id="buildResult" aria-live="polite" hidden>
         <div class="result-placeholder" id="buildPlaceholder">
-          <p>Még nincs kisorsolt build.</p>
-          <p class="hint">Pörgesd meg a build kereket!</p>
+          <p data-i18n="build.none">Még nincs kisorsolt build.</p>
+          <p class="hint" data-i18n="build.spinHint">Pörgesd meg a build kereket!</p>
         </div>
         <div class="build-card" id="buildCard" hidden>
           <div class="build-card-head">
-            <p class="result-label">A buildod</p>
+            <p class="result-label" data-i18n="build.yours">A buildod</p>
             <button type="button" class="fav-btn" id="favBtn" aria-pressed="false">
-              <span class="star" aria-hidden="true">☆</span><span class="fav-label">Kedvencekhez</span>
+              <span class="star" aria-hidden="true">☆</span><span class="fav-label" data-i18n="fav.add">Kedvencekhez</span>
             </button>
           </div>
           <h2 id="buildName"></h2>
           <p class="build-desc" id="buildDesc"></p>
 
-          <h3 class="build-section">Idézői varázslatok</h3>
+          <h3 class="build-section" data-i18n="sec.spells">Idézői varázslatok</h3>
           <div class="spell-row" id="buildSpells"></div>
 
-          <h3 class="build-section">Rúnák</h3>
+          <h3 class="build-section" data-i18n="sec.runes">Rúnák</h3>
           <div class="rune-page" id="buildRunes"></div>
 
-          <h3 class="build-section">Tárgyak vásárlási sorrendben</h3>
+          <h3 class="build-section" data-i18n="sec.items">Tárgyak vásárlási sorrendben</h3>
           <ol class="item-list" id="buildItems"></ol>
 
-          <button type="button" class="ghost-btn suggest-btn" id="suggestForChamp">Saját build javaslása ehhez a championhoz</button>
+          <button type="button" class="ghost-btn suggest-btn" id="suggestForChamp" data-i18n="build.suggestOwn">Saját build javaslása ehhez a championhoz</button>
         </div>
       </section>
 
       <section class="history">
         <div class="history-head">
-          <div class="tabs" role="tablist" aria-label="Buildek">
+          <div class="tabs" role="tablist" aria-label="Buildek" data-i18n-aria="tabs.group">
             <button type="button" class="tab" role="tab" id="historyTab" aria-selected="true" aria-controls="historyPanel">Előzmények</button>
             <button type="button" class="tab" role="tab" id="favTab" aria-selected="false" aria-controls="favPanel">Kedvencek</button>
-            <button type="button" class="tab" role="tab" id="ideaTab" aria-selected="false" aria-controls="ideaPanel">Ötletek</button>
+            <button type="button" class="tab" role="tab" id="ideaTab" aria-selected="false" aria-controls="ideaPanel" data-i18n="tab.idea">Ötletek</button>
           </div>
-          <button type="button" class="link-btn" id="clearHistory">Törlés</button>
+          <button type="button" class="link-btn" id="clearHistory" data-i18n="history.clear">Törlés</button>
         </div>
 
         <div role="tabpanel" id="historyPanel" aria-labelledby="historyTab">
           <ol class="history-list" id="historyList"></ol>
-          <p class="history-empty" id="historyEmpty">Itt jelennek meg a korábbi sorsolások.</p>
+          <p class="history-empty" id="historyEmpty" data-i18n="history.empty">Itt jelennek meg a korábbi sorsolások.</p>
         </div>
 
         <div role="tabpanel" id="favPanel" aria-labelledby="favTab" hidden>
           <ol class="history-list" id="favList"></ol>
-          <p class="history-empty" id="favEmpty">Még nincs kedvenc build. A build kártyán vagy az előzményekben a ☆ gombbal mentheted ide a jól bevált buildeket.</p>
+          <p class="history-empty" id="favEmpty" data-i18n="fav.empty">Még nincs kedvenc build. A build kártyán vagy az előzményekben a ☆ gombbal mentheted ide a jól bevált buildeket.</p>
         </div>
 
         <div role="tabpanel" id="ideaPanel" aria-labelledby="ideaTab" hidden>
           <div class="suggest-cta">
-            <p>Van egy jól bevált buildod? Rakd össze ikononként, és küldd el!</p>
-            <button type="button" class="ghost-btn" id="openEditor">Build javaslása</button>
+            <p data-i18n="idea.cta">Van egy jól bevált buildod? Rakd össze ikononként, és küldd el!</p>
+            <button type="button" class="ghost-btn" id="openEditor" data-i18n="idea.open">Build javaslása</button>
           </div>
-          <p class="idea-intro">Van egy ötleted, hogyan lehetne jobb a sorsoló? Írd meg!</p>
+          <p class="idea-intro" data-i18n="idea.intro">Van egy ötleted, hogyan lehetne jobb a sorsoló? Írd meg!</p>
           <form class="idea-form" id="ideaForm" novalidate>
-            <label for="ideaCategory">Kategória</label>
+            <label for="ideaCategory" data-i18n="idea.category">Kategória</label>
+            <!-- Az értékek mindig magyarok (így érkeznek a Formspree-be), csak a felirat fordul. -->
             <select id="ideaCategory" name="kategoria">
-              <option>Új funkció</option>
-              <option>Build javaslat</option>
-              <option>Hiba</option>
-              <option>Egyéb</option>
+              <option value="Új funkció" data-i18n="idea.cat.feature">Új funkció</option>
+              <option value="Build javaslat" data-i18n="idea.cat.build">Build javaslat</option>
+              <option value="Hiba" data-i18n="idea.cat.bug">Hiba</option>
+              <option value="Egyéb" data-i18n="idea.cat.other">Egyéb</option>
             </select>
 
-            <label for="ideaText">Javaslat</label>
+            <label for="ideaText" data-i18n="idea.text">Javaslat</label>
             <textarea id="ideaText" name="javaslat" rows="4" maxlength="1000" required
-              placeholder="Pl. legyen ARAM mód, vagy Yasuo kapjon tank buildet…"></textarea>
+              placeholder="Pl. legyen ARAM mód, vagy Yasuo kapjon tank buildet…" data-i18n-ph="idea.placeholder"></textarea>
             <p class="idea-counter" id="ideaCounter">0 / 1000</p>
 
-            <label for="ideaName">Neved <span>(nem kötelező)</span></label>
+            <label for="ideaName" data-i18n="idea.name">Neved <span data-i18n="common.optional">(nem kötelező)</span></label>
             <input type="text" id="ideaName" name="nev" maxlength="60" autocomplete="nickname">
 
             <!-- Spam elleni csapda: ember nem látja, botok kitöltik. -->
             <input type="text" name="_gotcha" class="trap" tabindex="-1" autocomplete="off" aria-hidden="true">
 
-            <button type="submit" class="ghost-btn" id="ideaSubmit">Ötlet elküldése</button>
+            <button type="submit" class="ghost-btn" id="ideaSubmit" data-i18n="idea.submit">Ötlet elküldése</button>
             <p class="idea-status" id="ideaStatus" role="status"></p>
           </form>
 
@@ -184,7 +196,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>A LoL Champion Sorsoló nem a Riot Games terméke, és nem tükrözi a Riot Games vagy a League of Legends létrehozásában és kezelésében hivatalosan részt vevő személyek nézeteit. A League of Legends és a Riot Games a Riot Games, Inc. védjegyei vagy bejegyzett védjegyei.</p>
+    <p data-i18n="footer.legal">A LoL Champion Sorsoló nem a Riot Games terméke, és nem tükrözi a Riot Games vagy a League of Legends létrehozásában és kezelésében hivatalosan részt vevő személyek nézeteit. A League of Legends és a Riot Games a Riot Games, Inc. védjegyei vagy bejegyzett védjegyei.</p>
     <p id="versionInfo"></p>
   </footer>
 
@@ -192,71 +204,71 @@
   <div class="editor" id="buildEditor" role="dialog" aria-modal="true" aria-labelledby="editorTitle" hidden>
     <div class="editor-panel">
       <header class="editor-head">
-        <h2 id="editorTitle">Build javaslása</h2>
-        <button type="button" class="editor-close" id="editorClose" aria-label="Bezárás">×</button>
+        <h2 id="editorTitle" data-i18n="editor.title">Build javaslása</h2>
+        <button type="button" class="editor-close" id="editorClose" aria-label="Bezárás" data-i18n-aria="editor.close">×</button>
       </header>
 
       <div class="editor-body">
         <section class="editor-section">
-          <h3>1. Champion és lane</h3>
+          <h3 data-i18n="ed.s1">1. Champion és lane</h3>
           <div class="editor-row">
             <img class="editor-champ-icon" id="edChampIcon" alt="" hidden>
-            <label class="visually-hidden" for="edChamp">Champion</label>
+            <label class="visually-hidden" for="edChamp" data-i18n="ed.champ">Champion</label>
             <select id="edChamp"></select>
           </div>
-          <div class="ed-lanes" id="edLanes" role="group" aria-label="Lane"></div>
-          <label class="visually-hidden" for="edTitle">A build neve</label>
-          <input type="text" id="edTitle" maxlength="60" placeholder="A build neve (nem kötelező), pl. „Crit Garen”">
+          <div class="ed-lanes" id="edLanes" role="group" aria-label="Lane" data-i18n-aria="ed.lane"></div>
+          <label class="visually-hidden" for="edTitle" data-i18n="ed.buildName">A build neve</label>
+          <input type="text" id="edTitle" maxlength="60" placeholder="A build neve (nem kötelező), pl. „Crit Garen”" data-i18n-ph="ed.buildNamePh">
         </section>
 
         <section class="editor-section">
-          <h3>2. Tárgyak <span id="edItemCount"></span></h3>
-          <p class="editor-hint">Kattints a tárgyakra a vásárlási sorrendben. Egy kijelölt tárgyra kattintva kiveheted.</p>
+          <h3 data-i18n="ed.s2">2. Tárgyak <span id="edItemCount"></span></h3>
+          <p class="editor-hint" data-i18n="ed.itemsHint">Kattints a tárgyakra a vásárlási sorrendben. Egy kijelölt tárgyra kattintva kiveheted.</p>
           <ol class="ed-slots" id="edSlots"></ol>
-          <div class="ed-filters" id="edItemFilters" role="group" aria-label="Tárgy kategóriák"></div>
-          <label class="visually-hidden" for="edItemSearch">Tárgy keresése</label>
-          <input type="text" id="edItemSearch" placeholder="Tárgy keresése…" autocomplete="off">
+          <div class="ed-filters" id="edItemFilters" role="group" aria-label="Tárgy kategóriák" data-i18n-aria="ed.itemCats"></div>
+          <label class="visually-hidden" for="edItemSearch" data-i18n="ed.itemSearch">Tárgy keresése</label>
+          <input type="text" id="edItemSearch" placeholder="Tárgy keresése…" data-i18n-ph="ed.itemSearchPh" autocomplete="off">
           <div class="ed-item-grid" id="edItemGrid"></div>
           <p class="editor-msg" id="edItemMsg" role="status"></p>
         </section>
 
         <section class="editor-section">
-          <h3>3. Rúnák</h3>
+          <h3 data-i18n="ed.s3">3. Rúnák</h3>
           <div class="ed-runes">
             <div class="ed-rune-col">
-              <p class="ed-sub">Fő ág</p>
-              <div class="ed-trees" id="edPrimaryTrees" role="group" aria-label="Fő rúnaág"></div>
+              <p class="ed-sub" data-i18n="ed.primary">Fő ág</p>
+              <div class="ed-trees" id="edPrimaryTrees" role="group" aria-label="Fő rúnaág" data-i18n-aria="ed.primaryAria"></div>
               <div id="edPrimaryRows"></div>
             </div>
             <div class="ed-rune-col">
-              <p class="ed-sub">Másodlagos ág <span>(2 rúna, külön sorból)</span></p>
-              <div class="ed-trees" id="edSecondaryTrees" role="group" aria-label="Másodlagos rúnaág"></div>
+              <p class="ed-sub" data-i18n="ed.secondary">Másodlagos ág <span data-i18n="ed.secondaryNote">(2 rúna, külön sorból)</span></p>
+              <div class="ed-trees" id="edSecondaryTrees" role="group" aria-label="Másodlagos rúnaág" data-i18n-aria="ed.secondaryAria"></div>
               <div id="edSecondaryRows"></div>
             </div>
           </div>
-          <p class="ed-sub">Alap értékek</p>
+          <p class="ed-sub" data-i18n="sec.shards">Alap értékek</p>
           <div id="edShardRows"></div>
           <p class="editor-msg" id="edRuneName"></p>
         </section>
 
         <section class="editor-section">
-          <h3>4. Idézői varázslatok <span id="edSpellCount"></span></h3>
-          <div class="ed-spells" id="edSpells" role="group" aria-label="Idézői varázslatok"></div>
+          <h3 data-i18n="ed.s4">4. Idézői varázslatok <span id="edSpellCount"></span></h3>
+          <div class="ed-spells" id="edSpells" role="group" aria-label="Idézői varázslatok" data-i18n-aria="sec.spells"></div>
         </section>
 
         <section class="editor-section">
-          <h3>5. Megjegyzés és küldés</h3>
-          <label class="visually-hidden" for="edNote">Megjegyzés</label>
-          <textarea id="edNote" rows="3" maxlength="600" placeholder="Miért jó ez a build? Mire figyeljen, aki kipróbálja? (nem kötelező)"></textarea>
-          <label class="visually-hidden" for="edName">Neved</label>
-          <input type="text" id="edName" maxlength="40" autocomplete="nickname" placeholder="Neved (nem kötelező)">
+          <h3 data-i18n="ed.s5">5. Megjegyzés és küldés</h3>
+          <label class="visually-hidden" for="edNote" data-i18n="ed.note">Megjegyzés</label>
+          <textarea id="edNote" rows="3" maxlength="600" placeholder="Miért jó ez a build? Mire figyeljen, aki kipróbálja? (nem kötelező)" data-i18n-ph="ed.notePh"></textarea>
+          <label class="visually-hidden" for="edName" data-i18n="ed.name">Neved</label>
+          <input type="text" id="edName" maxlength="40" autocomplete="nickname" placeholder="Neved (nem kötelező)" data-i18n-ph="ed.namePh">
         </section>
       </div>
 
       <footer class="editor-foot">
         <p class="idea-status" id="edStatus" role="status"></p>
-        <button type="button" class="link-btn" id="edReset">Újrakezdés</button>
-        <button type="button" class="ghost-btn" id="edSubmit">Javaslat elküldése</button>
+        <button type="button" class="link-btn" id="edReset" data-i18n="ed.reset">Újrakezdés</button>
+        <button type="button" class="ghost-btn" id="edSubmit" data-i18n="ed.submit">Javaslat elküldése</button>
       </footer>
     </div>
   </div>
@@ -269,15 +281,16 @@
       </div>
       <div class="reveal-items" id="revealItems" hidden></div>
       <div class="reveal-extras" id="revealExtras" hidden></div>
-      <p class="reveal-label" id="revealLabel">A te championod</p>
+      <p class="reveal-label" id="revealLabel" data-i18n="banner.label">A te championod</p>
       <h2 class="reveal-name" id="revealName"></h2>
       <p class="reveal-title" id="revealTitle"></p>
-      <p class="reveal-hint">Kattints a bezáráshoz</p>
+      <p class="reveal-hint" data-i18n="reveal.hint">Kattints a bezáráshoz</p>
     </div>
   </div>
 
   <canvas class="fx" id="fx" aria-hidden="true"></canvas>
 
+  <script src="i18n.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

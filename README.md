@@ -43,6 +43,11 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 
 Az előzmények és a kedvencek a böngészőben tárolódnak (`localStorage`).
 
+### Nyelv: magyar és angol
+- Jobb felül a **zászlókkal** váltható az oldal nyelve; a választást megjegyzi. Első látogatáskor a böngésző nyelve dönt (magyar böngészőnél magyar, egyébként angol).
+- Váltáskor a Riot adatai (championok, tárgyak, rúnák, varázslatok) is az új nyelven töltődnek be, és az épp látott build megmarad.
+- Az oldal szövegei az `i18n.js` fájlban vannak, mindkét nyelven. A beküldött ötletek és buildek mezőnevei mindig magyarok, a `nyelv` mező mutatja, milyen nyelven küldték.
+
 ## Helyi futtatás
 
 Windows alatt a mellékelt kis szerverrel:
@@ -59,7 +64,7 @@ Bármilyen más statikus szerver is jó, pl. `npx serve .` vagy `python -m http.
 
 Az oldal a **Vercelen** fut, ami össze van kötve ezzel a GitHub-tárolóval: minden `main` ágra feltöltött változás pár percen belül magától élesedik a https://lol-sorsolo.vercel.app/ címen.
 
-Máshol is közzétehető, mert csak ezek a fájlok kellenek hozzá: `index.html`, `style.css`, `script.js` (a `serve.ps1` csak helyi teszteléshez kell). Például Netlifyon: húzd rá a mappát a https://app.netlify.com/drop oldalra.
+Máshol is közzétehető, mert csak ezek a fájlok kellenek hozzá: `index.html`, `style.css`, `i18n.js`, `script.js` (a `serve.ps1` csak helyi teszteléshez kell). Például Netlifyon: húzd rá a mappát a https://app.netlify.com/drop oldalra.
 
 ## Ötletek fogadása (Formspree)
 
@@ -84,20 +89,22 @@ A szabályok mind a `script.js` elején, jól elkülönítve találhatók:
 | Kézi javítások a champion profilokhoz (pl. ki számít AP-nak / AD-nak) | `AP_EXTRA`, `AP_EXCLUDE`, `AD_EXTRA`, `AD_EXCLUDE`, `CRIT_EXTRA`, `AP_ONHIT_EXTRA`, `INFO_FIX` |
 | Tárgyszám lane-enként | `LANES` |
 | Support tárgy és jungle pet a build szerint | `SUPPORT_ITEM`, `JUNGLE_PET` |
-| Egymást kizáró tárgyak | `ITEM_GROUPS` |
+| Egymást kizáró tárgyak | `GROUP_COMPONENTS`, `MANUAL_GROUPS` |
+| Az oldal szövegei (magyar és angol), a buildek angol neve | `i18n.js` |
 
 ## Felépítés
 
 ```
 index.html   az oldal szerkezete
 style.css    megjelenés (sötét, LoL-stílusú téma, mobilon is)
+i18n.js      az oldal szövegei magyarul és angolul
 script.js    adatbetöltés, kerekek, build-összeállítás, előzmények, kedvencek, ötletek
 serve.ps1    kis helyi szerver teszteléshez (Windows PowerShell)
 ```
 
 ## Adatforrások
 
-- [Riot Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon) – championok, tárgyak, rúnák, idézői varázslatok, képek (magyarul).
+- [Riot Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon) – championok, tárgyak, rúnák, idézői varázslatok, képek (magyarul és angolul).
 - [CommunityDragon](https://www.communitydragon.org/) – szerepkör- és lane-ikonok, a rúnák alap értékei, a champion-választás hangjai.
 
 Az oldal futás közben tölti be az adatokat, ezért internetkapcsolat kell hozzá.
