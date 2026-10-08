@@ -29,7 +29,7 @@
   let version = '';
   let champions = [];       // összes champion
   let pool = [];            // a szűrés után a keréken lévők
-  const activeRoles = new Set(ROLES.map(r => r.tag));
+  const activeRoles = new Set(); // üres = minden champion a keréken van
   let rotation = 0;         // a kerék aktuális elforgatása radiánban
   let spinning = false;
 
@@ -76,7 +76,7 @@
       btn.type = 'button';
       btn.className = 'role-btn';
       btn.textContent = role.label;
-      btn.setAttribute('aria-pressed', 'true');
+      btn.setAttribute('aria-pressed', 'false');
       btn.addEventListener('click', () => {
         if (spinning) return;
         if (activeRoles.has(role.tag)) activeRoles.delete(role.tag);
@@ -89,10 +89,14 @@
   }
 
   function applyFilter() {
-    pool = champions.filter(c => c.tags.some(t => activeRoles.has(t)));
-    $('champCount').textContent = pool.length
-      ? `${pool.length} champion van a keréken`
-      : 'Válassz legalább egy szerepkört!';
+    if (activeRoles.size === 0) {
+      pool = champions;
+      $('champCount').textContent = `Mind a ${pool.length} champion a keréken van · válassz szerepkört a szűréshez`;
+    } else {
+      pool = champions.filter(c => c.tags.some(t => activeRoles.has(t)));
+      const labels = ROLES.filter(r => activeRoles.has(r.tag)).map(r => r.label).join(', ');
+      $('champCount').textContent = `${pool.length} champion a keréken (${labels})`;
+    }
     spinBtn.disabled = spinning || pool.length === 0;
     rotation = 0;
     ticker.innerHTML = '&nbsp;';
