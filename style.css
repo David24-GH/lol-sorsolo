@@ -322,6 +322,20 @@ body {
 
 .spin-btn:disabled { cursor: not-allowed; opacity: 0.6; }
 
+.spin-btn.is-skip {
+  font-size: clamp(0.65rem, 2vw, 0.9rem);
+  border-color: var(--gold-light);
+  animation: skip-pulse 1s ease-in-out infinite;
+}
+
+@keyframes skip-pulse {
+  50% { box-shadow: 0 0 20px rgba(200, 170, 110, 0.55); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin-btn.is-skip { animation: none; }
+}
+
 .ticker {
   margin: 18px 0 0;
   min-height: 1.8em;

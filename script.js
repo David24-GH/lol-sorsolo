@@ -547,9 +547,11 @@
       const endRot = startRot + (5 + randomInt(3)) * Math.PI * 2 + mod(targetMod - startRot, Math.PI * 2);
       const t0 = performance.now();
       let lastIdx = -1;
+      let done = false;
 
-      const frame = now => {
-        const t = Math.min(1, (now - t0) / duration);
+      const frame = (now, skipped = false) => {
+        if (done) return;
+        const t = skipped ? 1 : Math.min(1, (now - t0) / duration);
         const eased = 1 - Math.pow(1 - t, 4);
         this.rotation = startRot + (endRot - startRot) * eased;
         this.draw();
@@ -561,15 +563,24 @@
         if (t < 1) {
           requestAnimationFrame(frame);
         } else {
+          done = true;
+          this.skipSpin = null;
           this.rotation = mod(endRot, Math.PI * 2);
+          this.draw();
           this.spinning = false;
           const won = this.indexAtPointer();
           this.flash(won);
           onDone(this.items[won]);
         }
       };
+      this.skipSpin = () => frame(performance.now(), true);
       requestAnimationFrame(frame);
       return this.items[winner];
+    }
+
+    // Pörgés közben: azonnal a végeredményre ugrik.
+    skip() {
+      if (this.spinning && this.skipSpin) this.skipSpin();
     }
 
     // Pörgés nélkül a mutató alá forgatja és kiemeli az adott szeletet.
@@ -865,7 +876,7 @@
 
   function updateSpinState() {
     $('laneButtons').classList.toggle('has-selection', !!lane);
-    spinBtn.disabled = champWheel.spinning || pool.length === 0 || !lane;
+    spinBtn.disabled = !champWheel.spinning && (pool.length === 0 || !lane);
     if (!champWheel.spinning) {
       $('ticker').textContent = lane ? ' ' : 'Válaszd ki a lane-ed a pörgetéshez!';
     }
@@ -977,10 +988,21 @@
   }
 
   // ---------- Champion sorsolás ----------
+  // Pörgés közben a középső gomb a kihagyás gombja.
+  function setSkipMode(btn, on) {
+    btn.textContent = on ? 'KIHAGYÁS' : 'PÖRGETÉS';
+    btn.classList.toggle('is-skip', on);
+    btn.setAttribute('aria-label', on ? 'Animáció kihagyása' : 'Pörgetés');
+  }
+
   function spinChampion() {
+    if (champWheel.spinning) {
+      champWheel.skip();
+      return;
+    }
     if (!lane) return;
     const winner = champWheel.spin(CHAMP_SPIN_MS, $('ticker'), champ => {
-      spinBtn.disabled = false;
+      setSkipMode(spinBtn, false);
       setPickersDisabled(false);
       playSounds();
       burstFromWheel(champWheel.canvas);
@@ -994,7 +1016,7 @@
       addChampionEntry(champ.id, lane);
     });
     if (!winner) return;
-    spinBtn.disabled = true;
+    setSkipMode(spinBtn, true);
     setPickersDisabled(true);
     preloadSounds(winner);
   }
@@ -1039,10 +1061,14 @@
 
   // ---------- Build sorsolás ----------
   function spinBuild() {
+    if (buildWheel.spinning) {
+      buildWheel.skip();
+      return;
+    }
     const champ = currentChamp;
     const laneId = lane;
     const winner = buildWheel.spin(BUILD_SPIN_MS, $('buildTicker'), build => {
-      buildSpinBtn.disabled = false;
+      setSkipMode(buildSpinBtn, false);
       $('newChampBtn').disabled = false;
       const full = makeFullBuild(champ, build, laneId);
       const split = splitItems(full);
@@ -1062,7 +1088,7 @@
       addBuildEntry(champ.id, laneId, full);
     });
     if (!winner) return;
-    buildSpinBtn.disabled = true;
+    setSkipMode(buildSpinBtn, true);
     $('newChampBtn').disabled = true;
   }
 
