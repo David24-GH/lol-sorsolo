@@ -14,7 +14,7 @@
   const HISTORY_KEY = 'lolSorsolo.history';
   const SOUND_KEY = 'lolSorsolo.sound';
   const LANE_KEY = 'lolSorsolo.lane';
-  const HISTORY_MAX = 10;
+  const HISTORY_MAX = 15;
   const CHAMP_SPIN_MS = 5500;
   const BUILD_SPIN_MS = 4500;
   const REVEAL_MS = 5000;
@@ -547,6 +547,17 @@
       return this.items[winner];
     }
 
+    // Pörgés nélkül a mutató alá forgatja és kiemeli az adott szeletet.
+    pointAt(idx) {
+      const n = this.items.length;
+      if (idx < 0 || !n) return;
+      const seg = (Math.PI * 2) / n;
+      this.rotation = mod(-(idx + 0.5) * seg, Math.PI * 2);
+      this.highlightIdx = idx;
+      this.highlightAlpha = 0.35;
+      this.draw();
+    }
+
     flash(idx) {
       this.highlightIdx = idx;
       if (reducedMotion) {
@@ -720,14 +731,18 @@
       btn.append(img, span);
       btn.addEventListener('click', () => {
         if (champWheel.spinning) return;
-        lane = l.id;
-        try { localStorage.setItem(LANE_KEY, lane); } catch { /* nem elérhető */ }
-        wrap.querySelectorAll('.lane-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lane === lane)));
-        applyFilter();
+        setLane(l.id);
       });
       wrap.appendChild(btn);
     }
     $('laneButtons').classList.toggle('has-selection', !!lane);
+  }
+
+  function setLane(laneId) {
+    lane = laneId;
+    try { localStorage.setItem(LANE_KEY, lane); } catch { /* nem elérhető */ }
+    document.querySelectorAll('.lane-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lane === lane)));
+    applyFilter();
   }
 
   function renderRoleButtons() {
@@ -801,7 +816,7 @@
         splash: splashUrl(champ.id),
       });
       enterBuildStage(champ);
-      addToHistory(champ.id, lane);
+      addChampionEntry(champ.id, lane);
     });
     if (!winner) return;
     spinBtn.disabled = true;
@@ -837,6 +852,8 @@
   function leaveBuildStage() {
     if (buildWheel.spinning) return;
     currentChamp = null;
+    currentEntryId = null;
+    renderHistory();
     $('champBanner').hidden = true;
     $('buildStage').hidden = true;
     $('buildResult').hidden = true;
@@ -867,7 +884,7 @@
         extras,
       });
       showBuildCard(full);
-      setHistoryBuild(champ.id, laneId, build.id);
+      addBuildEntry(champ.id, laneId, full);
     });
     if (!winner) return;
     buildSpinBtn.disabled = true;
@@ -1168,13 +1185,20 @@
   }
 
   // ---------- Előzmények ----------
-  // Egy bejegyzés: { c: champion id, l: lane id, b: build id vagy null }
+  // Egy bejegyzés: { id, c: champion id, l: lane id, b: build id vagy null, full: elmentett build vagy null }
+  // Minden kisorsolt build külön bejegyzés, és a teljes build el van mentve, hogy pontosan
+  // ugyanúgy vissza lehessen hívni.
+  const newEntryId = () => `${Date.now().toString(36)}-${randomInt(1e6).toString(36)}`;
+
   function readHistory() {
     try {
       const arr = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
       if (!Array.isArray(arr)) return [];
-      // A legelső verzió csak champion id-ket tárolt.
-      return arr.map(e => (typeof e === 'string' ? { c: e, b: null } : e)).filter(e => e && e.c);
+      // A legelső verzió csak champion id-ket tárolt, a korábbiak azonosító nélküliek.
+      return arr
+        .map(e => (typeof e === 'string' ? { c: e, b: null } : e))
+        .filter(e => e && e.c)
+        .map(e => ({ full: null, ...e, id: e.id || newEntryId() }));
     } catch {
       return [];
     }
@@ -1185,16 +1209,105 @@
   }
 
   let history = readHistory();
+  let currentEntryId = null; // a most megjelenített bejegyzés
 
-  function addToHistory(champId, laneId) {
-    history = [{ c: champId, l: laneId, b: null }, ...history].slice(0, HISTORY_MAX);
+  function addChampionEntry(champId, laneId) {
+    const entry = { id: newEntryId(), c: champId, l: laneId, b: null, full: null };
+    history = [entry, ...history].slice(0, HISTORY_MAX);
+    currentEntryId = entry.id;
     writeHistory(history);
     renderHistory();
   }
 
-  function setHistoryBuild(champId, laneId, buildId) {
-    if (history[0] && history[0].c === champId) history[0].b = buildId;
-    else history = [{ c: champId, l: laneId, b: buildId }, ...history].slice(0, HISTORY_MAX);
+  function addBuildEntry(champId, laneId, full) {
+    const current = history.find(e => e.id === currentEntryId);
+    if (current && current.c === champId && !current.b) {
+      // A champion bejegyzése még build nélküli: ez lesz az első buildje.
+      current.b = full.build.id;
+      current.full = serializeBuild(full);
+    } else {
+      // Újrapörgetett build: külön bejegyzés ugyanahhoz a championhoz.
+      const entry = { id: newEntryId(), c: champId, l: laneId, b: full.build.id, full: serializeBuild(full) };
+      history = [entry, ...history].slice(0, HISTORY_MAX);
+      currentEntryId = entry.id;
+    }
+    writeHistory(history);
+    renderHistory();
+  }
+
+  function serializeBuild(full) {
+    return {
+      items: full.items.map(it => ({ id: it.id, note: it.note || null })),
+      starter: full.starter ? full.starter.id : null,
+      spells: full.spells.map(s => s.id),
+      runes: full.runes && {
+        p: full.runes.primary.key,
+        k: full.runes.keystone.key,
+        pr: full.runes.primaryRunes.map(r => r.key),
+        s: full.runes.secondary.key,
+        sr: full.runes.secondaryRunes.map(r => r.key),
+      },
+      shards: full.shards.map(s => s.id),
+    };
+  }
+
+  // Az elmentett buildből újra felépíti a megjelenítéshez szükséges adatokat.
+  function restoreBuild(entry) {
+    const build = BUILD_BY_ID.get(entry.b);
+    const entryLane = LANE_BY_ID.get(entry.l);
+    const saved = entry.full;
+    if (!build || !entryLane || !saved) return null;
+    const withNote = (id, note) => {
+      const it = getItem(id);
+      return it && (note ? { ...it, note } : it);
+    };
+    const tree = key => runeTrees.find(t => t.key === key);
+    const rune = (t, key) => t && t.slots.flat().find(r => r.key === key);
+    let runes = null;
+    if (saved.runes) {
+      const primary = tree(saved.runes.p);
+      const secondary = tree(saved.runes.s);
+      const keystone = rune(primary, saved.runes.k);
+      const primaryRunes = saved.runes.pr.map(k => rune(primary, k));
+      const secondaryRunes = saved.runes.sr.map(k => rune(secondary, k));
+      if (keystone && [...primaryRunes, ...secondaryRunes].every(Boolean)) {
+        runes = { primary, keystone, primaryRunes, secondary, secondaryRunes };
+      }
+    }
+    return {
+      build,
+      lane: entryLane,
+      spells: saved.spells.map(id => spellData.get(id)).filter(Boolean),
+      runes,
+      shards: statShards(saved.shards),
+      starter: saved.starter ? withNote(saved.starter, 'Kezdő tárgy') : null,
+      items: saved.items.map(x => withNote(x.id, x.note)).filter(Boolean),
+    };
+  }
+
+  function recallEntry(id) {
+    if (champWheel.spinning || buildWheel.spinning) return;
+    const entry = history.find(e => e.id === id);
+    const champ = entry && champions.find(c => c.id === entry.c);
+    if (!champ) return;
+    // A régi bejegyzésekben nincs lane: ilyenkor a mostani (vagy a Mid) lesz.
+    if (!LANE_BY_ID.has(entry.l)) entry.l = lane || 'mid';
+    setLane(entry.l);
+    enterBuildStage(champ);
+    currentEntryId = entry.id;
+
+    const build = BUILD_BY_ID.get(entry.b);
+    if (build) {
+      let full = restoreBuild(entry);
+      if (!full) {
+        // Régi bejegyzés, amihez még nem volt elmentve a teljes build.
+        full = makeFullBuild(champ, build, entry.l);
+        entry.full = serializeBuild(full);
+      }
+      showBuildCard(full);
+      buildWheel.pointAt(buildWheel.items.indexOf(build));
+      $('buildTicker').textContent = build.name;
+    }
     writeHistory(history);
     renderHistory();
   }
@@ -1205,15 +1318,47 @@
     $('historyList').replaceChildren(...entries.map(e => {
       const c = byId.get(e.c);
       const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'history-entry';
+      if (e.id === currentEntryId) btn.setAttribute('aria-current', 'true');
+      const build = BUILD_BY_ID.get(e.b);
+      btn.title = 'Kattints a visszahíváshoz';
+
+      const head = document.createElement('div');
+      head.className = 'history-head-row';
       const img = document.createElement('img');
       img.src = iconUrl(c.id);
       img.alt = '';
       img.loading = 'lazy';
       const text = document.createElement('div');
       text.appendChild(textEl('span', c.name));
-      const details = [LANE_BY_ID.get(e.l), BUILD_BY_ID.get(e.b)].filter(Boolean).map(x => x.label || x.name);
-      if (details.length) text.appendChild(textEl('small', details.join(' · ')));
-      li.append(img, text);
+      const l = LANE_BY_ID.get(e.l);
+      const details = [l && l.label, build ? build.name : 'Nincs még build'].filter(Boolean);
+      text.appendChild(textEl('small', details.join(' · ')));
+      head.append(img, text);
+      btn.appendChild(head);
+
+      if (e.full) {
+        const icons = document.createElement('div');
+        icons.className = 'history-items';
+        const ids = [...(e.full.starter ? [e.full.starter] : []), ...e.full.items.filter(x => x.note).map(x => x.id),
+          ...e.full.items.filter(x => !x.note).map(x => x.id)];
+        for (const id of ids) {
+          const it = getItem(id);
+          if (!it) continue;
+          const ic = document.createElement('img');
+          ic.src = itemIconUrl(id);
+          ic.alt = '';
+          ic.title = it.name;
+          ic.loading = 'lazy';
+          icons.appendChild(ic);
+        }
+        btn.appendChild(icons);
+      }
+
+      btn.addEventListener('click', () => recallEntry(e.id));
+      li.appendChild(btn);
       return li;
     }));
     $('historyEmpty').hidden = entries.length > 0;
@@ -1227,6 +1372,7 @@
   $('retryBtn').addEventListener('click', loadData);
   $('clearHistory').addEventListener('click', () => {
     history = [];
+    currentEntryId = null;
     writeHistory(history);
     renderHistory();
   });
