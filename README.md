@@ -2,6 +2,8 @@
 
 Szerencsekerék a League of Legendshez: válaszd ki a lane-ed, pörgesd ki a championod, majd egy második keréken egy hozzá illő **fun buildet** – teljes rúnaoldallal, idézői varázslatokkal és tárgyakkal vásárlási sorrendben.
 
+**Élő oldal: https://lol-sorsolo.vercel.app/**
+
 Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs telepítendő függőség, bármilyen statikus tárhelyen fut.
 
 ## Funkciók
@@ -54,14 +56,9 @@ Bármilyen más statikus szerver is jó, pl. `npx serve .` vagy `python -m http.
 
 ## Közzététel weboldalként
 
-Feltölteni ezeket a fájlokat kell: `index.html`, `style.css`, `script.js` (a `serve.ps1` csak helyi teszteléshez kell).
+Az oldal a **Vercelen** fut, ami össze van kötve ezzel a GitHub-tárolóval: minden `main` ágra feltöltött változás pár percen belül magától élesedik a https://lol-sorsolo.vercel.app/ címen.
 
-**GitHub Pages**
-1. A tároló oldalán: *Settings* → *Pages*.
-2. *Source*: `Deploy from a branch`, branch: `main`, mappa: `/ (root)` → *Save*.
-3. Pár perc múlva elérhető: `https://<felhasznalonev>.github.io/lol-sorsolo/`
-
-**Netlify**: húzd rá a mappát a https://app.netlify.com/drop oldalra.
+Máshol is közzétehető, mert csak ezek a fájlok kellenek hozzá: `index.html`, `style.css`, `script.js` (a `serve.ps1` csak helyi teszteléshez kell). Például Netlifyon: húzd rá a mappát a https://app.netlify.com/drop oldalra.
 
 ## Ötletek fogadása (Formspree)
 
