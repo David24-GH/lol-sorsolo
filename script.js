@@ -19,7 +19,7 @@
   const FAV_MAX = 30;
   // Az Ötletek űrlap ide küldi a javaslatokat (pl. 'https://formspree.io/f/abcdwxyz').
   // Ha üres, az ötletek csak a böngészőben tárolódnak. Lásd: README.md.
-  const IDEA_ENDPOINT = '';
+  const IDEA_ENDPOINT = 'https://formspree.io/f/mwlvonek';
   const IDEA_KEY = 'lolSorsolo.ideas';
   const CHAMP_SPIN_MS = 5500;
   const BUILD_SPIN_MS = 4500;
