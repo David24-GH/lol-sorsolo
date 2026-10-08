@@ -657,32 +657,49 @@ body {
   gap: 4px;
 }
 
-/* ---------- Ötletek ---------- */
-.idea-intro {
-  margin: 12px 0 0;
-  font-size: 0.9rem;
-  color: var(--text);
+/* ---------- Üzenőfal (Ötletek fül) ---------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.idea-form {
+.wall-compose {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(1, 10, 19, 0.45);
 }
 
-.idea-form label {
-  margin-top: 6px;
-  font-size: 0.8rem;
-  color: var(--gold-light);
+.wall-compose-row {
+  display: flex;
+  gap: 8px;
 }
 
-.idea-form label span { color: var(--muted); }
+.wall-compose-foot {
+  align-items: center;
+  justify-content: space-between;
+}
 
-.idea-form select,
-.idea-form textarea,
-.idea-form input[type="text"] {
+.wall-compose-foot .idea-counter { white-space: nowrap; }
+.wall-compose-foot .ghost-btn { width: auto; flex: none; }
+.wall-compose .idea-status { margin: 0; min-height: 0; }
+.wall-compose .idea-status:empty { display: none; }
+
+.wall-compose textarea,
+.wall-compose input[type="text"],
+.wall-compose select,
+.wall-admin input {
   width: 100%;
+  min-width: 0;
   font: inherit;
   font-size: 0.9rem;
   padding: 8px 10px;
@@ -692,23 +709,143 @@ body {
   color: var(--gold-light);
 }
 
-.idea-form textarea { resize: vertical; min-height: 90px; }
+.wall-compose textarea { resize: vertical; min-height: 70px; }
+.wall-compose select { width: auto; flex: none; }
 
-.idea-form select:focus,
-.idea-form textarea:focus,
-.idea-form input[type="text"]:focus {
+.wall-compose textarea:focus,
+.wall-compose input[type="text"]:focus,
+.wall-compose select:focus,
+.wall-admin input:focus {
   outline: none;
   border-color: var(--gold);
 }
 
 .idea-counter {
   margin: 0;
-  align-self: flex-end;
   font-size: 0.72rem;
   color: var(--muted);
 }
 
-.idea-form .ghost-btn { margin-top: 10px; }
+.wall-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+
+.wall-head h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.wall-feed {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wall-post {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(1, 10, 19, 0.45);
+}
+
+.wall-post-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: #fff;
+  background: hsl(var(--hue, 200), 45%, 38%);
+  border: 2px solid hsl(var(--hue, 200), 50%, 55%);
+}
+
+.wall-post-who {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.wall-post-who strong {
+  color: var(--gold-light);
+  overflow-wrap: anywhere;
+}
+
+.wall-post-who small { color: var(--blue); font-size: 0.75rem; }
+
+.wall-text {
+  margin: 10px 0 0;
+  font-size: 0.92rem;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.wall-actions {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.like-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.like-btn:hover { background: rgba(30, 58, 90, 0.5); color: var(--gold-light); }
+.like-btn[aria-pressed="true"] { color: var(--blue); font-weight: 600; }
+.like-btn:focus-visible { outline: 2px solid var(--blue); }
+
+.wall-delete {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.wall-delete svg { display: block; width: 100%; height: 100%; }
+.wall-delete:hover { color: var(--error); background: rgba(224, 85, 85, 0.12); }
+
+.wall-admin {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--error);
+  border-radius: 8px;
+}
+
+.wall-admin-form { display: flex; gap: 8px; }
+.wall-admin-form .ghost-btn { flex: none; }
+.wall-admin-form[hidden], .wall-admin-on[hidden] { display: none; }
+.wall-admin-on { margin: 0; font-size: 0.85rem; color: var(--gold-light); }
 
 /* Spam-csapda mező: képernyőn kívül, de nem display:none, hogy a botok kitöltsék. */
 .trap {
@@ -720,45 +857,8 @@ body {
 }
 
 .idea-status { margin: 6px 0 0; min-height: 1.2em; font-size: 0.85rem; }
-.idea-status.ok { color: var(--blue); }
-.idea-status.error { color: var(--error); }
-
-.idea-saved {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--border);
-}
-
-.idea-saved h4 {
-  margin: 0 0 8px;
-  font-size: 0.85rem;
-  color: var(--gold-light);
-}
-
-.idea-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.idea-list li {
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: rgba(1, 10, 19, 0.45);
-}
-
-.idea-list small { color: var(--blue); font-size: 0.75rem; }
-
-.idea-list p {
-  margin: 2px 0 4px;
-  font-size: 0.9rem;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
+.idea-status.is-ok { color: var(--blue); }
+.idea-status.is-error { color: var(--error); }
 
 .tab {
   font: inherit;

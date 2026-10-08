@@ -18,10 +18,11 @@
   const HISTORY_MAX = 10;
   const FAV_KEY = 'lolSorsolo.favorites';
   const FAV_MAX = 30;
-  // Az Ötletek űrlap ide küldi a javaslatokat (pl. 'https://formspree.io/f/abcdwxyz').
-  // Ha üres, az ötletek csak a böngészőben tárolódnak. Lásd: README.md.
-  const IDEA_ENDPOINT = 'https://formspree.io/f/mwlvonek';
-  const IDEA_KEY = 'lolSorsolo.ideas';
+  // Az Ötletek fül közös üzenőfala (api/wall.js).
+  const WALL_API = '/api/wall';
+  const WALL_REFRESH_MS = 30000;
+  const CLIENT_KEY = 'lolSorsolo.clientId';
+  const ADMIN_KEY_STORE = 'lolSorsolo.adminKey';
   const CHAMP_SPIN_MS = 5500;
   const BUILD_SPIN_MS = 4500;
   const REVEAL_MS = 5000;
@@ -1519,6 +1520,7 @@
     $('favPanel').hidden = tab !== 'fav';
     $('ideaPanel').hidden = tab !== 'idea';
     renderLists();
+    if (tab === 'idea') loadWall();
   }
 
   function renderLists() {
@@ -1622,99 +1624,277 @@
     return li;
   }
 
-  // ---------- Ötletek ----------
-  // A javaslatok mindig elmentődnek a böngészőben is; ha van IDEA_ENDPOINT, oda is elküldi őket.
-  let ideas = (() => {
+  // ---------- Üzenőfal (Ötletek fül) ----------
+  // Közös fal: az üzeneteket a szerver tárolja (api/wall.js), így mindenki látja a többiekét.
+  // A lájkokhoz egy véletlen, névtelen böngésző-azonosító kell (egy böngészőből egy lájk).
+  const clientId = (() => {
     try {
-      const arr = JSON.parse(localStorage.getItem(IDEA_KEY) || '[]');
-      return Array.isArray(arr) ? arr : [];
+      let id = localStorage.getItem(CLIENT_KEY);
+      if (!id) {
+        id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${randomInt(1e9).toString(36)}`;
+        localStorage.setItem(CLIENT_KEY, id);
+      }
+      return id;
     } catch {
-      return [];
+      return `${Date.now().toString(36)}-${randomInt(1e9).toString(36)}`;
     }
   })();
+  // A korábbi, csak a böngészőben tárolt ötletek már nem kellenek.
+  try { localStorage.removeItem('lolSorsolo.ideas'); } catch { /* nem elérhető */ }
 
-  function writeIdeas() {
-    try { localStorage.setItem(IDEA_KEY, JSON.stringify(ideas)); } catch { /* nem elérhető */ }
+  let wallPosts = [];
+  let wallTimer = 0;
+  let wallLoading = false;
+  let adminKey = (() => { try { return sessionStorage.getItem(ADMIN_KEY_STORE) || ''; } catch { return ''; } })();
+
+  async function wallRequest(body) {
+    const res = await fetch(WALL_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { status: res.status, data };
   }
 
-  function renderIdeas() {
-    $('ideaSaved').hidden = ideas.length === 0;
-    $('ideaSaved').querySelector('h4').textContent = IDEA_ENDPOINT
-      ? 'Általad elküldött ötletek'
-      : 'Ebben a böngészőben mentett ötletek';
-    $('ideaList').replaceChildren(...ideas.map(idea => {
-      const li = document.createElement('li');
-      const meta = `${idea.category} · ${new Date(idea.date).toLocaleDateString('hu-HU')}${idea.name ? ` · ${idea.name}` : ''}`;
-      li.append(textEl('small', meta), textEl('p', idea.text));
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'link-btn';
-      del.textContent = 'Törlés';
-      del.addEventListener('click', () => {
-        ideas = ideas.filter(x => x.id !== idea.id);
-        writeIdeas();
-        renderIdeas();
-      });
-      li.appendChild(del);
-      return li;
-    }));
-  }
-
-  function setIdeaStatus(text, kind) {
-    const el = $('ideaStatus');
+  function setStatus(id, text, kind) {
+    const el = $(id);
     el.textContent = text;
-    el.className = `idea-status${kind ? ` ${kind}` : ''}`;
+    el.className = `idea-status${kind ? ` is-${kind}` : ''}`;
   }
 
-  async function submitIdea(event) {
-    event.preventDefault();
-    const form = $('ideaForm');
-    const text = $('ideaText').value.trim();
-    if (text.length < 5) {
-      setIdeaStatus('Írj legalább pár szót a javaslatodról!', 'error');
-      $('ideaText').focus();
+  async function loadWall() {
+    if (wallLoading) return;
+    wallLoading = true;
+    if (!wallPosts.length) renderWall('Betöltés…');
+    try {
+      const res = await fetch(`${WALL_API}?client=${encodeURIComponent(clientId)}`, { cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw Object.assign(new Error(data.error || res.status), { code: data.error });
+      wallPosts = data.posts || [];
+      renderWall();
+    } catch (err) {
+      console.warn(err);
+      // Csak akkor írja felül a falat, ha még nincs mit mutatni.
+      if (!wallPosts.length) {
+        renderWall(err.code === 'not-configured'
+          ? 'Az üzenőfal hamarosan elérhető lesz.'
+          : 'Az üzenőfal most nem érhető el. Próbáld újra kicsit később.');
+      }
+    } finally {
+      wallLoading = false;
+    }
+    scheduleWallRefresh();
+  }
+
+  // Amíg az Ötletek fül nyitva van és az oldal látszik, félpercenként frissül a fal.
+  function scheduleWallRefresh() {
+    clearTimeout(wallTimer);
+    wallTimer = setTimeout(() => {
+      if (activeTab === 'idea' && !document.hidden) loadWall();
+      else scheduleWallRefresh();
+    }, WALL_REFRESH_MS);
+  }
+
+  function timeAgo(ts) {
+    const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+    if (s < 60) return 'most';
+    if (s < 3600) return `${Math.floor(s / 60)} perce`;
+    if (s < 86400) return `${Math.floor(s / 3600)} órája`;
+    if (s < 7 * 86400) return `${Math.floor(s / 86400)} napja`;
+    return new Date(ts).toLocaleDateString('hu-HU');
+  }
+
+  // A név alapján mindig ugyanolyan színű kezdőbetűs „profilkép”.
+  function avatarEl(name) {
+    const span = document.createElement('span');
+    span.className = 'avatar';
+    span.setAttribute('aria-hidden', 'true');
+    let hash = 0;
+    for (const ch of name) hash = (hash * 31 + ch.codePointAt(0)) % 360;
+    span.style.setProperty('--hue', String(hash));
+    span.textContent = [...name.trim()][0] ? [...name.trim()][0].toUpperCase() : '?';
+    return span;
+  }
+
+  function renderWall(message) {
+    const feed = $('wallFeed');
+    const empty = $('wallEmpty');
+    if (message) {
+      feed.replaceChildren();
+      empty.textContent = message;
+      empty.hidden = false;
       return;
     }
-    // Ha a rejtett mező ki van töltve, valószínűleg bot küldte: csendben eldobjuk.
-    if (form.elements._gotcha.value) return;
-
-    const idea = {
-      id: newEntryId(),
-      category: $('ideaCategory').value,
-      text,
-      name: $('ideaName').value.trim(),
-      date: new Date().toISOString(),
-    };
-
-    if (IDEA_ENDPOINT) {
-      $('ideaSubmit').disabled = true;
-      setIdeaStatus('Küldés…');
-      try {
-        const res = await fetch(IDEA_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ kategoria: idea.category, javaslat: idea.text, nev: idea.name || '-' }),
-        });
-        if (!res.ok) throw new Error(String(res.status));
-      } catch (err) {
-        console.warn(err);
-        setIdeaStatus('Nem sikerült elküldeni. Ellenőrizd az internetkapcsolatot, és próbáld újra.', 'error');
-        $('ideaSubmit').disabled = false;
-        return;
-      }
-      $('ideaSubmit').disabled = false;
-    }
-
-    ideas = [idea, ...ideas].slice(0, 50);
-    writeIdeas();
-    renderIdeas();
-    form.reset();
-    updateIdeaCounter();
-    setIdeaStatus(IDEA_ENDPOINT ? 'Köszönjük, megkaptuk az ötletedet!' : 'Elmentve! Köszönöm az ötletet.', 'ok');
+    empty.textContent = 'Még nincs üzenet a falon. Legyél te az első!';
+    empty.hidden = wallPosts.length > 0;
+    feed.replaceChildren(...wallPosts.map(postEl));
   }
 
-  function updateIdeaCounter() {
-    $('ideaCounter').textContent = `${$('ideaText').value.length} / 1000`;
+  function postEl(p) {
+    const li = document.createElement('li');
+    li.className = 'wall-post';
+
+    const head = document.createElement('div');
+    head.className = 'wall-post-head';
+    const who = document.createElement('div');
+    who.className = 'wall-post-who';
+    const time = document.createElement('time');
+    time.dateTime = new Date(p.ts).toISOString();
+    time.title = new Date(p.ts).toLocaleString('hu-HU');
+    time.textContent = timeAgo(p.ts);
+    const meta = document.createElement('small');
+    meta.append(`${p.category} · `, time);
+    who.append(textEl('strong', p.name), meta);
+    head.append(avatarEl(p.name), who);
+
+    if (adminKey) {
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'wall-delete';
+      del.title = 'Üzenet törlése a falról';
+      del.setAttribute('aria-label', `${p.name} üzenetének törlése`);
+      del.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      del.addEventListener('click', () => deletePost(p));
+      head.appendChild(del);
+    }
+
+    const text = textEl('p', p.text, 'wall-text');
+
+    const actions = document.createElement('div');
+    actions.className = 'wall-actions';
+    const like = document.createElement('button');
+    like.type = 'button';
+    like.className = 'like-btn';
+    like.setAttribute('aria-pressed', String(!!p.liked));
+    like.innerHTML = '<span aria-hidden="true">👍</span>';
+    like.append(` Tetszik${p.likes ? ` · ${p.likes}` : ''}`);
+    like.addEventListener('click', () => toggleLike(p));
+    actions.appendChild(like);
+
+    li.append(head, text, actions);
+    return li;
+  }
+
+  async function submitPost(event) {
+    event.preventDefault();
+    const text = $('wallText').value.trim();
+    if (text.length < 3) {
+      setStatus('wallStatus', 'Írj legalább pár szót az ötletedről!', 'error');
+      $('wallText').focus();
+      return;
+    }
+    $('wallSubmit').disabled = true;
+    setStatus('wallStatus', 'Közzététel…');
+    try {
+      const { status, data } = await wallRequest({
+        action: 'post',
+        text,
+        name: $('wallName').value.trim(),
+        category: $('wallCategory').value,
+        website: $('wallForm').elements.website.value,
+      });
+      if (status === 429) {
+        setStatus('wallStatus', 'Kicsit lassabban! Fél percen belül csak egy üzenetet küldhetsz.', 'error');
+        return;
+      }
+      if (status === 503) {
+        setStatus('wallStatus', 'Az üzenőfal hamarosan elérhető lesz.', 'error');
+        return;
+      }
+      if (status !== 201 && status !== 200) throw new Error(String(status));
+      if (data.post) wallPosts = [data.post, ...wallPosts];
+      renderWall();
+      $('wallText').value = '';
+      updateWallCounter();
+      setStatus('wallStatus', 'Kint van a falon. Köszönjük az ötletet!', 'ok');
+    } catch (err) {
+      console.warn(err);
+      setStatus('wallStatus', 'Nem sikerült közzétenni. Ellenőrizd az internetkapcsolatot, és próbáld újra.', 'error');
+    } finally {
+      $('wallSubmit').disabled = false;
+    }
+  }
+
+  async function toggleLike(p) {
+    // Azonnal átállítja a gombot, és ha a szerver mást mond, ahhoz igazodik.
+    const before = { liked: p.liked, likes: p.likes };
+    p.liked = !p.liked;
+    p.likes += p.liked ? 1 : -1;
+    renderWall();
+    try {
+      const { status, data } = await wallRequest({ action: 'like', id: p.id, client: clientId });
+      if (status !== 200) throw new Error(String(status));
+      p.liked = data.liked;
+      p.likes = data.likes;
+    } catch (err) {
+      console.warn(err);
+      Object.assign(p, before);
+    }
+    renderWall();
+  }
+
+  async function deletePost(p) {
+    if (!window.confirm(`Biztosan törlöd ${p.name} üzenetét a falról?`)) return;
+    try {
+      const { status } = await wallRequest({ action: 'delete', id: p.id, adminKey });
+      if (status === 403) {
+        setAdmin('');
+        setStatus('adminStatus', 'Lejárt vagy hibás admin kód, lépj be újra.', 'error');
+        return;
+      }
+      if (status !== 200) throw new Error(String(status));
+      wallPosts = wallPosts.filter(x => x.id !== p.id);
+      renderWall();
+    } catch (err) {
+      console.warn(err);
+      setStatus('adminStatus', 'Nem sikerült törölni, próbáld újra.', 'error');
+    }
+  }
+
+  // ---------- Moderálás ----------
+  function setAdmin(key) {
+    adminKey = key;
+    try {
+      if (key) sessionStorage.setItem(ADMIN_KEY_STORE, key);
+      else sessionStorage.removeItem(ADMIN_KEY_STORE);
+    } catch { /* nem elérhető */ }
+    $('adminForm').hidden = !!key;
+    $('adminOn').hidden = !key;
+    renderWall();
+  }
+
+  async function adminLogin(event) {
+    event.preventDefault();
+    const key = $('adminKey').value;
+    if (!key) return;
+    setStatus('adminStatus', 'Ellenőrzés…');
+    try {
+      const { status } = await wallRequest({ action: 'checkAdmin', adminKey: key });
+      if (status !== 200) {
+        setStatus('adminStatus', 'Hibás admin kód.', 'error');
+        return;
+      }
+      $('adminKey').value = '';
+      setStatus('adminStatus', '');
+      setAdmin(key);
+    } catch (err) {
+      console.warn(err);
+      setStatus('adminStatus', 'Nem sikerült ellenőrizni, próbáld újra.', 'error');
+    }
+  }
+
+  // A moderáló rész csak a #admin címmel megnyitva látszik.
+  function initAdmin() {
+    const show = location.hash === '#admin' || !!adminKey;
+    $('wallAdmin').hidden = !show;
+    $('adminForm').hidden = !!adminKey;
+    $('adminOn').hidden = !adminKey;
+    if (location.hash === '#admin') setTab('idea');
+  }
+
+  function updateWallCounter() {
+    $('wallCounter').textContent = `${$('wallText').value.length} / 1000`;
   }
 
   // ---------- Indítás ----------
@@ -1729,8 +1909,15 @@
   $('champSearch').addEventListener('focus', updateSuggestions);
   $('champSearch').addEventListener('keydown', onSearchKey);
   $('champSearch').addEventListener('blur', hideSuggestions);
-  $('ideaForm').addEventListener('submit', submitIdea);
-  $('ideaText').addEventListener('input', updateIdeaCounter);
+  $('wallForm').addEventListener('submit', submitPost);
+  $('wallText').addEventListener('input', updateWallCounter);
+  $('wallRefresh').addEventListener('click', loadWall);
+  $('adminForm').addEventListener('submit', adminLogin);
+  $('adminLogout').addEventListener('click', () => setAdmin(''));
+  window.addEventListener('hashchange', initAdmin);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && activeTab === 'idea') loadWall();
+  });
   $('favBtn').addEventListener('click', () => { if (currentEntryId) toggleFavorite(currentEntryId); });
   $('clearHistory').addEventListener('click', () => {
     history = [];
@@ -1755,7 +1942,7 @@
 
   renderLaneButtons();
   renderRoleButtons();
-  renderIdeas();
+  initAdmin();
   updateSoundBtn();
   updateSpinState();
   champWheel.resize();
