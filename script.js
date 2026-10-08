@@ -66,7 +66,8 @@
   // a valós játékot, ezek a listák javítják.
   const AP_EXTRA = new Set(['Gwen', 'Kaisa', 'KogMaw', 'Volibear', 'Shyvana', 'Udyr', 'Varus']);
   const AP_EXCLUDE = new Set(['Belveth', 'DrMundo', 'Jhin', 'KSante', 'Senna']);
-  const AD_EXTRA = new Set(['Belveth']);
+  const AD_EXTRA = new Set(['Belveth', 'Nidalee']);
+  const CRIT_EXTRA = new Set(['Nidalee']);
   const AD_EXCLUDE = new Set(['Azir', 'Diana', 'Elise', 'Gwen', 'Hwei', 'Kennen']);
   const AP_ONHIT_EXTRA = new Set(['Kayle', 'Teemo', 'Kaisa', 'Gwen', 'KogMaw', 'Varus', 'Katarina']);
   // Néhány championnál a Riot adataiban minden érték 0.
@@ -125,7 +126,7 @@
       boots: [3006],
       keystones: ['LethalTempo', 'PressTheAttack', 'FleetFootwork', 'HailOfBlades'],
       shards: [5005, 5008, 5001],
-      ok: p => p.ad && (p.has('Marksman') || p.attack >= 7),
+      ok: p => p.ad && (p.has('Marksman') || p.attack >= 7 || CRIT_EXTRA.has(p.id)),
     },
     {
       id: 'onhit', name: 'On-hit', color: '#9e7a2a',
