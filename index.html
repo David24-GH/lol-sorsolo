@@ -17,7 +17,8 @@
     <div class="sound-control">
       <button type="button" class="sound-btn" id="soundBtn" aria-pressed="true">
         <svg id="soundOnIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <svg id="soundOffIcon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <!-- Némítva / 0%: az áthúzott hangszóró. A sötét alsó vonal elválasztja a ferde vonalat az ikontól. -->
+        <svg id="soundOffIcon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 3l18 18" fill="none" stroke="#0a1428" stroke-width="5" stroke-linecap="round"/><path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
       <!-- Hangerő: csak akkor jelenik meg, ha az egér a gomb fölött van (vagy billentyűzettel rá lépnek). -->
       <div class="volume-pop">
