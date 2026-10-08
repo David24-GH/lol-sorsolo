@@ -1463,6 +1463,9 @@
     // A régi bejegyzésekben nincs lane: ilyenkor a mostani (vagy a Mid) lesz.
     if (!LANE_BY_ID.has(entry.l)) entry.l = lane || 'mid';
     setLane(entry.l);
+    // Visszahíváskor is megszólal a champion hangja, mint a sorsolásnál.
+    preloadSounds(champ);
+    playSounds();
     enterBuildStage(champ);
     currentEntryId = entry.id;
 
