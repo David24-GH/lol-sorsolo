@@ -37,7 +37,13 @@
 
   <main class="layout">
     <section class="wheel-panel" id="champStage" aria-label="Champion kerék">
+      <div class="lane-picker" role="group" aria-label="Lane">
+        <p class="step-label">Melyik lane-en játszol?</p>
+        <div class="lane-buttons" id="laneButtons"></div>
+      </div>
+
       <div class="filters" role="group" aria-label="Szerepkörök">
+        <p class="step-label">Szűrés szerepkörre <span>(nem kötelező)</span></p>
         <div class="role-buttons" id="roleButtons"></div>
         <p class="count" id="champCount">Championok betöltése…</p>
       </div>
@@ -79,7 +85,15 @@
           <p class="result-label">A buildod</p>
           <h2 id="buildName"></h2>
           <p class="build-desc" id="buildDesc"></p>
-          <ul class="item-list" id="buildItems"></ul>
+
+          <h3 class="build-section">Idézői varázslatok</h3>
+          <div class="spell-row" id="buildSpells"></div>
+
+          <h3 class="build-section">Rúnák</h3>
+          <div class="rune-page" id="buildRunes"></div>
+
+          <h3 class="build-section">Tárgyak</h3>
+          <ol class="item-list" id="buildItems"></ol>
         </div>
       </section>
 
@@ -106,6 +120,7 @@
         <img id="revealSplash" alt="">
       </div>
       <div class="reveal-items" id="revealItems" hidden></div>
+      <div class="reveal-extras" id="revealExtras" hidden></div>
       <p class="reveal-label" id="revealLabel">A te championod</p>
       <h2 class="reveal-name" id="revealName"></h2>
       <p class="reveal-title" id="revealTitle"></p>

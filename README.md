@@ -7,6 +7,11 @@ Szerencsekerék, ami véletlenszerűen kisorsol egy League of Legends championt.
 - Az utolsó 10 sorsolás a böngészőben megmarad.
 - Sorsoláskor megszólal a champion angol nyelvű választási hangja és effektje (mint a champion-választásnál), a hang a jobb felső gombbal kikapcsolható.
 - Látványos eredmény: teljes képernyős bemutató, fénysugarak, csillogás és részecske-effekt.
+- Az elején kiválasztod a lane-ed (Top, Jungle, Mid, ADC, Support), és a végén a lane-nek megfelelő **teljes buildet** kapsz: idézői varázslatok, rúnaoldal és tárgyak.
+  - Top / Jungle: cipő + 5 tárgy (jungle-ben kezdő pet tárggyal és Sújtással)
+  - Mid: fejlesztett cipő + 5 tárgy
+  - ADC: cipő + 6 tárgy (7 tárgy)
+  - Support: support tárgy (a Világatlasz végső fejlesztése) + cipő + 4 tárgy
 - A kisorsolt champion fejlécként megmarad, alatta egy második kerék jelenik meg **fun buildekkel** (pl. Teljes AP, Lethality, Kritikus csapás, Mozgási sebesség). Minden champion csak olyan buildeket kap, amivel játszható: ezt a Riot adataiból (sebzéstípus, szerepkör, harctávolság) számolja ki, néhány kézi javítással. A buildekhez tartozó tárgyak az aktuális patch tárgylistájából jönnek.
 
 A szerepkör-ikonok és a hangok a [CommunityDragon](https://www.communitydragon.org/) oldalról töltődnek be.
