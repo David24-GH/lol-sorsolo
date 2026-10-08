@@ -143,48 +143,35 @@
         </div>
 
         <div role="tabpanel" id="ideaPanel" aria-labelledby="ideaTab" hidden>
-          <!-- Közös üzenőfal: mindenki látja a többiek ötleteit (api/wall.js). -->
-          <form class="wall-compose" id="wallForm" novalidate>
-            <label class="visually-hidden" for="wallText">Ötleted</label>
-            <textarea id="wallText" rows="3" maxlength="1000"
-              placeholder="Mi az ötleted? Írd ki a falra! Pl. legyen ARAM mód…"></textarea>
-            <div class="wall-compose-row">
-              <label class="visually-hidden" for="wallName">Neved</label>
-              <input type="text" id="wallName" maxlength="40" autocomplete="nickname" placeholder="Neved (nem kötelező)">
-              <label class="visually-hidden" for="wallCategory">Kategória</label>
-              <select id="wallCategory">
-                <option>Új funkció</option>
-                <option>Build javaslat</option>
-                <option>Hiba</option>
-                <option>Egyéb</option>
-              </select>
-            </div>
+          <p class="idea-intro">Van egy ötleted, hogyan lehetne jobb a sorsoló? Írd meg!</p>
+          <form class="idea-form" id="ideaForm" novalidate>
+            <label for="ideaCategory">Kategória</label>
+            <select id="ideaCategory" name="kategoria">
+              <option>Új funkció</option>
+              <option>Build javaslat</option>
+              <option>Hiba</option>
+              <option>Egyéb</option>
+            </select>
+
+            <label for="ideaText">Javaslat</label>
+            <textarea id="ideaText" name="javaslat" rows="4" maxlength="1000" required
+              placeholder="Pl. legyen ARAM mód, vagy Yasuo kapjon tank buildet…"></textarea>
+            <p class="idea-counter" id="ideaCounter">0 / 1000</p>
+
+            <label for="ideaName">Neved <span>(nem kötelező)</span></label>
+            <input type="text" id="ideaName" name="nev" maxlength="60" autocomplete="nickname">
+
             <!-- Spam elleni csapda: ember nem látja, botok kitöltik. -->
-            <input type="text" name="website" class="trap" tabindex="-1" autocomplete="off" aria-hidden="true">
-            <div class="wall-compose-row wall-compose-foot">
-              <span class="idea-counter" id="wallCounter">0 / 1000</span>
-              <button type="submit" class="ghost-btn" id="wallSubmit">Közzététel</button>
-            </div>
-            <p class="idea-status" id="wallStatus" role="status"></p>
+            <input type="text" name="_gotcha" class="trap" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+            <button type="submit" class="ghost-btn" id="ideaSubmit">Ötlet elküldése</button>
+            <p class="idea-status" id="ideaStatus" role="status"></p>
           </form>
 
-          <!-- Moderálás: csak a #admin címmel megnyitva látszik (pl. lol-sorsolo.vercel.app/#admin). -->
-          <div class="wall-admin" id="wallAdmin" hidden>
-            <form id="adminForm" class="wall-admin-form">
-              <label class="visually-hidden" for="adminKey">Admin kód</label>
-              <input type="password" id="adminKey" placeholder="Admin kód" autocomplete="current-password">
-              <button type="submit" class="ghost-btn">Belépés</button>
-            </form>
-            <p class="wall-admin-on" id="adminOn" hidden>Moderálás bekapcsolva. <button type="button" class="link-btn" id="adminLogout">Kilépés</button></p>
-            <p class="idea-status" id="adminStatus" role="status"></p>
+          <div class="idea-saved" id="ideaSaved" hidden>
+            <h4>Ebben a böngészőben mentett ötletek</h4>
+            <ol class="idea-list" id="ideaList"></ol>
           </div>
-
-          <div class="wall-head">
-            <h4>Üzenőfal</h4>
-            <button type="button" class="link-btn" id="wallRefresh">Frissítés</button>
-          </div>
-          <ol class="wall-feed" id="wallFeed" aria-live="polite"></ol>
-          <p class="history-empty" id="wallEmpty" hidden></p>
         </div>
       </section>
     </aside>

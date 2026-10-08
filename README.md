@@ -4,7 +4,7 @@ Szerencsekerék a League of Legendshez: válaszd ki a lane-ed, pörgesd ki a cha
 
 **Élő oldal: https://lol-sorsolo.vercel.app/**
 
-Statikus weboldal (HTML + CSS + JavaScript), build lépés és telepítendő függőség nélkül. Egyetlen szerveroldali része a közös üzenőfal (`api/wall.js`, Vercel szerverfüggvény).
+Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs telepítendő függőség, bármilyen statikus tárhelyen fut.
 
 ## Funkciók
 
@@ -38,9 +38,9 @@ Statikus weboldal (HTML + CSS + JavaScript), build lépés és telepítendő fü
 ### Előzmények, kedvencek, ötletek
 - **Előzmények**: az utolsó 10 sorsolás, kattintásra pontosan visszahívható (ugyanaz a build, rúnák, tárgyak).
 - **Kedvencek**: a jól bevált buildek ☆ csillaggal elmenthetők (legfeljebb 30).
-- **Ötletek**: közös üzenőfal, mint egy Facebook-fal – bárki kiírhatja az ötletét, mindenki látja a többiekét, és 👍 lájkolhatók. Moderálni a `#admin` címmel lehet (lásd lent: [Üzenőfal beállítása](#üzenőfal-beállítása)).
+- **Ötletek**: javaslat-űrlap a további fejlesztésekhez (lásd lent: [Ötletek fogadása](#ötletek-fogadása-formspree)).
 
-Az előzmények és a kedvencek a böngészőben tárolódnak (`localStorage`), az üzenőfal üzenetei a szerveren.
+Az előzmények és a kedvencek a böngészőben tárolódnak (`localStorage`).
 
 ## Helyi futtatás
 
@@ -52,23 +52,25 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 Majd nyisd meg: http://localhost:8792
 
-Bármilyen más statikus szerver is jó, pl. `npx serve .` vagy `python -m http.server`. Az üzenőfal helyben nem működik (ahhoz a Vercel szerverfüggvénye kell), ott a „nem érhető el” üzenet jelenik meg; minden más igen.
+Bármilyen más statikus szerver is jó, pl. `npx serve .` vagy `python -m http.server`.
 
 ## Közzététel weboldalként
 
 Az oldal a **Vercelen** fut, ami össze van kötve ezzel a GitHub-tárolóval: minden `main` ágra feltöltött változás pár percen belül magától élesedik a https://lol-sorsolo.vercel.app/ címen.
 
-## Üzenőfal beállítása
+Máshol is közzétehető, mert csak ezek a fájlok kellenek hozzá: `index.html`, `style.css`, `script.js` (a `serve.ps1` csak helyi teszteléshez kell). Például Netlifyon: húzd rá a mappát a https://app.netlify.com/drop oldalra.
 
-Az **Ötletek** fül fala az `api/wall.js` szerverfüggvényen keresztül egy **Upstash Redis** tárolóba menti az üzeneteket. Amíg ez nincs beállítva, a fal azt írja ki, hogy „hamarosan elérhető”.
+## Ötletek fogadása (Formspree)
 
-1. Vercel → a projekt → **Storage** → *Create Database* → **Upstash for Redis** (ingyenes csomag) → kösd a projekthez (*Connect*), minden környezethez. Ez magától létrehozza a `KV_REST_API_URL` és `KV_REST_API_TOKEN` változókat.
-2. Vercel → a projekt → **Settings** → **Environment Variables**: új változó `ADMIN_KEY` néven, értéke egy hosszú, titkos kód (ezzel moderálsz).
-3. **Deployments** → a legutóbbi élesítésnél *Redeploy*, hogy a változók érvénybe lépjenek.
+Az **Ötletek** fülön a látogatók javaslatokat küldhetnek. Alapból ezek csak az adott böngészőben tárolódnak. Hogy minden látogató ötlete hozzád érkezzen:
 
-**Moderálás:** nyisd meg az oldalt `#admin` végződéssel (pl. https://lol-sorsolo.vercel.app/#admin), írd be az admin kódot, és minden üzenetnél megjelenik egy szemetes ikon. A kód csak az adott böngészőlapon marad meg, a lap bezárásával kilépsz.
-
-**Korlátok:** egy üzenet legfeljebb 1000 karakter, egy címről fél percenként egy üzenet küldhető, a fal a legújabb 200 üzenetet őrzi meg (és az 50 legújabbat mutatja). Egy böngészőből üzenetenként egy lájk adható.
+1. Regisztrálj ingyen a https://formspree.io oldalon, és hozz létre egy új űrlapot (*New Form*).
+2. Másold ki az űrlap címét, pl. `https://formspree.io/f/abcdwxyz`.
+3. Írd be a `script.js` elején az `IDEA_ENDPOINT` értékének:
+   ```js
+   const IDEA_ENDPOINT = 'https://formspree.io/f/abcdwxyz';
+   ```
+4. Töltsd fel újra az oldalt. Az ötletek ezután e-mailben és a Formspree felületén is megjelennek (kategória, javaslat, név).
 
 ## Testreszabás
 
@@ -81,17 +83,15 @@ A szabályok mind a `script.js` elején, jól elkülönítve találhatók:
 | Kézi javítások a champion profilokhoz (pl. ki számít AP-nak / AD-nak) | `AP_EXTRA`, `AP_EXCLUDE`, `AD_EXTRA`, `AD_EXCLUDE`, `CRIT_EXTRA`, `AP_ONHIT_EXTRA`, `INFO_FIX` |
 | Tárgyszám lane-enként | `LANES` |
 | Support tárgy és jungle pet a build szerint | `SUPPORT_ITEM`, `JUNGLE_PET` |
-| Egymást kizáró tárgyak (alapanyag szerint, plusz kézi csoportok) | `GROUP_COMPONENTS`, `MANUAL_GROUPS` |
-| Fix első / utolsó tárgy egy buildben | a build `pool` első eleme, illetve `last` mezője |
+| Egymást kizáró tárgyak | `ITEM_GROUPS` |
 
 ## Felépítés
 
 ```
-index.html    az oldal szerkezete
-style.css     megjelenés (sötét, LoL-stílusú téma, mobilon is)
-script.js     adatbetöltés, kerekek, build-összeállítás, előzmények, kedvencek, üzenőfal
-api/wall.js   az üzenőfal szerverfüggvénye (Vercel + Upstash Redis)
-serve.ps1     kis helyi szerver teszteléshez (Windows PowerShell)
+index.html   az oldal szerkezete
+style.css    megjelenés (sötét, LoL-stílusú téma, mobilon is)
+script.js    adatbetöltés, kerekek, build-összeállítás, előzmények, kedvencek, ötletek
+serve.ps1    kis helyi szerver teszteléshez (Windows PowerShell)
 ```
 
 ## Adatforrások
