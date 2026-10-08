@@ -236,16 +236,22 @@
     ap: [6655, 4645, 4646, 3100, 3116, 3089, 3165, 3157, 3135],
     tank: [3084, 3068, 6665, 3075, 4401, 3143, 3083, 2502, 3110, 3065],
   };
-  // Ezekből a csoportokból egyszerre csak egy tárgy lehet nálad.
-  const ITEM_GROUPS = [
-    [3053, 6673, 3156],       // Életmentő
-    [3074, 3748, 6698],       // Hidrák
-    [3036, 3033, 6694],       // Utolsó suttogás
-    [3135, 3137],             // Pusztítás
-    [3078, 3100, 6662, 3508], // Varázspenge
-    [3003, 3004, 3119],       // Könnycsepp
-  ];
-  const GROUP_OF = new Map(ITEM_GROUPS.flatMap((g, i) => g.map(id => [id, i])));
+  // Egymást kizáró tárgyak: a játékban az ugyanebből az alapanyagból épülő tárgyakból
+  // egyszerre csak egy lehet nálad. A csoportokat a tárgyfából számolja ki (loadItems),
+  // így az új tárgyakat is magától felismeri.
+  const GROUP_COMPONENTS = {
+    3057: 'Varázspenge',     // Ragyogás: Háromság hatalma, Félholt csapás, Jégkesztyű…
+    3035: 'Utolsó suttogás', // Lord Dominik, Halálos emlékeztető, Serylda…
+    3077: 'Hidra',           // Tiamat: hidrák, Megtorpantó
+    3070: 'Könnycsepp',      // Arkangyal, Manamún, Közelgő tél…
+    4630: 'Pusztítás',       // Pusztító ékkő: Az Üresség botja, Kriptavirág
+    6660: 'Égetés',          // Bami parazsa: Naptűz égisz, Hollow Radiance
+    3140: 'Higanyléptű',     // Higanyléptű öv
+  };
+  // Ezek nem közös alapanyagból épülnek, de szintén kizárják egymást.
+  const MANUAL_GROUPS = {
+    'Életmentő': [3053, 6673, 3156], // Sterak, Halhatatlan pajzsíj, Malmortius
+  };
   const MELEE_ONLY = new Set([3074, 3748, 6698, 6631]);
 
   // A support tárgy végső fejlesztése és a jungle pet a build típusa szerint.
@@ -304,11 +310,9 @@
       const it = getItem(id);
       // Ha egy tárgy kikerült a játékból, egyszerűen kimarad.
       if (!it || (!melee && MELEE_ONLY.has(id))) continue;
-      const g = GROUP_OF.get(id);
-      if (g !== undefined) {
-        if (usedGroups.has(g)) continue;
-        usedGroups.add(g);
-      }
+      const groups = itemGroups.get(id) || [];
+      if (groups.some(g => usedGroups.has(g))) continue;
+      groups.forEach(g => usedGroups.add(g));
       out.push(it);
     }
     // Vásárlási sorrend: előbb a build saját tárgyai a megadott sorrendben, utána a pótlások.
@@ -596,6 +600,7 @@
   let pool = [];              // a szűrés után a keréken lévők
   let itemData = new Map();   // megvásárolható tárgyak: id -> { id, name }
   let bootUpgrade = new Map(); // cipő id -> fejlesztett cipő id
+  let itemGroups = new Map();  // tárgy id -> az egymást kizáró csoportjai
   let runeTrees = [];
   let spellData = new Map();
   let shardSlots = [];        // [{ label, shards: [{ id, name, desc, icon }] }]
@@ -683,6 +688,23 @@
     bootUpgrade = new Map(entries
       .filter(([, it]) => it.from && it.from.length === 1 && boots.has(it.from[0]))
       .map(([id, it]) => [Number(it.from[0]), Number(id)]));
+
+    // Egymást kizáró csoportok: melyik tárgy fájában szerepel valamelyik csoport-alapanyag.
+    const components = id => {
+      const found = new Set();
+      const walk = i => ((raw[i] && raw[i].from) || []).forEach(f => { found.add(f); walk(f); });
+      walk(id);
+      return found;
+    };
+    itemGroups = new Map();
+    const addGroup = (id, group) => itemGroups.set(id, [...(itemGroups.get(id) || []), group]);
+    for (const [id] of entries) {
+      const parts = components(id);
+      for (const [comp, group] of Object.entries(GROUP_COMPONENTS)) {
+        if (parts.has(comp)) addGroup(Number(id), group);
+      }
+    }
+    for (const [group, ids] of Object.entries(MANUAL_GROUPS)) ids.forEach(id => addGroup(id, group));
   }
 
   function loadShards(perks, styles) {
