@@ -37,6 +37,25 @@
   ];
   const LANE_BY_ID = new Map(LANES.map(l => [l.id, l]));
 
+  // Ezek a championok az adott lane-en gyakorlatilag játszhatatlanok, ezért nem kerülnek a kerékre.
+  const LANE_BANS = {
+    jungle: new Set([
+      // Enchanterek és tank supportok: nincs tisztítás és túlélés
+      'Yuumi', 'Sona', 'Soraka', 'Janna', 'Nami', 'Lulu', 'Seraphine', 'Milio', 'Renata', 'Karma',
+      'Senna', 'Braum', 'Rakan', 'Taric', 'Bard', 'Leona', 'Alistar',
+      // ADC-k
+      'Ashe', 'Caitlyn', 'Jhin', 'Jinx', 'MissFortune', 'Samira', 'Sivir', 'Xayah', 'Zeri', 'Aphelios',
+      'Draven', 'Ezreal', 'Varus', 'Lucian', 'Smolder', 'Yunara', 'KogMaw', 'Kaisa', 'Tristana', 'Corki', 'Kalista',
+      // Mozgásképtelen tüzérmágusok
+      'Xerath', 'Velkoz', 'Ziggs', 'Lux', 'Orianna', 'Syndra', 'Viktor', 'Veigar', 'Azir', 'AurelionSol',
+      'Hwei', 'Anivia', 'Annie', 'Mel', 'Zoe', 'Cassiopeia', 'Malzahar', 'Heimerdinger',
+    ]),
+    top: new Set(['Yuumi', 'Janna', 'Nami', 'Milio', 'Renata', 'Sona', 'Rakan']),
+    mid: new Set(['Yuumi', 'Janna', 'Nami', 'Milio', 'Renata', 'Soraka', 'Taric', 'Braum', 'Rakan', 'Alistar', 'Leona']),
+    bot: new Set(['Yuumi', 'Janna', 'Nami', 'Milio', 'Renata', 'Soraka', 'Taric', 'Braum', 'Rakan', 'Alistar', 'Leona', 'Rell']),
+    support: new Set(),
+  };
+
   const SLICE_COLORS = ['#13294b', '#0b1a30', '#1d3b5e', '#102238'];
 
   // ---------- Fun buildek ----------
@@ -644,7 +663,7 @@
         lane = l.id;
         try { localStorage.setItem(LANE_KEY, lane); } catch { /* nem elérhető */ }
         wrap.querySelectorAll('.lane-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lane === lane)));
-        updateSpinState();
+        applyFilter();
       });
       wrap.appendChild(btn);
     }
@@ -679,13 +698,17 @@
 
   function applyFilter() {
     $('roleButtons').classList.toggle('has-selection', activeRoles.size > 0);
+    const bans = lane ? LANE_BANS[lane] : new Set();
+    const playable = champions.filter(c => !bans.has(c.id));
+    const banned = champions.length - playable.length;
+    const banNote = banned ? ` · ${banned} kizárva, mert ${LANE_BY_ID.get(lane).label} lane-en nem játszható` : '';
     if (activeRoles.size === 0) {
-      pool = champions;
-      $('champCount').textContent = `Mind a ${pool.length} champion a keréken van · válassz szerepkört a szűréshez`;
+      pool = playable;
+      $('champCount').textContent = `${pool.length} champion a keréken${banNote}`;
     } else {
-      pool = champions.filter(c => c.tags.some(t => activeRoles.has(t)));
+      pool = playable.filter(c => c.tags.some(t => activeRoles.has(t)));
       const labels = ROLES.filter(r => activeRoles.has(r.tag)).map(r => r.label).join(', ');
-      $('champCount').textContent = `${pool.length} champion a keréken (${labels})`;
+      $('champCount').textContent = `${pool.length} champion a keréken (${labels})${banNote}`;
     }
     champWheel.setItems(pool);
     updateSpinState();
