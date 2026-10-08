@@ -8,6 +8,9 @@
   const LANE_ICON_BASE = `${CDRAGON}rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/`;
   // A champion-választás hangjai (angol), a champion numerikus kulcsa alapján.
   const CDRAGON_AUDIO = `${CDRAGON}rcp-be-lol-game-data/global/default/v1/`;
+  // A rúnaoldal alap értékei (shardok) magyarul; a Data Dragon ezeket nem tartalmazza.
+  const CDRAGON_DATA_HU = `${CDRAGON}rcp-be-lol-game-data/global/hu_hu/v1/`;
+  const CDRAGON_ASSETS = `${CDRAGON}rcp-be-lol-game-data/global/default/`;
   const HISTORY_KEY = 'lolSorsolo.history';
   const SOUND_KEY = 'lolSorsolo.sound';
   const LANE_KEY = 'lolSorsolo.lane';
@@ -85,6 +88,7 @@
       pool: [6655, 4645, 4646, 3118, 3100, 3089, 3165, 3157, 3137, 3135],
       boots: [3020],
       keystones: ['Electrocute', 'ArcaneComet', 'DarkHarvest', 'FirstStrike'],
+      shards: [5008, 5008, 5001],
       ok: p => p.ap,
     },
     {
@@ -93,6 +97,7 @@
       pool: [3115, 3124, 4633, 3116, 3100, 4645, 3089, 3157, 3135],
       boots: [3006, 3020],
       keystones: ['LethalTempo', 'PressTheAttack', 'HailOfBlades'],
+      shards: [5005, 5008, 5001],
       ok: p => (p.ap && p.attack >= 6) || AP_ONHIT_EXTRA.has(p.id),
     },
     {
@@ -101,6 +106,7 @@
       pool: [6653, 4633, 3068, 3116, 8010, 4401, 3075, 2502, 3157],
       boots: [3047, 3111],
       keystones: ['Conqueror', 'GraspOfTheUndying', 'PhaseRush', 'Aftershock'],
+      shards: [5007, 5001, 5013],
       ok: p => p.magic >= 5 && p.defense >= 5,
     },
     {
@@ -109,6 +115,7 @@
       pool: [3142, 6697, 6698, 6696, 3814, 6676, 6694, 3156],
       boots: [3158, 3047],
       keystones: ['Electrocute', 'DarkHarvest', 'FirstStrike', 'HailOfBlades'],
+      shards: [5008, 5008, 5001],
       ok: p => p.ad,
     },
     {
@@ -117,6 +124,7 @@
       pool: [6672, 3031, 3095, 3094, 3046, 6676, 3036, 3033, 3072, 3026],
       boots: [3006],
       keystones: ['LethalTempo', 'PressTheAttack', 'FleetFootwork', 'HailOfBlades'],
+      shards: [5005, 5008, 5001],
       ok: p => p.ad && (p.has('Marksman') || p.attack >= 7),
     },
     {
@@ -125,6 +133,7 @@
       pool: [3153, 3124, 3091, 3302, 6672, 3139, 6673, 3026],
       boots: [3006],
       keystones: ['LethalTempo', 'PressTheAttack', 'Conqueror'],
+      shards: [5005, 5008, 5001],
       ok: p => p.ad && (p.has('Marksman') || p.has('Fighter') || p.attack >= 7),
     },
     {
@@ -133,6 +142,7 @@
       pool: [3078, 6610, 3071, 3161, 3073, 3748, 3181, 3053, 6333, 3065],
       boots: [3047, 3111],
       keystones: ['Conqueror', 'GraspOfTheUndying', 'PhaseRush'],
+      shards: [5008, 5008, 5013],
       ok: p => p.melee && p.attack >= 5 && (p.has('Fighter') || p.has('Tank') || p.has('Assassin')),
     },
     {
@@ -141,6 +151,7 @@
       pool: [3084, 3068, 6665, 3075, 4401, 3143, 2502, 3110, 3065],
       boots: [3047, 3111],
       keystones: ['GraspOfTheUndying', 'Aftershock', 'Guardian'],
+      shards: [5007, 5001, 5013],
       ok: p => p.has('Tank') || p.has('Fighter') || (p.has('Support') && p.melee),
     },
     {
@@ -149,6 +160,7 @@
       pool: [3084, 3083, 3068, 6665, 3065, 2502, 3143, 4401],
       boots: [3047, 3111],
       keystones: ['GraspOfTheUndying', 'Aftershock'],
+      shards: [5007, 5001, 5001],
       ok: p => (p.has('Tank') || p.has('Fighter')) && p.defense >= 5,
     },
     {
@@ -157,6 +169,7 @@
       pool: [3153, 3074, 3072, 6673, 6610, 3031, 6333, 3036],
       boots: [3008],
       keystones: ['Conqueror', 'FleetFootwork', 'LethalTempo'],
+      shards: [5005, 5008, 5001],
       ok: p => p.ad,
     },
     {
@@ -165,6 +178,7 @@
       pool: [6617, 6620, 3504, 6616, 2065, 6621, 3107, 3222, 4005],
       boots: [3158, 3009],
       keystones: ['SummonAery', 'Guardian', 'UnsealedSpellbook'],
+      shards: [5007, 5008, 5001],
       ok: p => p.has('Support') && p.magic >= 5,
     },
     {
@@ -177,6 +191,7 @@
       },
       boots: { ap: [3020], ad: [3158], tank: [3047] },
       keystones: { ap: ['ArcaneComet', 'PhaseRush'], ad: ['Conqueror', 'FleetFootwork'], tank: ['GraspOfTheUndying'] },
+      shards: { ap: [5007, 5008, 5001], ad: [5007, 5008, 5001], tank: [5007, 5001, 5013] },
       ok: p => p.mana,
     },
     {
@@ -189,6 +204,7 @@
       },
       boots: [3009],
       keystones: ['PhaseRush', 'FleetFootwork', 'HailOfBlades'],
+      shards: [5008, 5010, 5013],
       ok: () => true,
     },
     {
@@ -201,6 +217,7 @@
       },
       boots: [3158],
       keystones: ['ArcaneComet', 'UnsealedSpellbook', 'PhaseRush', 'Conqueror'],
+      shards: { ad: [5007, 5008, 5001], ap: [5007, 5008, 5001], tank: [5007, 5001, 5013] },
       ok: () => true,
     },
   ];
@@ -324,6 +341,14 @@
     return { primary, keystone, primaryRunes, secondary, secondaryRunes };
   }
 
+  // Soronként (Támadás, Rugalmas, Védekezés) a buildhez megadott érték, ha az abban a sorban választható.
+  function statShards(wanted) {
+    return shardSlots.map((slot, i) => {
+      const shard = slot.shards.find(s => s.id === wanted[i]) || slot.shards[0];
+      return shard && { ...shard, slot: slot.label };
+    }).filter(Boolean);
+  }
+
   // A teljes build: idézői varázslatok, rúnák és a lane szerinti tárgyak.
   function makeFullBuild(champ, build, laneId) {
     const p = profileOf(champ);
@@ -359,6 +384,7 @@
       lane,
       spells: spellsFor(laneId, build),
       runes: runePage(byKind(build.keystones)),
+      shards: statShards(byKind(build.shards)),
       starter: starter && { ...starter, note: 'Kezdő tárgy' },
       items,
     };
@@ -554,6 +580,7 @@
   let bootUpgrade = new Map(); // cipő id -> fejlesztett cipő id
   let runeTrees = [];
   let spellData = new Map();
+  let shardSlots = [];        // [{ label, shards: [{ id, name, desc, icon }] }]
   let currentChamp = null;
   let lane = null;
   const activeRoles = new Set(); // üres = minden champion a keréken van
@@ -594,12 +621,16 @@
       const data = path => `${DDRAGON}/cdn/${version}/data/${LOCALE}/${path}`;
       // A tárgyak, rúnák és varázslatok nélkül is működik a sorsolás, csak a build lesz hiányos.
       const optional = p => fetchJson(data(p)).catch(err => { console.warn(err); return null; });
-      const [champJson, itemJson, runeJson, spellJson] = await Promise.all([
+      const cdragon = p => fetchJson(CDRAGON_DATA_HU + p).catch(err => { console.warn(err); return null; });
+      const [champJson, itemJson, runeJson, spellJson, perkJson, styleJson] = await Promise.all([
         fetchJson(data('champion.json')),
         optional('item.json'),
         optional('runesReforged.json'),
         optional('summoner.json'),
+        cdragon('perks.json'),
+        cdragon('perkstyles.json'),
       ]);
+      loadShards(perkJson, styleJson);
       champions = Object.values(champJson.data)
         .map(c => ({
           id: c.id, key: c.key, name: c.name, title: c.title, tags: c.tags,
@@ -634,6 +665,23 @@
     bootUpgrade = new Map(entries
       .filter(([, it]) => it.from && it.from.length === 1 && boots.has(it.from[0]))
       .map(([id, it]) => [Number(it.from[0]), Number(id)]));
+  }
+
+  function loadShards(perks, styles) {
+    if (!perks || !styles || !styles.styles || !styles.styles.length) return;
+    const byId = new Map(perks.map(p => [p.id, p]));
+    const strip = html => html.replace(/<[^>]+>/g, '').trim();
+    shardSlots = styles.styles[0].slots
+      .filter(s => s.type === 'kStatMod')
+      .map(s => ({
+        label: s.slotLabel,
+        shards: s.perks.map(id => byId.get(id)).filter(Boolean).map(p => ({
+          id: p.id,
+          name: p.name,
+          desc: strip(p.shortDesc),
+          icon: CDRAGON_ASSETS + p.iconPath.replace('/lol-game-data/assets/', '').toLowerCase(),
+        })),
+      }));
   }
 
   async function fetchJson(url) {
@@ -843,6 +891,7 @@
         runeTreeEl(primary, [keystone, ...primaryRunes], true),
         runeTreeEl(secondary, secondaryRunes, false),
       );
+      if (full.shards.length) runesEl.appendChild(shardListEl(full.shards));
     } else {
       runesEl.replaceChildren(textEl('p', 'A rúnák most nem érhetők el.', 'muted'));
     }
@@ -896,6 +945,24 @@
     });
     wrap.append(head, row);
     if (isPrimary) wrap.appendChild(textEl('p', runes[0].name, 'keystone-name'));
+    return wrap;
+  }
+
+  function shardListEl(shards) {
+    const wrap = document.createElement('div');
+    wrap.className = 'shard-list';
+    wrap.appendChild(textEl('p', 'Alap értékek', 'shard-title'));
+    for (const s of shards) {
+      const row = document.createElement('div');
+      row.className = 'shard';
+      const img = document.createElement('img');
+      img.src = s.icon;
+      img.alt = '';
+      const text = document.createElement('div');
+      text.append(textEl('span', s.name), textEl('small', `${s.slot} · ${s.desc}`));
+      row.append(img, text);
+      wrap.appendChild(row);
+    }
     return wrap;
   }
 
