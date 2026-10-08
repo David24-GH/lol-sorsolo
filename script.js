@@ -748,6 +748,7 @@
     lane = laneId;
     try { localStorage.setItem(LANE_KEY, lane); } catch { /* nem elérhető */ }
     document.querySelectorAll('.lane-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lane === lane)));
+    $('searchHint').textContent = '';
     applyFilter();
   }
 
@@ -804,7 +805,108 @@
   }
 
   function setPickersDisabled(disabled) {
-    document.querySelectorAll('.role-btn, .lane-btn').forEach(b => { b.disabled = disabled; });
+    document.querySelectorAll('.role-btn, .lane-btn, #champSearch').forEach(b => { b.disabled = disabled; });
+  }
+
+  // ---------- Champion választás név alapján ----------
+  // Kisbetűs, ékezet- és írásjelmentes alak, hogy pl. a „kaisa” is megtalálja Kai'Sát.
+  const normalize = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+  const SUGGEST_MAX = 8;
+  let suggestions = [];
+  let suggestIdx = -1;
+
+  function updateSuggestions() {
+    const input = $('champSearch');
+    const list = $('champSuggest');
+    const q = normalize(input.value);
+    if (!q) {
+      hideSuggestions();
+      return;
+    }
+    suggestions = champions
+      .map(c => ({ c, name: normalize(c.name), id: normalize(c.id) }))
+      .filter(x => x.name.includes(q) || x.id.includes(q))
+      // Előre azok, akiknek a neve a beírt szöveggel kezdődik.
+      .sort((a, b) => (b.name.startsWith(q) - a.name.startsWith(q)) || a.c.name.localeCompare(b.c.name, 'hu'))
+      .slice(0, SUGGEST_MAX)
+      .map(x => x.c);
+    suggestIdx = suggestions.length ? 0 : -1;
+
+    if (!suggestions.length) {
+      list.replaceChildren(textEl('li', 'Nincs ilyen champion.', 'suggest-empty'));
+    } else {
+      list.replaceChildren(...suggestions.map((c, i) => {
+        const li = document.createElement('li');
+        li.id = `suggest-${i}`;
+        li.setAttribute('role', 'option');
+        const img = document.createElement('img');
+        img.src = iconUrl(c.id);
+        img.alt = '';
+        const text = document.createElement('div');
+        text.append(textEl('span', c.name), textEl('small', c.title));
+        li.append(img, text);
+        // mousedown, hogy a mező elhagyása (blur) előtt fusson le.
+        li.addEventListener('mousedown', e => {
+          e.preventDefault();
+          pickChampion(c);
+        });
+        return li;
+      }));
+    }
+    list.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    highlightSuggestion();
+  }
+
+  function highlightSuggestion() {
+    const input = $('champSearch');
+    $('champSuggest').querySelectorAll('[role="option"]').forEach((li, i) => {
+      li.setAttribute('aria-selected', String(i === suggestIdx));
+      if (i === suggestIdx) li.scrollIntoView({ block: 'nearest' });
+    });
+    if (suggestIdx >= 0) input.setAttribute('aria-activedescendant', `suggest-${suggestIdx}`);
+    else input.removeAttribute('aria-activedescendant');
+  }
+
+  function hideSuggestions() {
+    $('champSuggest').hidden = true;
+    $('champSearch').setAttribute('aria-expanded', 'false');
+    $('champSearch').removeAttribute('aria-activedescendant');
+    suggestions = [];
+    suggestIdx = -1;
+  }
+
+  function onSearchKey(e) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if ($('champSuggest').hidden) updateSuggestions();
+      if (!suggestions.length) return;
+      e.preventDefault();
+      const step = e.key === 'ArrowDown' ? 1 : -1;
+      suggestIdx = (suggestIdx + step + suggestions.length) % suggestions.length;
+      highlightSuggestion();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (suggestions[suggestIdx]) pickChampion(suggestions[suggestIdx]);
+    } else if (e.key === 'Escape') {
+      hideSuggestions();
+    }
+  }
+
+  // A champion kerék kimarad: a választott championnal rögtön a build kerék jön.
+  function pickChampion(champ) {
+    if (champWheel.spinning) return;
+    if (!lane) {
+      $('searchHint').textContent = 'Előbb válaszd ki fent a lane-ed!';
+      return;
+    }
+    $('champSearch').value = '';
+    $('searchHint').textContent = '';
+    hideSuggestions();
+    $('champSearch').blur();
+    preloadSounds(champ);
+    playSounds();
+    enterBuildStage(champ);
+    addChampionEntry(champ.id, lane);
   }
 
   // ---------- Champion sorsolás ----------
@@ -1540,6 +1642,10 @@
   $('historyTab').addEventListener('click', () => setTab('history'));
   $('favTab').addEventListener('click', () => setTab('fav'));
   $('ideaTab').addEventListener('click', () => setTab('idea'));
+  $('champSearch').addEventListener('input', updateSuggestions);
+  $('champSearch').addEventListener('focus', updateSuggestions);
+  $('champSearch').addEventListener('keydown', onSearchKey);
+  $('champSearch').addEventListener('blur', hideSuggestions);
   $('ideaForm').addEventListener('submit', submitIdea);
   $('ideaText').addEventListener('input', updateIdeaCounter);
   $('favBtn').addEventListener('click', () => { if (currentEntryId) toggleFavorite(currentEntryId); });

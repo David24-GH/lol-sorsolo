@@ -42,6 +42,16 @@
         <div class="lane-buttons" id="laneButtons"></div>
       </div>
 
+      <div class="champ-search">
+        <label class="step-label" for="champSearch">Válassz név alapján <span>(vagy pörgess lent)</span></label>
+        <div class="search-box">
+          <input type="text" id="champSearch" role="combobox" aria-autocomplete="list" aria-expanded="false"
+            aria-controls="champSuggest" placeholder="Pl. Ahri, Lee Sin, Kai'Sa…" autocomplete="off" spellcheck="false">
+          <ul class="suggest-list" id="champSuggest" role="listbox" aria-label="Championok" hidden></ul>
+        </div>
+        <p class="search-hint" id="searchHint" role="status"></p>
+      </div>
+
       <div class="filters" role="group" aria-label="Szerepkörök">
         <p class="step-label">Szűrés szerepkörre <span>(nem kötelező)</span></p>
         <div class="role-buttons" id="roleButtons"></div>
