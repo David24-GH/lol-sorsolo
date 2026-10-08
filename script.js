@@ -804,6 +804,7 @@
       buildSpinBtn.disabled = false;
       $('newChampBtn').disabled = false;
       const full = makeFullBuild(champ, build, laneId);
+      const split = splitItems(full);
       burstFromWheel(buildWheel.canvas);
       const extras = [
         ...full.spells.map(s => ({ src: spellIconUrl(s.id), alt: s.name })),
@@ -813,7 +814,7 @@
         label: `Fun build · ${champ.name} · ${full.lane.label}`,
         name: build.name,
         title: build.desc,
-        icons: full.items.map(it => ({ src: itemIconUrl(it.id), alt: it.name })),
+        icons: [...split.special, ...split.core].map(it => ({ src: itemIconUrl(it.id), alt: it.name })),
         extras,
       });
       showBuildCard(full);
@@ -846,8 +847,9 @@
       runesEl.replaceChildren(textEl('p', 'A rúnák most nem érhetők el.', 'muted'));
     }
 
-    const list = [...(full.starter ? [full.starter] : []), ...full.items];
-    $('buildItems').replaceChildren(...list.map(it => {
+    const { special, core } = splitItems(full);
+    const list = [...special, ...core];
+    $('buildItems').replaceChildren(...list.map((it, i) => {
       const li = document.createElement('li');
       const img = document.createElement('img');
       img.src = itemIconUrl(it.id);
@@ -856,7 +858,8 @@
       text.appendChild(textEl('span', it.name));
       if (it.note) text.appendChild(textEl('small', it.note));
       li.append(img, text);
-      if (it.note === 'Kezdő tárgy') li.className = 'starter';
+      // A speciális tárgyak (kezdő pet, support tárgy, cipő) szaggatott vonallal elválasztva, felül.
+      if (i === special.length - 1 && core.length) li.className = 'special-last';
       return li;
     }));
     if (!list.length) $('buildItems').replaceChildren(textEl('li', 'A tárgyak most nem érhetők el.', 'muted'));
@@ -864,6 +867,12 @@
     card.classList.remove('pop');
     void card.offsetWidth;
     card.classList.add('pop');
+  }
+
+  // Speciális tárgyak (megjegyzéssel jelölve) és a többi tárgy vásárlási sorrendben.
+  function splitItems(full) {
+    const all = [...(full.starter ? [full.starter] : []), ...full.items];
+    return { special: all.filter(it => it.note), core: all.filter(it => !it.note) };
   }
 
   function runeTreeEl(tree, runes, isPrimary) {

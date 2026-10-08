@@ -494,39 +494,15 @@ body {
   gap: 8px;
 }
 
-.item-list { counter-reset: buy; }
-
 .item-list li {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* Vásárlási sorszám (a kezdő tárgy nem kap számot) */
-.item-list li:not(.starter)::before {
-  counter-increment: buy;
-  content: counter(buy);
-  flex: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--bg);
-  background: var(--gold);
-}
-
-.item-list li.starter::before {
-  content: "";
-  flex: none;
-  width: 20px;
-}
-
 .item-list li div { display: flex; flex-direction: column; line-height: 1.25; }
 .item-list small { color: var(--blue); font-size: 0.75rem; }
-.item-list li.starter { opacity: 0.85; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
+.item-list li.special-last { padding-bottom: 10px; border-bottom: 1px dashed var(--gold-dark); }
 
 .item-list img {
   width: 36px;
