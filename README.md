@@ -31,7 +31,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 | Support | support tárgy + cipő + 4 tárgy |
 
 - **Idézői varázslatok** a lane és a build szerint.
-- **Képességsorrend** nyilakkal (pl. R → Q → E → W): a szokásos maxolási sorrend championonként (`SKILL_ORDER`), néhány AP buildnél eltérő (`AP_SKILL_ORDER`). Általános javaslat, nem patch-statisztika.
+- **Képességsorrend** nyilakkal (pl. Q → E → W → R): a szokásos maxolási sorrend championonként (`SKILL_ORDER`), néhány AP buildnél eltérő (`AP_SKILL_ORDER`). Általános javaslat, nem patch-statisztika.
 - **Rúnaoldal**: a buildhez illő fő rúna, teljes és szabályos oldal, plusz az **alap értékek** (shardok).
 - **Tárgyak vásárlási sorrendben**; a speciális tárgyak (kezdő pet, support tárgy, cipő) külön, elválasztva.
 - **+1 csere opció**: minden build alatt külön egy plusz tárgy ugyanabból a build típusból, ami nincs a buildben és egyik tárgyával sem ütközik – ha valamelyik tárgy nem tetszik, ez vehető helyette.

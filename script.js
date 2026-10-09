@@ -116,7 +116,7 @@
   };
 
   // ---------- Képességsorrend ----------
-  // A szokásos maxolási sorrend (az R, amikor csak lehet, utána ez a három). A Riot adataiban
+  // A szokásos maxolási sorrend (ez a három, az R a végén jelenik meg). A Riot adataiban
   // nincs ilyen, ez általános javaslat. Akinél nincs fix sorrend (Aphelios, Udyr) vagy
   // nincs megbízható adat, az kimarad, és a build kártyán nem jelenik meg.
   const SKILL_ORDER = {
@@ -1256,11 +1256,12 @@
 
     $('buildSpells').replaceChildren(...full.spells.map(s => iconWithLabel(spellIconUrl(s.id), s.name, 'spell')));
 
-    // Képességsorrend: R → és a három alapképesség maxolási sorrendje, nyilakkal.
+    // Képességsorrend: a három alapképesség maxolási sorrendje nyilakkal, az R a végén
+    // (azt a játék csak a 6., 11. és 16. szinten engedi fejleszteni).
     const order = currentChamp && skillOrderFor(currentChamp.id, build);
     $('buildSkillsWrap').hidden = !order;
     if (order) {
-      const keys = ['R', ...order];
+      const keys = [...order, 'R'];
       const row = $('buildSkills');
       row.setAttribute('aria-label', t('skills.aria', keys.join(' → ')));
       row.replaceChildren(...keys.flatMap((k, i) => {
