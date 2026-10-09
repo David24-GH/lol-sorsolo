@@ -658,7 +658,7 @@
   let version = '';
   let champions = [];         // összes champion
   let pool = [];              // a szűrés után a keréken lévők
-  let itemData = new Map();   // megvásárolható tárgyak: id -> { id, name }
+  let itemData = new Map();   // megvásárolható tárgyak: id -> { id, name, desc, gold }
   let bootUpgrade = new Map(); // cipő id -> fejlesztett cipő id
   let itemGroups = new Map();  // tárgy id -> az egymást kizáró csoportjai
   let editorItems = [];        // a build-javasló választható tárgyai
@@ -742,7 +742,9 @@
 
   function loadItems(raw) {
     const entries = Object.entries(raw).filter(([, it]) => it.gold && it.gold.purchasable && it.maps && it.maps['11']);
-    itemData = new Map(entries.map(([id, it]) => [id, { id: Number(id), name: it.name }]));
+    itemData = new Map(entries.map(([id, it]) => [id, {
+      id: Number(id), name: it.name, desc: it.description || '', gold: it.gold.total,
+    }]));
     // Fejlesztett cipő: az a tárgy, ami egyetlen (2. szintű) cipőből épül.
     const boots = new Set(entries
       .filter(([, it]) => (it.tags || []).includes('Boots') && (it.from || []).includes('1001'))
@@ -1154,6 +1156,8 @@
     const list = [...special, ...core];
     $('buildItems').replaceChildren(...list.map((it, i) => {
       const li = document.createElement('li');
+      li.dataset.itemId = it.id;
+      li.tabIndex = 0;
       const img = document.createElement('img');
       img.src = itemIconUrl(it.id);
       img.alt = '';
@@ -1166,6 +1170,7 @@
       return li;
     }));
     if (!list.length) $('buildItems').replaceChildren(textEl('li', t('items.na'), 'muted'));
+    dropStaleTip();
 
     card.classList.remove('pop');
     void card.offsetWidth;
@@ -1401,6 +1406,7 @@
 
   // Teljes képernyős bemutató: egy splash kép, vagy ikonsorok (tárgyak, varázslatok, rúna).
   function showReveal({ label, name, title, splash, icons, extras }) {
+    hideItemTip();
     const reveal = $('reveal');
     $('revealFrame').hidden = !splash;
     if (splash) {
@@ -1443,6 +1449,109 @@
     if (reveal.hidden) return;
     reveal.classList.remove('show');
     reveal.hidden = true;
+  }
+
+  // ---------- Tárgy-tooltip ----------
+  // Ha az egér egy tárgy fölé kerül (data-item-id), megmutatja, mit ad és milyen képességei vannak.
+  // A Riot leírása saját címkéket használ (<stats>, <passive>, <magicDamage>…). A HTML-t nem
+  // illeszti be közvetlenül: minden címkéből egy attribútumok nélküli span lesz tt-<címke>
+  // osztállyal (a színezéshez), a <br> sortörés marad, minden más szövegként kerül be.
+  // Néhány értéket a játék futás közben számol ki (pl. a manából adott sebzést); ezek a Riot
+  // adataiban 0-ként (angolul üresen) szerepelnek. A félrevezető nullák kimaradnak; a szám
+  // gyakran külön címkében áll (pl. <healing>0</healing> életerő), ezért a címkéken át is keres.
+  const fixZeros = html => html
+    .replace(/\s?\((?:<[^>]+>)*0(?:\s?mp|s)?(?:<[^>]+>)*\)/g, '')
+    .replace(/(^|[\s>(])0\s(?=(?:<[^>]+>)*másodperc)/g, '$1néhány ')
+    .replace(/(^|[\s>(])0(?:%(?:-kal|-os)?)?\s?(?=(?:\s|<[^>]+>)*\p{L})/gu, '$1');
+
+  function itemDescEl(html) {
+    const doc = new DOMParser().parseFromString(`<div>${fixZeros(html)}</div>`, 'text/html');
+    const convert = node => {
+      if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.textContent);
+      if (node.nodeType !== Node.ELEMENT_NODE) return null;
+      const tag = node.tagName.toLowerCase();
+      if (tag === 'br') return document.createElement('br');
+      const span = document.createElement('span');
+      span.className = `tt-${tag.replace(/[^a-z]/g, '')}`;
+      node.childNodes.forEach(ch => {
+        const out = convert(ch);
+        if (out) span.appendChild(out);
+      });
+      return span;
+    };
+    const root = document.createElement('div');
+    doc.body.firstChild.childNodes.forEach(ch => {
+      const out = convert(ch);
+      if (out) root.appendChild(out);
+    });
+    // A leírás eleji és végi üres sorok (pl. a jungle peteknél üres a statlista) kimaradnak.
+    const isBlank = n => n.nodeName === 'BR' || !n.textContent.trim();
+    const trim = el => {
+      while (el.firstChild && isBlank(el.firstChild)) el.firstChild.remove();
+      while (el.lastChild && isBlank(el.lastChild)) el.lastChild.remove();
+      if (el.childNodes.length === 1 && el.firstChild.nodeType === Node.ELEMENT_NODE) trim(el.firstChild);
+    };
+    trim(root);
+    return root;
+  }
+
+  let tipTarget = null;
+
+  function showItemTip(target) {
+    const it = getItem(target.dataset.itemId);
+    if (!it) return;
+    tipTarget = target;
+    $('tipIcon').src = itemIconUrl(it.id);
+    $('tipName').textContent = it.name;
+    $('tipGold').textContent = it.gold ? t('tip.gold', it.gold) : '';
+    $('tipBody').replaceChildren(itemDescEl(it.desc));
+    const hint = target.dataset.itemHint || '';
+    $('tipHint').textContent = hint;
+    $('tipHint').hidden = !hint;
+    const tip = $('itemTip');
+    tip.hidden = false;
+    target.setAttribute('aria-describedby', 'itemTip');
+    placeItemTip(target);
+  }
+
+  function hideItemTip() {
+    if (tipTarget) tipTarget.removeAttribute('aria-describedby');
+    tipTarget = null;
+    $('itemTip').hidden = true;
+  }
+
+  // Az elem mellé (jobbra, ha nem fér, balra; ha egyik sem, alá vagy fölé) teszi, a képernyőn belül.
+  function placeItemTip(target) {
+    const tip = $('itemTip');
+    const r = target.getBoundingClientRect();
+    const m = 10;
+    const w = tip.offsetWidth;
+    const h = tip.offsetHeight;
+    const vw = document.documentElement.clientWidth;
+    const vh = window.innerHeight;
+    let x = r.right + m;
+    let y = r.top;
+    if (x + w > vw - m) x = r.left - m - w;
+    if (x < m) {
+      x = Math.min(Math.max(m, r.left), vw - w - m);
+      y = r.bottom + m;
+      if (y + h > vh - m) y = r.top - m - h;
+    }
+    y = Math.min(Math.max(m, y), vh - h - m);
+    tip.style.left = `${Math.max(m, x)}px`;
+    tip.style.top = `${y}px`;
+  }
+
+  // Újrarajzolás után a tooltip már egy eltűnt elemhez tartozhat.
+  function dropStaleTip() {
+    if (tipTarget && !tipTarget.isConnected) hideItemTip();
+  }
+
+  function onItemHover(e) {
+    const target = e.target.closest ? e.target.closest('[data-item-id]') : null;
+    if (target === tipTarget) return;
+    if (target) showItemTip(target);
+    else if (tipTarget) hideItemTip();
   }
 
   // ---------- Előzmények ----------
@@ -1633,6 +1742,7 @@
     favBtn.setAttribute('aria-pressed', String(!!fav));
     favBtn.querySelector('.star').textContent = fav ? '★' : '☆';
     favBtn.querySelector('.fav-label').textContent = fav ? t('fav.is') : t('fav.add');
+    dropStaleTip();
   }
 
   // Egy bejegyzés törlése az előzményekből (a kedvencekben lévő másolata megmarad).
@@ -1677,7 +1787,7 @@
         const ic = document.createElement('img');
         ic.src = itemIconUrl(id);
         ic.alt = '';
-        ic.title = it.name;
+        ic.dataset.itemId = id;
         ic.loading = 'lazy';
         icons.appendChild(ic);
       }
@@ -1933,7 +2043,8 @@
       li.className = 'ed-slot';
       const b = document.createElement('button');
       b.type = 'button';
-      b.title = t('ed.slotTitle', it.name);
+      b.dataset.itemId = it.id;
+      b.dataset.itemHint = t('ed.slotHint');
       b.setAttribute('aria-label', t('ed.slotRemove', i + 1, it.name));
       const img = document.createElement('img');
       img.src = itemIconUrl(it.id);
@@ -1971,8 +2082,10 @@
       const reason = chosen ? null : itemBlockReason(it);
       if (chosen) b.classList.add('is-chosen');
       else if (reason) b.classList.add('is-blocked');
-      b.title = reason && !chosen ? `${it.name} – ${reason}` : it.name;
-      b.setAttribute('aria-label', b.title);
+      // A tooltip alján: miért nem vehető fel, vagy hogy kattintással kivehető.
+      b.dataset.itemId = it.id;
+      b.dataset.itemHint = chosen ? t('ed.slotHint') : reason || '';
+      b.setAttribute('aria-label', reason && !chosen ? `${it.name} – ${reason}` : it.name);
       b.setAttribute('aria-pressed', String(chosen));
       const img = document.createElement('img');
       img.src = itemIconUrl(it.id);
@@ -1983,6 +2096,7 @@
       return b;
     }));
     if (!shown.length) $('edItemGrid').replaceChildren(textEl('p', t('ed.noItem'), 'editor-hint'));
+    dropStaleTip();
   }
 
   function toggleEditorItem(it) {
@@ -2240,8 +2354,17 @@
   });
   $('volumeSlider').addEventListener('input', e => setVolume(Number(e.target.value)));
   $('reveal').addEventListener('click', hideReveal);
+  document.addEventListener('mouseover', onItemHover);
+  document.addEventListener('focusin', onItemHover);
+  document.addEventListener('focusout', e => {
+    if (tipTarget && e.target.closest('[data-item-id]') === tipTarget) hideItemTip();
+  });
+  // Ha az egér elhagyja az ablakot, vagy görget, a tooltip eltűnik.
+  document.addEventListener('mouseout', e => { if (!e.relatedTarget && tipTarget) hideItemTip(); });
+  window.addEventListener('scroll', () => { if (tipTarget) hideItemTip(); }, true);
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
+    hideItemTip();
     hideReveal();
     closeEditor();
   });

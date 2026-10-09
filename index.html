@@ -288,6 +288,19 @@
     </div>
   </div>
 
+  <!-- Tárgy-tooltip: mit ad a tárgy és milyen képességei vannak (script.js: showItemTip). -->
+  <div class="item-tip" id="itemTip" role="tooltip" hidden>
+    <div class="tip-head">
+      <img id="tipIcon" alt="">
+      <div>
+        <strong id="tipName"></strong>
+        <span class="tip-gold" id="tipGold"></span>
+      </div>
+    </div>
+    <div class="tip-body" id="tipBody"></div>
+    <p class="tip-hint" id="tipHint" hidden></p>
+  </div>
+
   <canvas class="fx" id="fx" aria-hidden="true"></canvas>
 
   <script src="i18n.js"></script>

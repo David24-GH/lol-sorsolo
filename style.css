@@ -1566,3 +1566,95 @@ body.no-scroll { overflow: hidden; }
   .lang-btn { width: 33px; height: 22px; }
   .sound-btn { width: 38px; height: 38px; padding: 8px; }
 }
+
+/* ---------- Tárgy-tooltip ---------- */
+.item-tip {
+  position: fixed;
+  z-index: 30;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 20px));
+  max-height: calc(100vh - 20px);
+  overflow: hidden;
+  padding: 12px 14px;
+  border: 1px solid var(--gold-dark);
+  border-radius: 8px;
+  background: rgba(1, 10, 19, 0.97);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  color: #a09b8c;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  pointer-events: none;
+}
+
+.item-tip[hidden] { display: none; }
+
+.tip-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(120, 90, 40, 0.5);
+}
+
+.tip-head img {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--gold-dark);
+  border-radius: 4px;
+}
+
+.tip-head strong { display: block; color: var(--gold-light); font-size: 0.95rem; }
+.tip-gold { color: #e8c46a; font-size: 0.8rem; }
+
+.tip-hint {
+  margin: 8px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid rgba(120, 90, 40, 0.5);
+  color: var(--gold);
+  font-style: italic;
+}
+
+/* A Riot leírásának címkéi (tt-<címke>), a játékbeli színekhez hasonlóan. */
+.tip-body .tt-attention { color: var(--gold-light); font-weight: 700; }
+.tip-body .tt-stats { color: var(--gold-light); }
+.tip-body .tt-passive,
+.tip-body .tt-active,
+.tip-body .tt-unique { color: var(--gold); font-weight: 700; }
+.tip-body .tt-magicdamage,
+.tip-body .tt-scaleap { color: #b77cff; }
+.tip-body .tt-physicaldamage,
+.tip-body .tt-scalead,
+.tip-body .tt-scalelethality,
+.tip-body .tt-armorpen { color: #ff9a4d; }
+.tip-body .tt-truedamage { color: #fff; }
+.tip-body .tt-healing,
+.tip-body .tt-health,
+.tip-body .tt-scalehealth { color: #5fd47a; }
+.tip-body .tt-shield { color: #c6d4e1; }
+.tip-body .tt-scalemana { color: #4ea8ff; }
+.tip-body .tt-scalearmor { color: #e8b04a; }
+.tip-body .tt-scalemr { color: #9fb3ff; }
+.tip-body .tt-lifesteal,
+.tip-body .tt-omnivamp { color: #e85d7f; }
+.tip-body .tt-speed,
+.tip-body .tt-ms { color: #9de4ff; }
+.tip-body .tt-attackspeed,
+.tip-body .tt-onhit { color: #f5b041; }
+.tip-body .tt-status,
+.tip-body .tt-keyword,
+.tip-body .tt-keywordmajor,
+.tip-body .tt-keywordstealth,
+.tip-body .tt-spellname { color: #f0d080; }
+.tip-body .tt-raritylegendary,
+.tip-body .tt-raritymythic,
+.tip-body .tt-raritygeneric { color: #e88b4a; }
+.tip-body .tt-rules,
+.tip-body .tt-flavortext { color: #7b7f88; font-style: italic; }
+.tip-body .tt-li { display: block; padding-left: 10px; }
+
+/* A build kártyán a tárgysor kijelölhető (billentyűzettel is), és jelzi, hogy van tooltipje. */
+.item-list li[data-item-id] { cursor: help; border-radius: 6px; }
+.item-list li[data-item-id]:hover,
+.item-list li[data-item-id]:focus-visible { background: rgba(200, 170, 110, 0.08); outline: none; }
+.history-items img[data-item-id] { cursor: help; }

@@ -34,6 +34,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 - **Rúnaoldal**: a buildhez illő fő rúna, teljes és szabályos oldal, plusz az **alap értékek** (shardok).
 - **Tárgyak vásárlási sorrendben**; a speciális tárgyak (kezdő pet, support tárgy, cipő) külön, elválasztva.
 - A tárgyak az aktuális patch tárgylistájából jönnek: ha egy tárgyat kivesznek a játékból, magától kimarad.
+- **Tárgy-tooltip**: ha az egeret egy tárgy fölé viszed (build kártya, előzmények, build-javasló), megmutatja az árát, a statjait és a passzív / aktív képességeit, a játékbelihez hasonló színekkel.
 
 ### Előzmények, kedvencek, ötletek
 - **Előzmények**: az utolsó 10 sorsolás, kattintásra pontosan visszahívható (ugyanaz a build, rúnák, tárgyak).
