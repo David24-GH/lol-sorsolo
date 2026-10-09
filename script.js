@@ -299,6 +299,8 @@
     'Életmentő': [3053, 6673, 3156], // Sterak, Halhatatlan pajzsíj, Malmortius
   };
   const MELEE_ONLY = new Set([3074, 3748, 6698, 6631]);
+  // Halmozódó tárgyak: ha bekerülnek a buildbe, mindig az elsők (Gőg / Hubris, Acélos szív / Heartsteel).
+  const FIRST_ITEMS = [6697, 3084];
 
   // A support tárgy végső fejlesztése és a jungle pet a build típusa szerint.
   const SUPPORT_ITEM = {
@@ -379,8 +381,11 @@
     }
     const clashes = it => (itemGroups.get(it.id) || []).some(g => usedGroups.has(g));
     const alt = spare.find(it => !clashes(it)) || spare[0] || null;
-    // Vásárlási sorrend: előbb a build saját tárgyai a megadott sorrendben, utána a pótlások.
+    // Vásárlási sorrend: elöl a halmozódó tárgyak (FIRST_ITEMS), utána a build saját tárgyai
+    // a megadott sorrendben, végül a pótlások.
     const rank = id => {
+      const first = FIRST_ITEMS.indexOf(id);
+      if (first >= 0) return first - FIRST_ITEMS.length;
       const i = pool.indexOf(id);
       return i >= 0 ? i : pool.length + fallback.indexOf(id);
     };
