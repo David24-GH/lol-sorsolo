@@ -85,14 +85,19 @@
   // ---------- Fun buildek ----------
   // A champion profilja a Riot "info" értékeiből (0–10) jön; ahol ez nem tükrözi
   // a valós játékot, ezek a listák javítják.
-  // Jarvan IV: az E-je varázserőből is sebez; Yasuo: full AP fun build.
-  const AP_EXTRA = new Set(['Gwen', 'Kaisa', 'KogMaw', 'Volibear', 'Shyvana', 'Udyr', 'Varus', 'JarvanIV', 'Yasuo']);
+  // Jarvan IV: az E-je varázserőből is sebez; Yasuo, Twitch, Irelia, Xin Zhao: AP fun buildek.
+  const AP_EXTRA = new Set([
+    'Gwen', 'Kaisa', 'KogMaw', 'Volibear', 'Shyvana', 'Udyr', 'Varus', 'JarvanIV', 'Yasuo',
+    'Twitch', 'Irelia', 'XinZhao',
+  ]);
   const AP_EXCLUDE = new Set(['Belveth', 'DrMundo', 'Jhin', 'KSante', 'Senna']);
   // Az AP tank buildhez a Riot adataiban kevés a varázserejük, mégis működik velük.
   const APTANK_EXTRA = new Set(['JarvanIV']);
-  // Teemo: AD (lethality, kritikus csapás) és on-hit buildek is.
-  const AD_EXTRA = new Set(['Belveth', 'Nidalee', 'Teemo']);
-  const CRIT_EXTRA = new Set(['Nidalee']);
+  // Teemo, Blitzcrank, Mordekaiser, Sion: AD (lethality) és on-hit fun buildek is.
+  const AD_EXTRA = new Set(['Belveth', 'Nidalee', 'Teemo', 'Blitzcrank', 'Mordekaiser', 'Sion']);
+  const CRIT_EXTRA = new Set(['Nidalee', 'Blitzcrank', 'Sion']);
+  // Az on-hit build alapból a lövészeknek, harcosoknak és a sokat támadóknak jár.
+  const ONHIT_EXTRA = new Set(['Blitzcrank']);
   const AD_EXCLUDE = new Set(['Azir', 'Diana', 'Elise', 'Gwen', 'Hwei', 'Kennen']);
   const AP_ONHIT_EXTRA = new Set(['Kayle', 'Teemo', 'Kaisa', 'Gwen', 'KogMaw', 'Varus', 'Katarina']);
   // A Vámpír build csak nekik jár: a képességeikben életlopás vagy mindenevő vámpírság van,
@@ -169,7 +174,7 @@
       boots: [3006],
       keystones: ['LethalTempo', 'PressTheAttack', 'Conqueror'],
       shards: [5005, 5008, 5001],
-      ok: p => p.ad && (p.has('Marksman') || p.has('Fighter') || p.attack >= 7),
+      ok: p => p.ad && (p.has('Marksman') || p.has('Fighter') || p.attack >= 7 || ONHIT_EXTRA.has(p.id)),
     },
     {
       id: 'bruiser', name: 'Bruiser', color: '#7a4a2a',
