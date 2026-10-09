@@ -103,8 +103,9 @@
   const AP_ONHIT_EXTRA = new Set(['Kayle', 'Teemo', 'Kaisa', 'Gwen', 'KogMaw', 'Varus', 'Katarina']);
   // A Mozgási sebesség build csak nekik jár: valamelyik képességük saját magának is mozgási
   // sebességet ad (a Riot képességleírásai alapján; a csak szövetségest gyorsító képesség nem számít).
+  // Aatrox kimarad: az R-je ugyan gyorsít, de a build nem illik hozzá.
   const MS_CHAMPS = new Set([
-    'Aatrox', 'Ahri', 'Akali', 'Akshan', 'Annie', 'Aurora', 'Bard', 'Blitzcrank', 'Braum', 'Briar',
+    'Ahri', 'Akali', 'Akshan', 'Annie', 'Aurora', 'Bard', 'Blitzcrank', 'Braum', 'Briar',
     'Camille', 'Cassiopeia', 'Draven', 'DrMundo', 'Elise', 'Evelynn', 'Fiora', 'Garen', 'Gnar',
     'Hecarim', 'Heimerdinger', 'Janna', 'Jayce', 'Jhin', 'Jinx', 'Kaisa', 'Karma', 'Katarina',
     'Kayle', 'Kayn', 'Kennen', 'Khazix', 'Kled', 'Lillia', 'Locke', 'Lucian', 'Lulu', 'Malphite',
