@@ -1115,7 +1115,9 @@
       .sort((a, b) => (b.name.startsWith(q) - a.name.startsWith(q)) || a.c.name.localeCompare(b.c.name, SORT_LOCALE))
       .slice(0, SUGGEST_MAX)
       .map(x => x.c);
-    suggestIdx = suggestions.length ? 0 : -1;
+    // Az első kiválasztható (a lane-en nem tiltott) champion van kijelölve.
+    suggestIdx = suggestions.findIndex(c => !isLaneBanned(c));
+    if (suggestIdx < 0 && suggestions.length) suggestIdx = 0;
 
     if (!suggestions.length) {
       list.replaceChildren(textEl('li', t('search.none'), 'suggest-empty'));
@@ -1124,12 +1126,23 @@
         const li = document.createElement('li');
         li.id = `suggest-${i}`;
         li.setAttribute('role', 'option');
+        const locked = isLaneBanned(c);
         const img = document.createElement('img');
         img.src = iconUrl(c.id);
         img.alt = '';
         const text = document.createElement('div');
-        text.append(textEl('span', c.name), textEl('small', c.title));
+        // A választott lane-en tiltott champion lezárva jelenik meg, és nem választható ki.
+        text.append(textEl('span', c.name), textEl('small', locked ? t('search.locked', LANE_BY_ID.get(lane).label) : c.title));
         li.append(img, text);
+        if (locked) {
+          li.classList.add('is-locked');
+          li.setAttribute('aria-disabled', 'true');
+          const lock = document.createElement('span');
+          lock.className = 'suggest-lock';
+          lock.setAttribute('aria-hidden', 'true');
+          lock.innerHTML = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+          li.appendChild(lock);
+        }
         // mousedown, hogy a mező elhagyása (blur) előtt fusson le.
         li.addEventListener('mousedown', e => {
           e.preventDefault();
@@ -1177,11 +1190,18 @@
     }
   }
 
+  // A választott lane-en kizárt champion (LANE_BANS)?
+  const isLaneBanned = c => !!lane && LANE_BANS[lane].has(c.id);
+
   // A champion kerék kimarad: a választott championnal rögtön a build kerék jön.
   function pickChampion(champ) {
     if (champWheel.spinning) return;
     if (!lane) {
       $('searchHint').textContent = t('search.needLane');
+      return;
+    }
+    if (isLaneBanned(champ)) {
+      $('searchHint').textContent = t('search.lockedHint', champ.name, LANE_BY_ID.get(lane).label);
       return;
     }
     $('champSearch').value = '';
