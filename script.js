@@ -801,13 +801,19 @@
     for (const [group, ids] of Object.entries(MANUAL_GROUPS)) ids.forEach(id => addGroup(id, group));
 
     // A build-javasló választható tárgyai: csak végleges tárgyak (és a 2. szintű cipők),
-    // alapanyagok, italok, őrök és championhoz kötött tárgyak nélkül.
+    // alapanyagok, italok, őrök és championhoz kötött tárgyak nélkül. Kimaradnak a más
+    // játékmódok tárgyai is, amiket a Riot adatai az Idézők szurdokánál is megjelölnek:
+    // a 6 jegyű azonosítójú változatok (Aréna stb.) és az ARAM-os Őrző-tárgyak, amik
+    // kezdő tárgynak (Lane) számítanak, de drágábbak egy valódi kezdő tárgynál.
+    const STARTER_MAX_GOLD = 500;
     const bootIds = new Set([...[...boots].map(Number), ...bootUpgrade.values()]);
     const seenNames = new Set();
     editorItems = entries
       .filter(([id, it]) => (!it.into || !it.into.length || boots.has(id))
+        && id.length <= 4
         && (it.tags || []).length
         && !(it.tags || []).some(t => t === 'Consumable' || t === 'Trinket')
+        && !((it.tags || []).includes('Lane') && it.gold.total > STARTER_MAX_GOLD)
         && !it.requiredChampion && !it.requiredAlly && id !== '1001')
       .sort(([a], [b]) => Number(a) - Number(b))
       // A játékban van néhány azonos nevű változat (pl. jungle petek): csak egyet mutat.
@@ -815,8 +821,9 @@
       .map(([id, it]) => {
         const tags = it.tags || [];
         const has = (...t) => t.some(x => tags.includes(x));
+        // Support tárgy: aranyat termel és őrszemet ad (a Viharhullám is GoldPer, de nem support).
         const kind = bootIds.has(Number(id)) ? 'boots'
-          : has('GoldPer') ? 'support'
+          : has('GoldPer') && has('Vision') ? 'support'
             : has('Jungle') ? 'jungle'
               : has('Lane') ? 'starter' : null;
         const cats = new Set(['all']);
