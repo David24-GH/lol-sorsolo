@@ -65,8 +65,9 @@
   const LANE_BANS = {
     jungle: new Set([
       // Enchanterek és tank supportok: nincs tisztítás és túlélés
+      // (Taric jungle-ben is játszható fun buildként, ezért ő nincs itt.)
       'Yuumi', 'Sona', 'Soraka', 'Janna', 'Nami', 'Lulu', 'Seraphine', 'Milio', 'Renata', 'Karma',
-      'Senna', 'Braum', 'Rakan', 'Taric', 'Bard', 'Leona', 'Alistar',
+      'Senna', 'Braum', 'Rakan', 'Bard', 'Leona', 'Alistar',
       // ADC-k
       'Ashe', 'Caitlyn', 'Jhin', 'Jinx', 'MissFortune', 'Samira', 'Sivir', 'Xayah', 'Zeri', 'Aphelios',
       'Draven', 'Ezreal', 'Varus', 'Lucian', 'Smolder', 'Yunara', 'KogMaw', 'Kaisa', 'Tristana', 'Corki', 'Kalista',
@@ -75,8 +76,10 @@
       'Hwei', 'Anivia', 'Annie', 'Mel', 'Zoe', 'Cassiopeia', 'Malzahar', 'Heimerdinger',
     ]),
     top: new Set(['Yuumi', 'Janna', 'Nami', 'Milio', 'Renata', 'Sona', 'Rakan']),
-    mid: new Set(['Yuumi', 'Janna', 'Nami', 'Milio', 'Renata', 'Soraka', 'Taric', 'Braum', 'Rakan', 'Alistar', 'Leona']),
-    bot: new Set(['Yuumi', 'Janna', 'Nami', 'Milio', 'Renata', 'Soraka', 'Taric', 'Braum', 'Rakan', 'Alistar', 'Leona', 'Rell']),
+    // AP Nami / Milio / Rakan / Alistar / Leona midre, crit Soraka és AP on-hit Renata ADC-re
+    // fun buildként működik, ezért ők itt nincsenek kizárva.
+    mid: new Set(['Yuumi', 'Janna', 'Renata', 'Soraka', 'Taric', 'Braum']),
+    bot: new Set(['Yuumi', 'Janna', 'Nami', 'Milio', 'Taric', 'Braum', 'Rakan', 'Alistar', 'Leona', 'Rell']),
     support: new Set(),
   };
 
@@ -105,7 +108,36 @@
   // buildelik (Holtak vértje, Viharos lendület, gyorsító tárgyak).
   const MS_CHAMPS = new Set([
     'Hecarim', 'Rammus', 'Quinn', 'Singed', 'Udyr', 'Bard', 'Zilean', 'Janna', 'Nunu',
+    'Ekko', 'Jhin', 'Warwick',
   ]);
+
+  // Közösségi fun build ötletek (a funleaguebuilds.de buildjei alapján): ezek a championok a
+  // profiljuktól függetlenül is megkapják az itt felsorolt build típusokat. Csak az ötlet
+  // (champion + build típus) innen van, a tárgyakat, rúnákat a saját szabályaink sorsolják.
+  const EXTRA_BUILDS = {
+    Aatrox: ['crit', 'lethality'], Akali: ['crit', 'bruiser'], Akshan: ['ap'], Alistar: ['ap'],
+    Ambessa: ['crit', 'lethality'], Amumu: ['tank', 'ap', 'aptank'], Ashe: ['lethality'],
+    Aurora: ['aptank'], Bard: ['ap'], Belveth: ['tank'], Braum: ['onhit'],
+    Briar: ['onhit', 'crit', 'lethality'], Caitlyn: ['lethality'], Camille: ['bruiser'],
+    Corki: ['ap'], Darius: ['crit'], Draven: ['lethality'], Elise: ['aptank'], Evelynn: ['aptank'],
+    Ezreal: ['ap'], Fiddlesticks: ['aptank'], Fiora: ['crit'], Fizz: ['lethality'],
+    Gangplank: ['ap'], Garen: ['ap'], Gnar: ['ap'], Graves: ['ap'], Hecarim: ['ap'], Illaoi: ['ap'],
+    Jax: ['tank', 'bruiser'], JarvanIV: ['tank'], Jayce: ['crit', 'ap'], Jhin: ['ap', 'lethality'],
+    Jinx: ['lethality'], Katarina: ['lifesteal'], Kennen: ['aponhit'], Kled: ['lethality', 'crit'],
+    KogMaw: ['ap'], LeeSin: ['lifesteal', 'lethality'], Leona: ['ap'], Lillia: ['bruiser'],
+    Locke: ['bruiser'], Lulu: ['ap'], Lux: ['crit'], Malphite: ['ap'], MasterYi: ['ap', 'bruiser'],
+    Mordekaiser: ['ap', 'onhit'], Naafiri: ['tank'], Nami: ['ap'], Nasus: ['ap', 'aptank', 'crit'],
+    Nautilus: ['ap', 'aptank'], Neeko: ['crit', 'onhit'], Nunu: ['bruiser'], Olaf: ['crit', 'lifesteal'],
+    Ornn: ['ap'], Pantheon: ['crit', 'ap'], Poppy: ['lethality'], Rakan: ['ap'], Rell: ['ap', 'aptank'],
+    Renata: ['aponhit'], Renekton: ['ap'], Rengar: ['crit', 'ap'], Riven: ['crit'], Sejuani: ['aptank'],
+    Seraphine: ['ap'], Sett: ['lethality'], Shaco: ['tank'], Singed: ['ap', 'aptank'],
+    Skarner: ['ap', 'lethality', 'aptank'], Sona: ['ap'], Soraka: ['crit'], Talon: ['bruiser'],
+    Taric: ['bruiser'], Teemo: ['crit', 'aptank'], Thresh: ['ap', 'tank'], Trundle: ['crit', 'ap'],
+    Tryndamere: ['tank', 'ap'], TwistedFate: ['tank'], Velkoz: ['tank'], Vi: ['onhit', 'ap', 'tank', 'crit'],
+    Viego: ['tank'], Warwick: ['onhit', 'tank', 'ap'], XinZhao: ['crit'], Yasuo: ['ap'],
+    Yone: ['tank', 'ap'], Yorick: ['ap', 'aptank'], Yunara: ['ap'], Zaahen: ['crit'], Zac: ['crit'],
+    Zeri: ['ap'],
+  };
   // A Vámpír build csak nekik jár: a képességeikben életlopás vagy mindenevő vámpírság van,
   // vagy az okozott sebzésük egy részét visszagyógyítják (a Riot képességleírásai alapján).
   const LIFESTEAL_CHAMPS = new Set([
@@ -385,7 +417,8 @@
 
   const buildsFor = c => {
     const p = profileOf(c);
-    return BUILDS.filter(b => b.ok(p));
+    const extra = EXTRA_BUILDS[c.id] || [];
+    return BUILDS.filter(b => b.ok(p) || extra.includes(b.id));
   };
 
   const pick = arr => arr[randomInt(arr.length)];

@@ -90,6 +90,8 @@ A szabályok mind a `script.js` elején, jól elkülönítve találhatók:
 | Lane-enként kizárt championok | `LANE_BANS` |
 | Build típusok (tárgyak sorrendje, cipő, fő rúnák, alap értékek, kinek jár) | `BUILDS` |
 | Kézi javítások a champion profilokhoz (pl. ki számít AP-nak / AD-nak) | `AP_EXTRA`, `AP_EXCLUDE`, `AD_EXTRA`, `AD_EXCLUDE`, `CRIT_EXTRA`, `AP_ONHIT_EXTRA`, `INFO_FIX` |
+| Közösségi fun build ötletek: champion → plusz build típusok (a [funleaguebuilds.de](https://funleaguebuilds.de/) buildjei alapján, csak az ötlet) | `EXTRA_BUILDS` |
+| Kik kapják a Mozgási sebesség / Vámpír buildet | `MS_CHAMPS`, `LIFESTEAL_CHAMPS` |
 | Tárgyszám lane-enként | `LANES` |
 | Support tárgy és jungle pet a build szerint | `SUPPORT_ITEM`, `JUNGLE_PET` |
 | Egymást kizáró tárgyak | `GROUP_COMPONENTS`, `MANUAL_GROUPS` |
