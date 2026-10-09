@@ -111,6 +111,14 @@
     'Ekko', 'Jhin', 'Warwick',
   ]);
 
+  // A Képesség-gyorsítás build csak nekik jár: a képességeikből élnek, és a játékosok
+  // ismerten képesség-gyorsításra buildelik őket.
+  const HASTE_CHAMPS = new Set([
+    'Ashe', 'Ezreal', 'Jayce', 'Lucian', 'Smolder', 'Sivir', 'Varus', 'Riven', 'LeeSin', 'Aatrox',
+    'Pantheon', 'Nasus', 'Taric', 'Sona', 'Karma', 'Ryze', 'Anivia', 'Ziggs', 'Heimerdinger',
+    'Zilean', 'Janna', 'Soraka', 'Yuumi', 'Lulu', 'Ivern', 'Xerath', 'Viktor', 'Hwei', 'Malzahar',
+  ]);
+
   // Közösségi fun build ötletek (a funleaguebuilds.de buildjei alapján): ezek a championok a
   // profiljuktól függetlenül is megkapják az itt felsorolt build típusokat. Csak az ötlet
   // (champion + build típus) innen van, a tárgyakat, rúnákat a saját szabályaink sorsolják.
@@ -354,10 +362,12 @@
         ap: [3118, 4629, 6655, 4628, 3165, 3157, 3137],
         tank: [3068, 3110, 6665, 3050, 4401, 3084, 2504],
       },
+      // Távolsági AD championoknak (pl. Ashe, Ezreal) a lövészeknek való gyorsító tárgyak.
+      rangedPool: { ad: [3508, 6675, 6696, 6694, 3179, 3071, 3161] },
       boots: [3158],
       keystones: ['ArcaneComet', 'UnsealedSpellbook', 'PhaseRush', 'Conqueror'],
       shards: { ad: [5007, 5008, 5001], ap: [5007, 5008, 5001], tank: [5007, 5001, 5013] },
-      ok: () => true,
+      ok: p => HASTE_CHAMPS.has(p.id),
     },
   ];
   // Más nyelven a buildek neve és leírása az i18n.js-ből jön.
@@ -556,7 +566,9 @@
       boots = { ...boots, note: 'boots' };
     }
     const fallback = build.onlyPool ? [] : FALLBACK_POOL[FALLBACK_BY_BUILD[build.id] || p.kind];
-    const { items: core, alt } = chooseItems(byKind(build.pool), fallback, lane.items, p.melee, build.must);
+    // Távolsági championnak a build saját távolsági listája (rangedPool), ha van ilyen a profiljához.
+    const rangedPool = !p.melee && build.rangedPool && build.rangedPool[p.kind];
+    const { items: core, alt } = chooseItems(rangedPool || byKind(build.pool), fallback, lane.items, p.melee, build.must);
     // A cipő általában az első tárgy után jön; supportnál és a gyorsaság buildnél már előtte.
     const bootsFirst = laneId === 'support' || build.id === 'ms';
     if (boots && bootsFirst) items.push(boots);
