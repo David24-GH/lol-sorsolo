@@ -345,11 +345,14 @@
   const getItem = id => itemData.get(String(id)) || null;
 
   // lastId: ha meg van adva (és elérhető), ez mindig bekerül, utolsó tárgyként.
+  // Visszaadja a tárgyakat (vásárlási sorrendben) és egy +1 csere opciót (alt), ami nincs a
+  // buildben: lehetőleg olyat, ami egyik tárggyal sem ütközik, így bármelyik helyére betehető.
   function chooseItems(pool, fallback, count, melee, lastId) {
     const order = [...pool.slice(0, 2), ...shuffle(pool.slice(2)), ...shuffle(fallback)];
     const out = [];
     const seen = new Set();
     const usedGroups = new Set();
+    const spare = []; // a kimaradt, de megvehető tárgyak
     const last = lastId ? getItem(lastId) : null;
     if (last) {
       seen.add(last.id);
@@ -357,17 +360,25 @@
       count -= 1;
     }
     for (const id of order) {
-      if (out.length >= count) break;
       if (seen.has(id)) continue;
       seen.add(id);
       const it = getItem(id);
       // Ha egy tárgy kikerült a játékból, egyszerűen kimarad.
       if (!it || (!melee && MELEE_ONLY.has(id))) continue;
+      if (out.length >= count) {
+        spare.push(it);
+        continue;
+      }
       const groups = itemGroups.get(id) || [];
-      if (groups.some(g => usedGroups.has(g))) continue;
+      if (groups.some(g => usedGroups.has(g))) {
+        spare.push(it);
+        continue;
+      }
       groups.forEach(g => usedGroups.add(g));
       out.push(it);
     }
+    const clashes = it => (itemGroups.get(it.id) || []).some(g => usedGroups.has(g));
+    const alt = spare.find(it => !clashes(it)) || spare[0] || null;
     // Vásárlási sorrend: előbb a build saját tárgyai a megadott sorrendben, utána a pótlások.
     const rank = id => {
       const i = pool.indexOf(id);
@@ -375,7 +386,7 @@
     };
     out.sort((a, b) => rank(a.id) - rank(b.id));
     if (last) out.push(last);
-    return out;
+    return { items: out, alt };
   }
 
   function spellsFor(laneId, build) {
@@ -438,7 +449,7 @@
       boots = { ...boots, note: 'boots' };
     }
     const fallback = build.onlyPool ? [] : FALLBACK_POOL[FALLBACK_BY_BUILD[build.id] || p.kind];
-    const core = chooseItems(byKind(build.pool), fallback, lane.items, p.melee, build.last);
+    const { items: core, alt } = chooseItems(byKind(build.pool), fallback, lane.items, p.melee, build.last);
     // A cipő általában az első tárgy után jön; supportnál és a gyorsaság buildnél már előtte.
     const bootsFirst = laneId === 'support' || build.id === 'ms';
     if (boots && bootsFirst) items.push(boots);
@@ -454,6 +465,8 @@
       shards: statShards(byKind(build.shards)),
       starter: starter && { ...starter, note: 'starter' },
       items,
+      // +1 csere opció: külön jelenik meg, ha valamelyik tárgy nem tetszik.
+      alt,
     };
   }
 
@@ -1167,26 +1180,35 @@
     const { special, core } = splitItems(full);
     const list = [...special, ...core];
     $('buildItems').replaceChildren(...list.map((it, i) => {
-      const li = document.createElement('li');
-      li.dataset.itemId = it.id;
-      li.tabIndex = 0;
-      const img = document.createElement('img');
-      img.src = itemIconUrl(it.id);
-      img.alt = '';
-      const text = document.createElement('div');
-      text.appendChild(textEl('span', it.name));
-      if (it.note) text.appendChild(textEl('small', t(`note.${noteKey(it.note)}`)));
-      li.append(img, text);
+      const li = itemLi(it, it.note ? t(`note.${noteKey(it.note)}`) : '');
       // A speciális tárgyak (kezdő pet, support tárgy, cipő) szaggatott vonallal elválasztva, felül.
       if (i === special.length - 1 && core.length) li.className = 'special-last';
       return li;
     }));
     if (!list.length) $('buildItems').replaceChildren(textEl('li', t('items.na'), 'muted'));
+    // +1 csere opció a lista alatt, külön.
+    $('buildAltWrap').hidden = !full.alt;
+    $('buildAlt').replaceChildren(...(full.alt ? [itemLi(full.alt, t('alt.note'))] : []));
     dropStaleTip();
 
     card.classList.remove('pop');
     void card.offsetWidth;
     card.classList.add('pop');
+  }
+
+  // Egy tárgy sora a build kártyán (ikon, név, megjegyzés); a tooltip a data-item-id alapján jön.
+  function itemLi(it, note) {
+    const li = document.createElement('li');
+    li.dataset.itemId = it.id;
+    li.tabIndex = 0;
+    const img = document.createElement('img');
+    img.src = itemIconUrl(it.id);
+    img.alt = '';
+    const text = document.createElement('div');
+    text.appendChild(textEl('span', it.name));
+    if (note) text.appendChild(textEl('small', note));
+    li.append(img, text);
+    return li;
   }
 
   // Speciális tárgyak (megjegyzéssel jelölve) és a többi tárgy vásárlási sorrendben.
@@ -1630,6 +1652,7 @@
         sr: full.runes.secondaryRunes.map(r => r.key),
       },
       shards: full.shards.map(s => s.id),
+      alt: full.alt ? full.alt.id : null,
     };
   }
 
@@ -1664,7 +1687,23 @@
       shards: statShards(saved.shards),
       starter: saved.starter ? withNote(saved.starter, 'starter') : null,
       items: saved.items.map(x => withNote(x.id, x.note && noteKey(x.note))).filter(Boolean),
+      alt: saved.alt ? getItem(saved.alt) : null,
     };
+  }
+
+  // Csere opció egy már meglévő buildhez: ugyanabból a build típusból, ami nincs benne
+  // és nem ütközik a tárgyaival (pár próbálkozás, utána bármelyik kimaradt tárgy jó).
+  function altFor(champ, build, laneId, full) {
+    const have = new Set(full.items.map(it => it.id));
+    const groups = new Set(full.items.flatMap(it => itemGroups.get(it.id) || []));
+    let fallback = null;
+    for (let i = 0; i < 12; i++) {
+      const alt = makeFullBuild(champ, build, laneId).alt;
+      if (!alt || have.has(alt.id)) continue;
+      if (!(itemGroups.get(alt.id) || []).some(g => groups.has(g))) return alt;
+      fallback = fallback || alt;
+    }
+    return fallback;
   }
 
   // silent: hang nélkül (nyelvváltás utáni visszaállításnál).
@@ -1689,6 +1728,12 @@
         // Régi bejegyzés, amihez még nem volt elmentve a teljes build.
         full = makeFullBuild(champ, build, entry.l);
         entry.full = serializeBuild(full);
+      } else if (!('alt' in entry.full)) {
+        // A +1 csere opció előtti bejegyzés: utólag kap egyet, és el is menti.
+        full.alt = altFor(champ, build, entry.l, full);
+        // Az előzményekben és a kedvencekben lévő példány is ugyanazt kapja.
+        [...history, ...favorites].filter(e => e.id === entry.id && e.full)
+          .forEach(e => { e.full.alt = full.alt ? full.alt.id : null; });
       }
       showBuildCard(full);
       buildWheel.pointAt(buildWheel.items.indexOf(build));

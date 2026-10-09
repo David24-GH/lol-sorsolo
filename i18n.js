@@ -61,6 +61,9 @@ window.LOL_TEXT = {
     'note.boots': 'Cipő',
     'note.bootsUp': 'Fejlesztett cipő',
     'note.starter': 'Kezdő tárgy',
+    'alt.label': '+1 csere opció',
+    'alt.hint': 'ha valamelyik tárgy nem tetszik, ezt veheted helyette',
+    'alt.note': 'Csere opció',
     'reveal.champ': lane => `A te championod · ${lane}`,
     'reveal.hint': 'Kattints a bezáráshoz',
 
@@ -219,6 +222,9 @@ window.LOL_TEXT = {
     'note.boots': 'Boots',
     'note.bootsUp': 'Upgraded boots',
     'note.starter': 'Starter item',
+    'alt.label': '+1 swap option',
+    'alt.hint': "if you don't like one of the items, buy this instead",
+    'alt.note': 'Swap option',
     'reveal.champ': lane => `Your champion · ${lane}`,
     'reveal.hint': 'Click to close',
 

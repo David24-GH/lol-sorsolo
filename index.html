@@ -131,6 +131,12 @@
           <h3 class="build-section" data-i18n="sec.items">Tárgyak vásárlási sorrendben</h3>
           <ol class="item-list" id="buildItems"></ol>
 
+          <!-- +1 csere opció: ha valamelyik tárgy nem tetszik, ez vehető helyette. -->
+          <div class="alt-item" id="buildAltWrap" hidden>
+            <p class="alt-label"><span data-i18n="alt.label">+1 csere opció</span> <small data-i18n="alt.hint">ha valamelyik tárgy nem tetszik, ezt veheted helyette</small></p>
+            <ol class="item-list" id="buildAlt"></ol>
+          </div>
+
           <button type="button" class="ghost-btn suggest-btn" id="suggestForChamp" data-i18n="build.suggestOwn">Saját build javaslása ehhez a championhoz</button>
         </div>
       </section>

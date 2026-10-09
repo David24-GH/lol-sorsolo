@@ -599,6 +599,37 @@ body {
 .item-list small { color: var(--blue); font-size: 0.75rem; }
 .item-list li.special-last { padding-bottom: 10px; border-bottom: 1px dashed var(--gold-dark); }
 
+/* +1 csere opció: a tárgylista alatt, külön keretben. */
+.alt-item {
+  margin-top: 14px;
+  padding: 10px 12px 12px;
+  border: 1px dashed var(--gold-dark);
+  border-radius: 8px;
+  background: rgba(200, 170, 110, 0.04);
+}
+
+.alt-item[hidden] { display: none; }
+
+.alt-label {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.alt-label small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.alt-item .item-list small { color: var(--gold); }
+
 .item-list img {
   width: 36px;
   height: 36px;
