@@ -223,10 +223,11 @@
       // Csak manát adó tárgyak, és nem pótol más tárgyakkal (onlyPool). A Könnycsepp-tárgyakból
       // (Arkangyal, Manamún, Közelgő tél) egyszerre csak egy lehet, AD-s mana-tárgy pedig csak
       // a Manamún van, ezért ez a build csak a varázserős, manát használó championoknak jár.
+      // Az első tárgy mindig a Korok pálcája, a második a Könnycseppből épülő tárgy.
       pool: {
-        ap: [3003, 6655, 3118, 2503, 6657, 2522, 3110],
-        ad: [3003, 6655, 3118, 2503, 6657, 2522, 3110],
-        tank: [3119, 3110, 6657, 3118, 2503, 6655, 2522],
+        ap: [6657, 3003, 6655, 3118, 2503, 2522, 3110],
+        ad: [6657, 3003, 6655, 3118, 2503, 2522, 3110],
+        tank: [6657, 3119, 3110, 3118, 2503, 6655, 2522],
       },
       onlyPool: true,
       boots: { ap: [3020], ad: [3020], tank: [3047] },
@@ -303,7 +304,7 @@
   const SUPPORT_ITEM = {
     tank: 3869, heartsteel: 3869, aptank: 3869,
     enchanter: [3870, 3876], ms: 3876,
-    ap: 3871, aponhit: 3871,
+    ap: 3871, aponhit: 3871, tear: 3871,
     lethality: 3877, crit: 3877, onhit: 3877, lifesteal: 3877, bruiser: 3877,
   };
   const SUPPORT_BY_KIND = { ap: 3871, ad: 3877, tank: 3869 };
