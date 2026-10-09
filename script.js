@@ -165,9 +165,9 @@
     {
       id: 'ap', name: 'Teljes AP', color: '#5b2f9e',
       desc: 'Minden pont varázserőbe: egy kombó, és a célpont már nincs is.',
-      pool: [6655, 4645, 4646, 3118, 3100, 3165, 3157, 3137, 3135],
-      // Rabadon mindig az utolsó tárgy, lane-től függetlenül.
-      last: 3089,
+      // Rabadon mindig benne van (must), a vásárlási sorrendben a két alaptárgy után.
+      pool: [6655, 4645, 3089, 4646, 3118, 3100, 3165, 3157, 3137, 3135],
+      must: [3089],
       boots: [3020],
       keystones: ['Electrocute', 'ArcaneComet', 'DarkHarvest', 'FirstStrike'],
       shards: [5008, 5008, 5001],
@@ -394,20 +394,21 @@
 
   const getItem = id => itemData.get(String(id)) || null;
 
-  // lastId: ha meg van adva (és elérhető), ez mindig bekerül, utolsó tárgyként.
+  // mustIds: ezek (ha elérhetők) mindig bekerülnek, a helyük a vásárlási sorrendből jön.
   // Visszaadja a tárgyakat (vásárlási sorrendben) és egy +1 csere opciót (alt), ami nincs a
   // buildben: lehetőleg olyat, ami egyik tárggyal sem ütközik, így bármelyik helyére betehető.
-  function chooseItems(pool, fallback, count, melee, lastId) {
+  function chooseItems(pool, fallback, count, melee, mustIds = []) {
     const order = [...pool.slice(0, 2), ...shuffle(pool.slice(2)), ...shuffle(fallback)];
     const out = [];
     const seen = new Set();
     const usedGroups = new Set();
     const spare = []; // a kimaradt, de megvehető tárgyak
-    const last = lastId ? getItem(lastId) : null;
-    if (last) {
-      seen.add(last.id);
-      (itemGroups.get(last.id) || []).forEach(g => usedGroups.add(g));
-      count -= 1;
+    for (const id of mustIds) {
+      const it = getItem(id);
+      if (!it || seen.has(id)) continue;
+      seen.add(id);
+      (itemGroups.get(id) || []).forEach(g => usedGroups.add(g));
+      out.push(it);
     }
     for (const id of order) {
       if (seen.has(id)) continue;
@@ -438,7 +439,6 @@
       return i >= 0 ? i : pool.length + fallback.indexOf(id);
     };
     out.sort((a, b) => rank(a.id) - rank(b.id));
-    if (last) out.push(last);
     return { items: out, alt };
   }
 
@@ -502,7 +502,7 @@
       boots = { ...boots, note: 'boots' };
     }
     const fallback = build.onlyPool ? [] : FALLBACK_POOL[FALLBACK_BY_BUILD[build.id] || p.kind];
-    const { items: core, alt } = chooseItems(byKind(build.pool), fallback, lane.items, p.melee, build.last);
+    const { items: core, alt } = chooseItems(byKind(build.pool), fallback, lane.items, p.melee, build.must);
     // A cipő általában az első tárgy után jön; supportnál és a gyorsaság buildnél már előtte.
     const bootsFirst = laneId === 'support' || build.id === 'ms';
     if (boots && bootsFirst) items.push(boots);
