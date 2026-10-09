@@ -101,6 +101,21 @@
   const ONHIT_EXTRA = new Set(['Blitzcrank']);
   const AD_EXCLUDE = new Set(['Azir', 'Diana', 'Elise', 'Gwen', 'Hwei', 'Kennen']);
   const AP_ONHIT_EXTRA = new Set(['Kayle', 'Teemo', 'Kaisa', 'Gwen', 'KogMaw', 'Varus', 'Katarina']);
+  // A Mozgási sebesség build csak nekik jár: valamelyik képességük saját magának is mozgási
+  // sebességet ad (a Riot képességleírásai alapján; a csak szövetségest gyorsító képesség nem számít).
+  const MS_CHAMPS = new Set([
+    'Aatrox', 'Ahri', 'Akali', 'Akshan', 'Annie', 'Aurora', 'Bard', 'Blitzcrank', 'Braum', 'Briar',
+    'Camille', 'Cassiopeia', 'Draven', 'DrMundo', 'Elise', 'Evelynn', 'Fiora', 'Garen', 'Gnar',
+    'Hecarim', 'Heimerdinger', 'Janna', 'Jayce', 'Jhin', 'Jinx', 'Kaisa', 'Karma', 'Katarina',
+    'Kayle', 'Kayn', 'Kennen', 'Khazix', 'Kled', 'Lillia', 'Locke', 'Lucian', 'Lulu', 'Malphite',
+    'Maokai', 'MasterYi', 'Mel', 'Milio', 'MissFortune', 'MonkeyKing', 'Mordekaiser', 'Morgana',
+    'Naafiri', 'Nami', 'Neeko', 'Nidalee', 'Nilah', 'Nocturne', 'Nunu', 'Olaf', 'Pantheon', 'Poppy',
+    'Pyke', 'Qiyana', 'Quinn', 'Rakan', 'Rammus', 'RekSai', 'Rell', 'Rengar', 'Rumble', 'Ryze',
+    'Senna', 'Seraphine', 'Sett', 'Shyvana', 'Singed', 'Sivir', 'Skarner', 'Smolder', 'Sona',
+    'Soraka', 'TahmKench', 'Taliyah', 'Talon', 'Teemo', 'Trundle', 'Twitch', 'Udyr', 'Vayne',
+    'Viego', 'Viktor', 'Vladimir', 'Volibear', 'Warwick', 'Xayah', 'Yone', 'Yorick', 'Yunara',
+    'Yuumi', 'Zac', 'Zeri', 'Zilean', 'Zoe',
+  ]);
   // A Vámpír build csak nekik jár: a képességeikben életlopás vagy mindenevő vámpírság van,
   // vagy az okozott sebzésük egy részét visszagyógyítják (a Riot képességleírásai alapján).
   const LIFESTEAL_CHAMPS = new Set([
@@ -297,7 +312,7 @@
       // Viharos lendület: a legtöbb mozgási sebességet adó fő rúna.
       keystones: ['PhaseRush'],
       shards: [5008, 5010, 5013],
-      ok: () => true,
+      ok: p => MS_CHAMPS.has(p.id),
     },
     {
       id: 'haste', name: 'Képesség-gyorsítás', color: '#4a6b9e',
