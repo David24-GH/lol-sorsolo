@@ -252,7 +252,8 @@
       boots: [3047, 3111],
       keystones: ['GraspOfTheUndying', 'Aftershock', 'Guardian'],
       shards: [5007, 5001, 5013],
-      ok: p => p.has('Tank') || p.has('Fighter') || (p.has('Support') && p.melee),
+      // Csak a Riot szerint tank szerepkörű championoknak.
+      ok: p => p.has('Tank'),
     },
     {
       id: 'heartsteel', name: 'HP-halmozás', color: '#2a7a6b',
@@ -261,7 +262,8 @@
       boots: [3047, 3111],
       keystones: ['GraspOfTheUndying', 'Aftershock'],
       shards: [5007, 5001, 5001],
-      ok: p => (p.has('Tank') || p.has('Fighter')) && p.defense >= 5,
+      // Csak a Riot szerint tank szerepkörű championoknak.
+      ok: p => p.has('Tank'),
     },
     {
       id: 'lifesteal', name: 'Vámpír', color: '#7a1f3d',
