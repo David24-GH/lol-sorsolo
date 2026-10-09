@@ -85,9 +85,13 @@
   // ---------- Fun buildek ----------
   // A champion profilja a Riot "info" értékeiből (0–10) jön; ahol ez nem tükrözi
   // a valós játékot, ezek a listák javítják.
-  const AP_EXTRA = new Set(['Gwen', 'Kaisa', 'KogMaw', 'Volibear', 'Shyvana', 'Udyr', 'Varus']);
+  // Jarvan IV: az E-je varázserőből is sebez; Yasuo: full AP fun build.
+  const AP_EXTRA = new Set(['Gwen', 'Kaisa', 'KogMaw', 'Volibear', 'Shyvana', 'Udyr', 'Varus', 'JarvanIV', 'Yasuo']);
   const AP_EXCLUDE = new Set(['Belveth', 'DrMundo', 'Jhin', 'KSante', 'Senna']);
-  const AD_EXTRA = new Set(['Belveth', 'Nidalee']);
+  // Az AP tank buildhez a Riot adataiban kevés a varázserejük, mégis működik velük.
+  const APTANK_EXTRA = new Set(['JarvanIV']);
+  // Teemo: AD (lethality, kritikus csapás) és on-hit buildek is.
+  const AD_EXTRA = new Set(['Belveth', 'Nidalee', 'Teemo']);
   const CRIT_EXTRA = new Set(['Nidalee']);
   const AD_EXCLUDE = new Set(['Azir', 'Diana', 'Elise', 'Gwen', 'Hwei', 'Kennen']);
   const AP_ONHIT_EXTRA = new Set(['Kayle', 'Teemo', 'Kaisa', 'Gwen', 'KogMaw', 'Varus', 'Katarina']);
@@ -137,7 +141,7 @@
       boots: [3047, 3111],
       keystones: ['Conqueror', 'GraspOfTheUndying', 'PhaseRush', 'Aftershock'],
       shards: [5007, 5001, 5013],
-      ok: p => p.magic >= 5 && p.defense >= 5,
+      ok: p => (p.magic >= 5 && p.defense >= 5) || APTANK_EXTRA.has(p.id),
     },
     {
       id: 'lethality', name: 'Lethality', color: '#8f2a2a',
@@ -269,6 +273,13 @@
     ad: [6672, 3153, 3031, 3071, 3046, 3072, 6673, 6333, 3036, 3026],
     ap: [6655, 4645, 4646, 3100, 3116, 3089, 3165, 3157, 3135],
     tank: [3084, 3068, 6665, 3075, 4401, 3143, 3083, 2502, 3110, 3065],
+  };
+  // A pótlás a build típusához illik, nem a champion profiljához (pl. az AD Teemo
+  // on-hit buildjébe ne kerüljön varázserős tárgy). A többi build a profil szerint pótol.
+  const FALLBACK_BY_BUILD = {
+    ap: 'ap', aponhit: 'ap',
+    lethality: 'ad', crit: 'ad', onhit: 'ad', bruiser: 'ad', lifesteal: 'ad',
+    tank: 'tank', heartsteel: 'tank',
   };
   // Egymást kizáró tárgyak: a játékban az ugyanebből az alapanyagból épülő tárgyakból
   // egyszerre csak egy lehet nálad. A csoportokat a tárgyfából számolja ki (loadItems),
@@ -425,7 +436,7 @@
     } else if (boots) {
       boots = { ...boots, note: 'boots' };
     }
-    const fallback = build.onlyPool ? [] : FALLBACK_POOL[p.kind];
+    const fallback = build.onlyPool ? [] : FALLBACK_POOL[FALLBACK_BY_BUILD[build.id] || p.kind];
     const core = chooseItems(byKind(build.pool), fallback, lane.items, p.melee, build.last);
     // A cipő általában az első tárgy után jön; supportnál és a gyorsaság buildnél már előtte.
     const bootsFirst = laneId === 'support' || build.id === 'ms';
