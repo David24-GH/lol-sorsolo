@@ -202,7 +202,82 @@ body {
 }
 
 /* ---------- Szűrők ---------- */
-.filters { text-align: center; }
+.filters { text-align: center; position: relative; }
+
+/* "X kizárva…" felirat és a felugró lista a kitiltott championokról.
+   A lista a .filters dobozhoz igazodik (szélessége ahhoz illik), de a felirat gyereke,
+   így amíg az egér rajta vagy a listán van, nyitva marad. */
+.ban-note {
+  color: var(--gold);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+  outline: none;
+}
+
+.ban-note:focus-visible { border-radius: 4px; box-shadow: 0 0 0 2px var(--gold-dark); }
+
+.ban-pop {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: none;
+  padding-top: 8px;
+  text-align: left;
+  cursor: default;
+}
+
+.ban-note:hover .ban-pop,
+.ban-note:focus .ban-pop,
+.ban-note:focus-within .ban-pop { display: block; }
+
+.ban-box {
+  display: block;
+  width: min(460px, 100%);
+  margin: 0 auto;
+  padding: 12px 14px;
+  border: 1px solid var(--gold-dark);
+  border-radius: 8px;
+  background: rgba(1, 10, 19, 0.97);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.ban-box strong {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--gold-light);
+  font-size: 0.85rem;
+}
+
+.ban-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px 10px;
+  max-height: min(50vh, 340px);
+  overflow-y: auto;
+}
+
+.ban-champ {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--text);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.ban-champ img {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-dark);
+}
+
+.ban-champ span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .role-buttons {
   display: grid;
@@ -516,6 +591,42 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
+}
+
+/* Képességsorrend: billentyűsapkák nyilakkal. */
+.skill-order {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-key {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--gold-dark);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #1b2c46, #0b1626);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.45);
+  color: var(--gold-light);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.skill-key.is-ult {
+  border-color: var(--gold);
+  color: #f2d27a;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.45), 0 0 10px rgba(200, 170, 110, 0.35);
+}
+
+.skill-arrow { color: var(--gold); font-size: 1.1rem; }
+
+.skill-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 .spell {

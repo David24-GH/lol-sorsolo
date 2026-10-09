@@ -115,6 +115,49 @@
     Vex: { attack: 1, defense: 3, magic: 9 },
   };
 
+  // ---------- Képességsorrend ----------
+  // A szokásos maxolási sorrend (az R, amikor csak lehet, utána ez a három). A Riot adataiban
+  // nincs ilyen, ez általános javaslat. Akinél nincs fix sorrend (Aphelios, Udyr) vagy
+  // nincs megbízható adat, az kimarad, és a build kártyán nem jelenik meg.
+  const SKILL_ORDER = {
+    Aatrox: 'QEW', Ahri: 'QWE', Akali: 'QEW', Akshan: 'QEW', Alistar: 'QWE', Ambessa: 'QEW',
+    Amumu: 'EQW', Anivia: 'EQW', Annie: 'QWE', Ashe: 'WQE', AurelionSol: 'QEW', Aurora: 'QEW',
+    Azir: 'QWE', Bard: 'QWE', Belveth: 'QEW', Blitzcrank: 'QEW', Brand: 'WEQ', Braum: 'QEW',
+    Briar: 'WQE', Caitlyn: 'QWE', Camille: 'QEW', Cassiopeia: 'EQW', Chogath: 'QEW', Corki: 'QEW',
+    Darius: 'QEW', Diana: 'QWE', Draven: 'QWE', DrMundo: 'QEW', Ekko: 'QEW', Elise: 'QWE',
+    Evelynn: 'QEW', Ezreal: 'QEW', Fiddlesticks: 'WEQ', Fiora: 'QEW', Fizz: 'EWQ', Galio: 'QEW',
+    Gangplank: 'QEW', Garen: 'EQW', Gnar: 'QWE', Gragas: 'QEW', Graves: 'QEW', Gwen: 'QEW',
+    Hecarim: 'QWE', Heimerdinger: 'QWE', Hwei: 'QEW', Illaoi: 'QEW', Irelia: 'QEW', Ivern: 'QEW',
+    Janna: 'EWQ', JarvanIV: 'QEW', Jax: 'QWE', Jayce: 'QWE', Jhin: 'QWE', Jinx: 'QWE',
+    Kaisa: 'QEW', Kalista: 'EQW', Karma: 'QEW', Karthus: 'QEW', Kassadin: 'QEW', Katarina: 'QEW',
+    Kayle: 'EQW', Kayn: 'QWE', Kennen: 'QWE', Khazix: 'QWE', Kindred: 'QWE', Kled: 'QWE',
+    KogMaw: 'WQE', KSante: 'QEW', Leblanc: 'QWE', LeeSin: 'QWE', Leona: 'WEQ', Lillia: 'QWE',
+    Lissandra: 'QWE', Lucian: 'QEW', Lulu: 'EWQ', Lux: 'EQW', Malphite: 'QEW', Malzahar: 'EQW',
+    Maokai: 'QEW', MasterYi: 'QEW', Milio: 'EWQ', MissFortune: 'QEW', MonkeyKing: 'QEW',
+    Mordekaiser: 'QEW', Morgana: 'QWE', Naafiri: 'QEW', Nami: 'WEQ', Nasus: 'QEW', Nautilus: 'EQW',
+    Neeko: 'QEW', Nidalee: 'QWE', Nilah: 'QEW', Nocturne: 'QEW', Nunu: 'QEW', Olaf: 'QEW',
+    Orianna: 'QWE', Ornn: 'QWE', Pantheon: 'QEW', Poppy: 'QEW', Pyke: 'QEW', Qiyana: 'QWE',
+    Quinn: 'QEW', Rakan: 'WEQ', Rammus: 'QWE', RekSai: 'QEW', Rell: 'QWE', Renata: 'QEW',
+    Renekton: 'QEW', Rengar: 'QWE', Riven: 'QEW', Rumble: 'QEW', Ryze: 'QEW', Samira: 'QEW',
+    Sejuani: 'WQE', Senna: 'QWE', Seraphine: 'QEW', Sett: 'QWE', Shaco: 'EQW', Shen: 'QEW',
+    Shyvana: 'WQE', Singed: 'QEW', Sion: 'QWE', Sivir: 'QWE', Skarner: 'QEW', Smolder: 'QWE',
+    Sona: 'QWE', Soraka: 'WQE', Swain: 'QEW', Sylas: 'QWE', Syndra: 'QWE', TahmKench: 'QWE',
+    Taliyah: 'QWE', Talon: 'WQE', Taric: 'EQW', Teemo: 'EQW', Thresh: 'EQW', Tristana: 'EQW',
+    Trundle: 'QWE', Tryndamere: 'EQW', TwistedFate: 'QWE', Twitch: 'EQW', Urgot: 'EQW',
+    Varus: 'QEW', Vayne: 'QWE', Veigar: 'QWE', Velkoz: 'QWE', Vex: 'QEW', Vi: 'QEW', Viego: 'QWE',
+    Viktor: 'EQW', Vladimir: 'QEW', Volibear: 'WQE', Warwick: 'QWE', Xayah: 'QEW', Xerath: 'QWE',
+    XinZhao: 'QEW', Yasuo: 'QEW', Yone: 'QWE', Yorick: 'QEW', Yuumi: 'EQW', Zac: 'EQW', Zed: 'QEW',
+    Zeri: 'QEW', Ziggs: 'QEW', Zilean: 'QWE', Zoe: 'QEW', Zyra: 'EQW',
+  };
+  // AP buildnél (Teljes AP, AP on-hit, AP tank) annál, akinél másik képesség sebez varázserőből.
+  const AP_SKILL_ORDER = { Twitch: 'EQW', JarvanIV: 'EQW', XinZhao: 'EQW', Irelia: 'EQW' };
+  const AP_BUILDS = new Set(['ap', 'aponhit', 'aptank']);
+
+  function skillOrderFor(champId, build) {
+    if (AP_BUILDS.has(build.id) && AP_SKILL_ORDER[champId]) return AP_SKILL_ORDER[champId];
+    return SKILL_ORDER[champId] || null;
+  }
+
   // A pool, boots és keystones mező vagy egy lista, vagy profilonként ({ ad, ap, tank }) külön lista.
   // pool: a tárgyak vásárlási sorrendben; az első kettő mindig bekerül, a többiből véletlenszerűen
   // választ, de a kiválasztottakat is ebben a sorrendben adja vissza.
@@ -939,18 +982,49 @@
     $('roleButtons').classList.toggle('has-selection', activeRoles.size > 0);
     const bans = lane ? LANE_BANS[lane] : new Set();
     const playable = champions.filter(c => !bans.has(c.id));
-    const banned = champions.length - playable.length;
-    const banNote = banned ? t('count.banned', banned, LANE_BY_ID.get(lane).label) : '';
+    const banned = champions.filter(c => bans.has(c.id));
+    let labels = '';
     if (activeRoles.size === 0) {
       pool = playable;
-      $('champCount').textContent = t('count.wheel', pool.length) + banNote;
     } else {
       pool = playable.filter(c => c.tags.some(tag => activeRoles.has(tag)));
-      const labels = ROLES.filter(r => activeRoles.has(r.tag)).map(r => r.label).join(', ');
-      $('champCount').textContent = t('count.wheel', pool.length, labels) + banNote;
+      labels = ROLES.filter(r => activeRoles.has(r.tag)).map(r => r.label).join(', ');
     }
+    const countEl = $('champCount');
+    countEl.replaceChildren(t('count.wheel', pool.length, labels));
+    if (banned.length) countEl.append(' · ', banNoteEl(banned, LANE_BY_ID.get(lane).label));
     champWheel.setItems(pool);
     updateSpinState();
+  }
+
+  // "X kizárva…" felirat: ha fölé viszik az egeret (vagy rákoppintanak), felugrik a lista
+  // az adott lane-en kitiltott championokról.
+  function banNoteEl(banned, laneLabel) {
+    const note = textEl('span', t('count.banned', banned.length, laneLabel), 'ban-note');
+    note.tabIndex = 0;
+    note.setAttribute('aria-describedby', 'banPop');
+    const pop = document.createElement('span');
+    pop.className = 'ban-pop';
+    pop.id = 'banPop';
+    pop.setAttribute('role', 'tooltip');
+    const box = document.createElement('span');
+    box.className = 'ban-box';
+    const list = document.createElement('span');
+    list.className = 'ban-list';
+    list.append(...banned.map(c => {
+      const item = document.createElement('span');
+      item.className = 'ban-champ';
+      const img = document.createElement('img');
+      img.src = iconUrl(c.id);
+      img.alt = '';
+      img.loading = 'lazy';
+      item.append(img, textEl('span', c.name));
+      return item;
+    }));
+    box.append(textEl('strong', t('ban.title', laneLabel, banned.length)), list);
+    pop.appendChild(box);
+    note.appendChild(pop);
+    return note;
   }
 
   function updateSpinState() {
@@ -1181,6 +1255,23 @@
     $('buildDesc').textContent = build.desc;
 
     $('buildSpells').replaceChildren(...full.spells.map(s => iconWithLabel(spellIconUrl(s.id), s.name, 'spell')));
+
+    // Képességsorrend: R → és a három alapképesség maxolási sorrendje, nyilakkal.
+    const order = currentChamp && skillOrderFor(currentChamp.id, build);
+    $('buildSkillsWrap').hidden = !order;
+    if (order) {
+      const keys = ['R', ...order];
+      const row = $('buildSkills');
+      row.setAttribute('aria-label', t('skills.aria', keys.join(' → ')));
+      row.replaceChildren(...keys.flatMap((k, i) => {
+        const key = textEl('span', k, `skill-key${k === 'R' ? ' is-ult' : ''}`);
+        key.setAttribute('aria-hidden', 'true');
+        if (!i) return [key];
+        const arrow = textEl('span', '→', 'skill-arrow');
+        arrow.setAttribute('aria-hidden', 'true');
+        return [arrow, key];
+      }));
+    }
 
     const runesEl = $('buildRunes');
     if (full.runes) {

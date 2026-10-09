@@ -10,7 +10,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 
 ### Champion kerék
 - **Lane-választás** (Top, Jungle, Mid, ADC, Support) a pörgetés előtt; az oldal megjegyzi.
-- Az adott lane-en **játszhatatlan championok kimaradnak** a kerékről (pl. Yuumi jungle-ben).
+- Az adott lane-en **játszhatatlan championok kimaradnak** a kerékről (pl. Yuumi jungle-ben); a „kizárva” feliratra víve az egeret felugrik a listájuk.
 - **Szűrés szerepkörre** a játék ikonjaival (Harcos, Tank, Mágus, Orgyilkos, Lövész, Támogató); több is kijelölhető.
 - Mindig friss champion lista: a Riot hivatalos adataiból töltődik be, az új championok maguktól megjelennek.
 - Sorsoláskor megszólal a champion **angol nyelvű választási hangja**, mint a játékban (kikapcsolható).
@@ -31,6 +31,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 | Support | support tárgy + cipő + 4 tárgy |
 
 - **Idézői varázslatok** a lane és a build szerint.
+- **Képességsorrend** nyilakkal (pl. R → Q → E → W): a szokásos maxolási sorrend championonként (`SKILL_ORDER`), néhány AP buildnél eltérő (`AP_SKILL_ORDER`). Általános javaslat, nem patch-statisztika.
 - **Rúnaoldal**: a buildhez illő fő rúna, teljes és szabályos oldal, plusz az **alap értékek** (shardok).
 - **Tárgyak vásárlási sorrendben**; a speciális tárgyak (kezdő pet, support tárgy, cipő) külön, elválasztva.
 - **+1 csere opció**: minden build alatt külön egy plusz tárgy ugyanabból a build típusból, ami nincs a buildben és egyik tárgyával sem ütközik – ha valamelyik tárgy nem tetszik, ez vehető helyette.
