@@ -85,16 +85,17 @@
   // ---------- Fun buildek ----------
   // A champion profilja a Riot "info" értékeiből (0–10) jön; ahol ez nem tükrözi
   // a valós játékot, ezek a listák javítják.
-  // Jarvan IV: az E-je varázserőből is sebez; Yasuo, Twitch, Irelia, Xin Zhao: AP fun buildek.
+  // Jarvan IV: az E-je varázserőből is sebez; Yasuo, Twitch, Irelia, Xin Zhao, Ashe,
+  // Tryndamere: AP fun buildek.
   const AP_EXTRA = new Set([
     'Gwen', 'Kaisa', 'KogMaw', 'Volibear', 'Shyvana', 'Udyr', 'Varus', 'JarvanIV', 'Yasuo',
-    'Twitch', 'Irelia', 'XinZhao',
+    'Twitch', 'Irelia', 'XinZhao', 'Ashe', 'Tryndamere',
   ]);
   const AP_EXCLUDE = new Set(['Belveth', 'DrMundo', 'Jhin', 'KSante', 'Senna']);
   // Az AP tank buildhez a Riot adataiban kevés a varázserejük, mégis működik velük.
   const APTANK_EXTRA = new Set(['JarvanIV']);
-  // Teemo, Blitzcrank, Mordekaiser, Sion: AD (lethality) és on-hit fun buildek is.
-  const AD_EXTRA = new Set(['Belveth', 'Nidalee', 'Teemo', 'Blitzcrank', 'Mordekaiser', 'Sion']);
+  // Teemo, Blitzcrank, Mordekaiser, Sion: AD (lethality) és on-hit fun buildek is; Sylas: AD (lethality).
+  const AD_EXTRA = new Set(['Belveth', 'Nidalee', 'Teemo', 'Blitzcrank', 'Mordekaiser', 'Sion', 'Sylas']);
   const CRIT_EXTRA = new Set(['Nidalee', 'Blitzcrank', 'Sion']);
   // Az on-hit build alapból a lövészeknek, harcosoknak és a sokat támadóknak jár.
   const ONHIT_EXTRA = new Set(['Blitzcrank']);
