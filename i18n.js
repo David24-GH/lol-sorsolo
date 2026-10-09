@@ -210,7 +210,7 @@ window.LOL_TEXT = {
     'version': (v, n) => `Data: Riot Data Dragon, version ${v} · ${n} champions`,
 
     'stage.build': 'Build wheel',
-    'build.count': (n, champ, lane) => `${n} playable builds for ${champ} (${lane})`,
+    'build.count': (n, champ, lane) => `${n} playable build${n === 1 ? '' : 's'} for ${champ} (${lane})`,
     'build.none': 'No build rolled yet.',
     'build.spinHint': 'Spin the build wheel!',
     'build.yours': 'Your build',

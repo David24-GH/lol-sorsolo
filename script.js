@@ -126,6 +126,7 @@
     Jinx: ['lethality'], Katarina: ['lifesteal'], Kennen: ['aponhit'], Kled: ['lethality', 'crit'],
     KogMaw: ['ap'], LeeSin: ['lifesteal', 'lethality'], Leona: ['ap'], Lillia: ['bruiser'],
     Locke: ['bruiser'], Lulu: ['ap'], Lux: ['crit'], Malphite: ['ap'], MasterYi: ['ap', 'bruiser'],
+    Milio: ['ap'],
     Mordekaiser: ['ap', 'onhit'], Naafiri: ['tank'], Nami: ['ap'], Nasus: ['ap', 'aptank', 'crit'],
     Nautilus: ['ap', 'aptank'], Neeko: ['crit', 'onhit'], Nunu: ['bruiser'], Olaf: ['crit', 'lifesteal'],
     Ornn: ['ap'], Pantheon: ['crit', 'ap'], Poppy: ['lethality'], Rakan: ['ap'], Rell: ['ap', 'aptank'],
@@ -137,6 +138,13 @@
     Viego: ['tank'], Warwick: ['onhit', 'tank', 'ap'], XinZhao: ['crit'], Yasuo: ['ap'],
     Yone: ['tank', 'ap'], Yorick: ['ap', 'aptank'], Yunara: ['ap'], Zaahen: ['crit'], Zac: ['crit'],
     Zeri: ['ap'],
+  };
+  // Alapból tiltott lane-ek, ahol a champion csak a közösségi fun buildjével (EXTRA_BUILDS)
+  // játszható: itt a kerekén csak az a build jelenik meg (pl. ADC Soraka csak kritikus).
+  const LANE_UNLOCKS = {
+    jungle: new Set(['Taric']),
+    mid: new Set(['Nami', 'Milio', 'Rakan', 'Alistar', 'Leona']),
+    bot: new Set(['Soraka', 'Renata']),
   };
   // A Vámpír build csak nekik jár: a képességeikben életlopás vagy mindenevő vámpírság van,
   // vagy az okozott sebzésük egy részét visszagyógyítják (a Riot képességleírásai alapján).
@@ -415,9 +423,14 @@
     };
   }
 
-  const buildsFor = c => {
+  // laneId: ha a champion ezen a lane-en csak fun buildként játszható (LANE_UNLOCKS), akkor
+  // csak a közösségi buildjei (EXTRA_BUILDS) jönnek, a többi nem.
+  const buildsFor = (c, laneId) => {
     const p = profileOf(c);
     const extra = EXTRA_BUILDS[c.id] || [];
+    if (laneId && LANE_UNLOCKS[laneId] && LANE_UNLOCKS[laneId].has(c.id)) {
+      return BUILDS.filter(b => extra.includes(b.id));
+    }
     return BUILDS.filter(b => b.ok(p) || extra.includes(b.id));
   };
 
@@ -1233,7 +1246,7 @@
     $('buildCard').hidden = true;
     $('buildTicker').innerHTML = '&nbsp;';
 
-    const builds = buildsFor(champ);
+    const builds = buildsFor(champ, lane);
     $('buildCount').textContent = t('build.count', builds.length, champ.name, l.label);
     buildWheel.resize();
     buildWheel.setItems(builds);
