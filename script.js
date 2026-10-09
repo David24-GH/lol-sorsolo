@@ -91,6 +91,12 @@
   const CRIT_EXTRA = new Set(['Nidalee']);
   const AD_EXCLUDE = new Set(['Azir', 'Diana', 'Elise', 'Gwen', 'Hwei', 'Kennen']);
   const AP_ONHIT_EXTRA = new Set(['Kayle', 'Teemo', 'Kaisa', 'Gwen', 'KogMaw', 'Varus', 'Katarina']);
+  // A Vámpír build csak nekik jár: a képességeikben életlopás vagy mindenevő vámpírság van,
+  // vagy az okozott sebzésük egy részét visszagyógyítják (a Riot képességleírásai alapján).
+  const LIFESTEAL_CHAMPS = new Set([
+    'Aatrox', 'Ambessa', 'Aphelios', 'Belveth', 'Briar', 'Hecarim', 'Kayn', 'KSante', 'LeeSin',
+    'Nasus', 'Nilah', 'Olaf', 'Renekton', 'Samira', 'Udyr', 'Viego', 'Warwick', 'Zaahen',
+  ]);
   // Néhány championnál a Riot adataiban minden érték 0.
   const INFO_FIX = {
     Akshan: { attack: 8, defense: 3, magic: 2 },
@@ -195,7 +201,8 @@
       boots: [3008],
       keystones: ['Conqueror', 'FleetFootwork', 'LethalTempo'],
       shards: [5005, 5008, 5001],
-      ok: p => p.ad,
+      // Csak azok kapják, akiknek a képességeiben is van életlopás.
+      ok: p => p.ad && LIFESTEAL_CHAMPS.has(p.id),
     },
     {
       id: 'enchanter', name: 'Enchanter', color: '#2a8f8a',
@@ -209,15 +216,19 @@
     {
       id: 'tear', name: 'Mana-halmozás', color: '#2a5f9e',
       desc: 'Könnycsepp-tárgyakra építesz: lassan éled, de a végén hatalmas.',
+      // Csak manát adó tárgyak, és nem pótol más tárgyakkal (onlyPool). A Könnycsepp-tárgyakból
+      // (Arkangyal, Manamún, Közelgő tél) egyszerre csak egy lehet, AD-s mana-tárgy pedig csak
+      // a Manamún van, ezért ez a build csak a varázserős, manát használó championoknak jár.
       pool: {
-        ap: [3003, 6655, 4645, 3089, 3165, 3157, 3135],
-        ad: [3004, 3071, 3161, 3142, 6676, 3036, 6694],
-        tank: [3119, 3084, 3068, 3075, 4401, 3143, 2502],
+        ap: [3003, 6655, 3118, 2503, 6657, 2522, 3110],
+        ad: [3003, 6655, 3118, 2503, 6657, 2522, 3110],
+        tank: [3119, 3110, 6657, 3118, 2503, 6655, 2522],
       },
-      boots: { ap: [3020], ad: [3158], tank: [3047] },
-      keystones: { ap: ['ArcaneComet', 'PhaseRush'], ad: ['Conqueror', 'FleetFootwork'], tank: ['GraspOfTheUndying'] },
+      onlyPool: true,
+      boots: { ap: [3020], ad: [3020], tank: [3047] },
+      keystones: { ap: ['ArcaneComet', 'PhaseRush'], ad: ['ArcaneComet', 'PhaseRush'], tank: ['GraspOfTheUndying', 'ArcaneComet'] },
       shards: { ap: [5007, 5008, 5001], ad: [5007, 5008, 5001], tank: [5007, 5001, 5013] },
-      ok: p => p.mana,
+      ok: p => p.mana && p.ap,
     },
     {
       id: 'ms', name: 'Mozgási sebesség', color: '#1f7a9e',
@@ -414,7 +425,8 @@
     } else if (boots) {
       boots = { ...boots, note: 'boots' };
     }
-    const core = chooseItems(byKind(build.pool), FALLBACK_POOL[p.kind], lane.items, p.melee, build.last);
+    const fallback = build.onlyPool ? [] : FALLBACK_POOL[p.kind];
+    const core = chooseItems(byKind(build.pool), fallback, lane.items, p.melee, build.last);
     // A cipő általában az első tárgy után jön; supportnál és a gyorsaság buildnél már előtte.
     const bootsFirst = laneId === 'support' || build.id === 'ms';
     if (boots && bootsFirst) items.push(boots);
