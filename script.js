@@ -734,9 +734,8 @@
         const eased = 1 - Math.pow(1 - t, 4);
         this.rotation = startRot + (endRot - startRot) * eased;
         this.draw();
-        // A forgás pillanatnyi sebessége (1 = indulás, 0 = megállás) a hangokhoz.
+        // A forgás pillanatnyi sebessége (1 = indulás, 0 = megállás) a kattanásokhoz.
         const speed = Math.pow(1 - t, 3);
-        spinSfx.update(speed);
         const idx = this.indexAtPointer();
         if (idx !== lastIdx) {
           tickerEl.textContent = this.opts.label(this.items[idx]);
@@ -1560,17 +1559,39 @@
     sfx.pause();
   }
 
-  // A kerekek hangja, a böngészőben előállítva (Web Audio, nincs hangfájl):
-  // hextech-töltődés induláskor, mágikus suhogás a sebességgel, kristályos kattanás
-  // minden szeletnél, megálláskor csengő akkord, mint a champion választás zárásánál.
+  // A kerekek hangja: a League kliens eredeti champion-választó hangjai (CommunityDragon).
+  // Induláskor az ARAM újrasorsolás (kocka) hangja, minden szeletnél a champion-rácson
+  // kattintás hangja, megálláskor a „Kiválasztás” (lock-in) gomb hangja.
   const spinSfx = (() => {
+    const CS_SOUNDS = `${CDRAGON}rcp-fe-lol-champ-select/global/default/sounds/`;
+    const FILES = {
+      start: 'sfx-cs-button-reroll-click.ogg',
+      tick: 'sfx-cs-button-thumbnail-click.ogg',
+      lockin: 'sfx-cs-lockin-button-click.ogg',
+    };
+    const buffers = {};
     let ctx = null;
     let master = null;
-    let noiseBuf = null;
-    let whoosh = null;
+    let spinning = false;
     let lastTick = 0;
+    let lastTickSrc = null;
+    let startSrc = null;
 
     const level = () => (soundOn ? volume : 0);
+
+    // Előre letölti és dekódolja a hangokat (OfflineAudioContext: nem kell hozzá kattintás).
+    (function preload() {
+      const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!OAC) return;
+      const decoder = new OAC(1, 1, 44100);
+      Object.entries(FILES).forEach(([name, file]) => {
+        fetch(CS_SOUNDS + file)
+          .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(r.status)))
+          .then(data => decoder.decodeAudioData(data))
+          .then(buf => { buffers[name] = buf; })
+          .catch(() => { /* hang nélkül is működik */ });
+      });
+    })();
 
     function ensure() {
       if (!ctx) {
@@ -1580,119 +1601,70 @@
         master = ctx.createGain();
         master.gain.value = level();
         master.connect(ctx.destination);
-        noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
-        const data = noiseBuf.getChannelData(0);
-        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
       }
       if (ctx.state === 'suspended') ctx.resume().catch(() => {});
       return true;
     }
 
-    function tone(type, freq, at, peak, decay, dest = master) {
-      const o = ctx.createOscillator();
+    // Lejátszik egy hangot; `fadeAfter` mp után gyorsan elhalkítja (a sűrű kattanásoknál).
+    function play(name, gain, fadeAfter = 0, rate = 1) {
+      const buf = buffers[name];
+      if (!ctx || !buf) return null;
+      const now = ctx.currentTime;
+      const src = ctx.createBufferSource();
       const g = ctx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq, at);
-      g.gain.setValueAtTime(0.0001, at);
-      g.gain.exponentialRampToValueAtTime(peak, at + 0.004);
-      g.gain.exponentialRampToValueAtTime(0.0001, at + decay);
-      o.connect(g).connect(dest);
-      o.start(at);
-      o.stop(at + decay + 0.05);
-      return o;
+      src.buffer = buf;
+      src.playbackRate.value = rate;
+      g.gain.setValueAtTime(gain, now);
+      src.connect(g).connect(master);
+      src.start(now);
+      if (fadeAfter) {
+        g.gain.setValueAtTime(gain, now + fadeAfter);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + fadeAfter + 0.08);
+        src.stop(now + fadeAfter + 0.1);
+      }
+      src.gainNode = g;
+      return src;
     }
 
-    function noise(at, dur, filterType, freq, peak) {
-      const src = ctx.createBufferSource();
-      const f = ctx.createBiquadFilter();
-      const g = ctx.createGain();
-      src.buffer = noiseBuf;
-      f.type = filterType;
-      f.frequency.value = freq;
-      g.gain.setValueAtTime(peak, at);
-      g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-      src.connect(f).connect(g).connect(master);
-      src.start(at);
-      src.stop(at + dur + 0.05);
+    function fadeOut(src) {
+      if (!src) return;
+      const now = ctx.currentTime;
+      try {
+        src.gainNode.gain.cancelScheduledValues(now);
+        src.gainNode.gain.setTargetAtTime(0.0001, now, 0.03);
+        src.stop(now + 0.2);
+      } catch { /* már leállt */ }
     }
 
     function start() {
-      if (!soundOn || !ensure()) return;
-      const now = ctx.currentTime;
-      // Hextech töltődés: gyorsan emelkedő, fényes hang.
-      const o = tone('sawtooth', 220, now, 0.05, 0.35);
-      o.frequency.exponentialRampToValueAtTime(880, now + 0.3);
-      tone('sine', 440, now, 0.08, 0.4).frequency.exponentialRampToValueAtTime(1320, now + 0.3);
-
-      // Folyamatos suhogás: szűrt zaj, a hangereje és a hangszíne a sebességet követi.
-      stopWhoosh(now);
-      const src = ctx.createBufferSource();
-      const filter = ctx.createBiquadFilter();
-      const gain = ctx.createGain();
-      const hum = ctx.createOscillator();
-      const humGain = ctx.createGain();
-      src.buffer = noiseBuf;
-      src.loop = true;
-      filter.type = 'bandpass';
-      filter.Q.value = 1.2;
-      filter.frequency.value = 1800;
-      gain.gain.value = 0.0001;
-      hum.type = 'sine';
-      hum.frequency.value = 110;
-      humGain.gain.value = 0.0001;
-      src.connect(filter).connect(gain).connect(master);
-      hum.connect(humGain).connect(master);
-      src.start(now);
-      hum.start(now);
-      whoosh = { src, filter, gain, hum, humGain };
+      spinning = true;
       lastTick = 0;
+      if (!soundOn || !ensure()) return;
+      startSrc = play('start', 0.8);
     }
 
-    function update(speed) {
-      if (!whoosh) return;
-      const now = ctx.currentTime;
-      whoosh.gain.gain.setTargetAtTime(0.0001 + 0.07 * speed, now, 0.05);
-      whoosh.filter.frequency.setTargetAtTime(350 + 1900 * speed, now, 0.05);
-      whoosh.humGain.gain.setTargetAtTime(0.0001 + 0.035 * speed, now, 0.05);
-      whoosh.hum.frequency.setTargetAtTime(80 + 60 * speed, now, 0.05);
-    }
-
-    // Kristályos kattanás, amikor egy új szelet ér a mutató alá.
+    // Champion-rács kattanás, amikor egy új szelet ér a mutató alá.
     function tick(speed) {
-      if (!ctx || !whoosh) return;
+      if (!spinning || !ctx) return;
       const now = ctx.currentTime;
-      if (now - lastTick < 0.045) return; // gyors pörgésnél ne legyen belőle zúgás
+      if (now - lastTick < 0.06) return; // gyors pörgésnél ne folyjon össze
       lastTick = now;
-      const f = 1400 + 700 * speed + Math.random() * 80;
-      const peak = 0.12 + 0.1 * (1 - speed); // lassulva tisztábban hallatszik
-      tone('triangle', f, now, peak, 0.08);
-      tone('sine', f * 2.76, now, peak * 0.35, 0.05); // fémes felhang
-      noise(now, 0.015, 'highpass', 4000, peak * 0.6);
+      // Gyorsan rövid, lassulva egyre tovább cseng; az előzőt elhalkítja.
+      fadeOut(lastTickSrc);
+      lastTickSrc = play('tick', 0.55 + 0.35 * (1 - speed), 0.08 + 0.35 * (1 - speed), 0.98 + Math.random() * 0.06);
     }
 
-    function stopWhoosh(at) {
-      if (!whoosh) return;
-      const w = whoosh;
-      whoosh = null;
-      w.gain.gain.setTargetAtTime(0.0001, at, 0.06);
-      w.humGain.gain.setTargetAtTime(0.0001, at, 0.06);
-      w.src.stop(at + 0.5);
-      w.hum.stop(at + 0.5);
-    }
-
-    // Megállás: mély dobbanás és csengő akkord (E – H – E).
+    // Megállás: lock-in hang, mint a champion választás véglegesítésekor.
     function stop(soft) {
+      spinning = false;
       if (!ctx) return;
-      const now = ctx.currentTime;
-      stopWhoosh(now);
+      fadeOut(lastTickSrc);
+      lastTickSrc = null;
+      fadeOut(startSrc);
+      startSrc = null;
       if (!soundOn) return;
-      const k = soft ? 0.5 : 1;
-      tone('sine', 120, now, 0.25 * k, 0.35).frequency.exponentialRampToValueAtTime(55, now + 0.3);
-      [659.25, 987.77, 1318.51].forEach((f, i) => {
-        const at = now + 0.05 + i * 0.07;
-        tone('sine', f, at, 0.12 * k, 1.4);
-        tone('triangle', f * 2, at, 0.025 * k, 0.6);
-      });
+      play('lockin', soft ? 0.8 : 1);
     }
 
     // Hangerő / némítás változásakor.
@@ -1700,7 +1672,7 @@
       if (master) master.gain.setTargetAtTime(level(), ctx.currentTime, 0.02);
     }
 
-    return { start, update, tick, stop, sync };
+    return { start, tick, stop, sync };
   })();
 
   // ---------- Effektek ----------
