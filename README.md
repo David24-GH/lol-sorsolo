@@ -14,6 +14,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 - **Szűrés szerepkörre** a játék ikonjaival (Harcos, Tank, Mágus, Orgyilkos, Lövész, Támogató); több is kijelölhető.
 - Mindig friss champion lista: a Riot hivatalos adataiból töltődik be, az új championok maguktól megjelennek.
 - Sorsoláskor megszólal a champion **angol nyelvű választási hangja**, mint a játékban (kikapcsolható).
+- **Kerékhang** pörgés közben (mindkét keréken): hextech-töltődés induláskor, a sebességgel halkuló mágikus suhogás, kristályos kattanás minden szeletnél, és csengő akkord megálláskor. A böngésző állítja elő (Web Audio), nincs hozzá hangfájl; a hangerő-csúszka és a némítás erre is vonatkozik.
 - Látványos eredmény: teljes képernyős bemutató, fénysugarak, csillogás, részecske-effekt.
 
 ### Fun build kerék
