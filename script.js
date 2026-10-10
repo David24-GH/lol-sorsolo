@@ -119,32 +119,48 @@
     'Zilean', 'Janna', 'Soraka', 'Yuumi', 'Lulu', 'Ivern', 'Xerath', 'Viktor', 'Hwei', 'Malzahar',
   ]);
 
+  // A Teljes tank build csak nekik jár: náluk a csak-tank tárgyakkal is van értelme
+  // (erős CC / engage, vagy a képességeik a páncélból, életerőből sebeznek).
+  const TANK_CHAMPS = new Set([
+    'Alistar', 'Amumu', 'Blitzcrank', 'Braum', 'Chogath', 'DrMundo', 'Galio', 'Gnar', 'Gragas',
+    'Jax', 'JarvanIV', 'KSante', 'Leona', 'Malphite', 'Maokai', 'Nasus', 'Nautilus', 'Nunu',
+    'Ornn', 'Poppy', 'Rammus', 'Rell', 'Sejuani', 'Sett', 'Shen', 'Singed', 'Sion', 'Skarner',
+    'TahmKench', 'Taric', 'Thresh', 'Trundle', 'Udyr', 'Volibear', 'Warwick', 'Zac',
+  ]);
+
+  // A HP-halmozás build csak nekik jár: a képességeik a (bónusz) életerőből sebeznek,
+  // pajzsolnak vagy gyógyítanak, így az Acélos szív és a Warmog tényleg erősíti őket.
+  const HP_CHAMPS = new Set([
+    'Chogath', 'Sion', 'DrMundo', 'TahmKench', 'Sett', 'Volibear', 'Ornn', 'KSante', 'Zac',
+    'Maokai', 'Nunu', 'Sejuani', 'Shen', 'Skarner', 'Urgot',
+  ]);
+
   // Közösségi fun build ötletek (a funleaguebuilds.de buildjei alapján): ezek a championok a
   // profiljuktól függetlenül is megkapják az itt felsorolt build típusokat. Csak az ötlet
   // (champion + build típus) innen van, a tárgyakat, rúnákat a saját szabályaink sorsolják.
   const EXTRA_BUILDS = {
     Aatrox: ['crit', 'lethality'], Akali: ['crit', 'bruiser'], Akshan: ['ap'], Alistar: ['ap'],
-    Ambessa: ['crit', 'lethality'], Amumu: ['tank', 'ap', 'aptank'], Ashe: ['lethality'],
-    Aurora: ['aptank'], Bard: ['ap'], Belveth: ['tank'], Braum: ['onhit'],
+    Ambessa: ['crit', 'lethality'], Amumu: ['ap', 'aptank'], Ashe: ['lethality'],
+    Aurora: ['aptank'], Bard: ['ap'], Braum: ['onhit'],
     Briar: ['onhit', 'crit', 'lethality'], Caitlyn: ['lethality'], Camille: ['bruiser'],
     Corki: ['ap'], Darius: ['crit'], Draven: ['lethality'], Elise: ['aptank'], Evelynn: ['aptank'],
     Ezreal: ['ap'], Fiddlesticks: ['aptank'], Fiora: ['crit'], Fizz: ['lethality'],
     Gangplank: ['ap'], Garen: ['ap'], Gnar: ['ap'], Graves: ['ap'], Hecarim: ['ap'], Illaoi: ['ap'],
-    Jax: ['tank', 'bruiser'], JarvanIV: ['tank'], Jayce: ['crit', 'ap'], Jhin: ['ap', 'lethality'],
+    Jax: ['bruiser'], Jayce: ['crit', 'ap'], Jhin: ['ap', 'lethality'],
     Jinx: ['lethality'], Katarina: ['lifesteal'], Kennen: ['aponhit'], Kled: ['lethality', 'crit'],
     KogMaw: ['ap'], LeeSin: ['lifesteal', 'lethality'], Leona: ['ap'], Lillia: ['bruiser'],
     Locke: ['bruiser'], Lulu: ['ap'], Lux: ['crit'], Malphite: ['ap'], MasterYi: ['ap', 'bruiser'],
     Milio: ['ap'],
-    Mordekaiser: ['ap', 'onhit'], Naafiri: ['tank'], Nami: ['ap'], Nasus: ['ap', 'aptank', 'crit'],
+    Mordekaiser: ['ap', 'onhit'], Nami: ['ap'], Nasus: ['ap', 'aptank', 'crit'],
     Nautilus: ['ap', 'aptank'], Neeko: ['crit', 'onhit'], Nunu: ['bruiser'], Olaf: ['crit', 'lifesteal'],
     Ornn: ['ap'], Pantheon: ['crit', 'ap'], Poppy: ['lethality'], Rakan: ['ap'], Rell: ['ap', 'aptank'],
     Renata: ['aponhit'], Renekton: ['ap'], Rengar: ['crit', 'ap'], Riven: ['crit'], Sejuani: ['aptank'],
-    Seraphine: ['ap'], Sett: ['lethality'], Shaco: ['tank'], Singed: ['ap', 'aptank'],
+    Seraphine: ['ap'], Sett: ['lethality'], Singed: ['ap', 'aptank'],
     Skarner: ['ap', 'lethality', 'aptank'], Sona: ['ap'], Soraka: ['crit'], Talon: ['bruiser'],
-    Taric: ['bruiser'], Teemo: ['crit', 'aptank'], Thresh: ['ap', 'tank'], Trundle: ['crit', 'ap'],
-    Tryndamere: ['tank', 'ap'], TwistedFate: ['tank'], Velkoz: ['tank'], Vi: ['onhit', 'ap', 'tank', 'crit'],
-    Viego: ['tank'], Warwick: ['onhit', 'tank', 'ap'], XinZhao: ['crit'], Yasuo: ['ap'],
-    Yone: ['tank', 'ap'], Yorick: ['ap', 'aptank'], Yunara: ['ap'], Zaahen: ['crit'], Zac: ['crit'],
+    Taric: ['bruiser'], Teemo: ['crit', 'aptank'], Thresh: ['ap'], Trundle: ['crit', 'ap'],
+    Tryndamere: ['ap'], Vi: ['onhit', 'ap', 'crit'],
+    Warwick: ['onhit', 'ap'], XinZhao: ['crit'], Yasuo: ['ap'],
+    Yone: ['ap'], Yorick: ['ap', 'aptank'], Yunara: ['ap'], Zaahen: ['crit'], Zac: ['crit'],
     Zeri: ['ap'],
   };
   // Alapból tiltott lane-ek, ahol a champion csak a közösségi fun buildjével (EXTRA_BUILDS)
@@ -289,8 +305,7 @@
       boots: [3047, 3111],
       keystones: ['GraspOfTheUndying', 'Aftershock', 'Guardian'],
       shards: [5007, 5001, 5013],
-      // Csak a Riot szerint tank szerepkörű championoknak.
-      ok: p => p.has('Tank'),
+      ok: p => TANK_CHAMPS.has(p.id),
     },
     {
       id: 'heartsteel', name: 'HP-halmozás', color: '#2a7a6b',
@@ -299,8 +314,7 @@
       boots: [3047, 3111],
       keystones: ['GraspOfTheUndying', 'Aftershock'],
       shards: [5007, 5001, 5001],
-      // Csak a Riot szerint tank szerepkörű championoknak.
-      ok: p => p.has('Tank'),
+      ok: p => HP_CHAMPS.has(p.id),
     },
     {
       id: 'lifesteal', name: 'Vámpír', color: '#7a1f3d',
