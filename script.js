@@ -84,7 +84,9 @@
     support: new Set(),
   };
 
-  const SLICE_COLORS = ['#13294b', '#0b1a30', '#1d3b5e', '#102238'];
+  // A kerék és az effektek színei a választott kerettémából jönnek (themes.js).
+  const theme = () => window.LOL_THEME;
+  const sliceColors = () => theme().slices;
 
   // ---------- Fun buildek ----------
   // A champion profilja a Riot "info" értékeiből (0–10) jön; ahol ez nem tükrözi
@@ -732,8 +734,9 @@
       const n = items.length;
       ctx.clearRect(0, 0, w, w);
 
+      const th = theme();
       if (!n) {
-        ctx.fillStyle = SLICE_COLORS[1];
+        ctx.fillStyle = th.slices[1];
         ctx.beginPath();
         ctx.arc(r, r, r, 0, Math.PI * 2);
         ctx.fill();
@@ -756,7 +759,7 @@
         ctx.fillStyle = opts.color(items[i], i, n);
         ctx.fill();
         if (labeled) {
-          ctx.strokeStyle = 'rgba(200, 170, 110, 0.35)';
+          ctx.strokeStyle = window.lolThemeRgba(th.gold, 0.35);
           ctx.lineWidth = Math.max(1, w / 900);
           ctx.stroke();
 
@@ -764,7 +767,7 @@
           ctx.rotate(start + seg / 2);
           ctx.textAlign = 'right';
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#f0e6d2';
+          ctx.fillStyle = th.goldLight;
           const fontSize = Math.min(w * opts.fontScale, (seg * r * 0.8) * 0.75);
           ctx.font = `600 ${fontSize}px "Segoe UI", system-ui, sans-serif`;
           ctx.fillText(opts.label(items[i]), r * 0.93, 0, r * 0.6);
@@ -779,9 +782,9 @@
         ctx.moveTo(0, 0);
         ctx.arc(0, 0, r, start, start + seg);
         ctx.closePath();
-        ctx.fillStyle = `rgba(240, 230, 210, ${this.highlightAlpha})`;
+        ctx.fillStyle = window.lolThemeRgba(th.goldLight, this.highlightAlpha);
         ctx.fill();
-        ctx.strokeStyle = '#f0e6d2';
+        ctx.strokeStyle = th.goldLight;
         ctx.lineWidth = Math.max(2, w / 250);
         ctx.stroke();
       }
@@ -790,7 +793,7 @@
       // Belső arany gyűrű a gomb körül
       ctx.beginPath();
       ctx.arc(r, r, r * 0.15, 0, Math.PI * 2);
-      ctx.fillStyle = '#785a28';
+      ctx.fillStyle = th.goldDark;
       ctx.fill();
     }
 
@@ -922,8 +925,9 @@
         // Sok szeletnél színátmenet, hogy a forgás jól látsszon.
         return `hsl(${(i / n) * 360}, 45%, ${i % 2 ? 26 : 32}%)`;
       }
-      if (i === n - 1 && n % SLICE_COLORS.length === 1) return SLICE_COLORS[2];
-      return SLICE_COLORS[i % SLICE_COLORS.length];
+      const slices = sliceColors();
+      if (i === n - 1 && n % slices.length === 1) return slices[2];
+      return slices[i % slices.length];
     },
     labelLimit: 40,
     fontScale: 0.034,
@@ -1826,6 +1830,7 @@
   function setFrame(id) {
     frameId = id;
     try { localStorage.setItem(FRAME_KEY, String(id)); } catch { /* nem elérhető */ }
+    window.applyLolTheme(id); // a keret színvilága az egész oldalra
     updateFrameBtn();
     champWheel.resize();
     buildWheel.resize();
@@ -1836,7 +1841,12 @@
   const fx = fxCanvas.getContext('2d');
   let particles = [];
   let fxRunning = false;
-  const PARTICLE_COLORS = ['#f0e6d2', '#c8aa6e', '#e8c77a', '#0ac8b9', '#5be0d6', '#ffffff'];
+  // A részecskék a kerettéma fém- és drágakőszíneit használják.
+  const particleColors = () => {
+    const th = theme();
+    const mix = window.lolThemeMix;
+    return [th.goldLight, th.gold, mix(th.gold, th.goldLight, 0.4), th.accent, mix(th.accent, '#ffffff', 0.35), '#ffffff'];
+  };
 
   function resizeFx() {
     const dpr = window.devicePixelRatio || 1;
@@ -1847,6 +1857,7 @@
 
   function burst(x, y, count, speed) {
     if (reducedMotion) return;
+    const colors = particleColors();
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const v = speed * (0.35 + Math.random() * 0.65);
@@ -1859,7 +1870,7 @@
         vr: (Math.random() - 0.5) * 0.3,
         life: 1,
         decay: 0.008 + Math.random() * 0.012,
-        color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
+        color: colors[Math.floor(Math.random() * colors.length)],
         spark: Math.random() < 0.4,
       });
     }

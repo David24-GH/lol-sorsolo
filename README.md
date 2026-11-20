@@ -16,7 +16,8 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 - Sorsoláskor megszólal a champion **angol nyelvű választási hangja**, mint a játékban (kikapcsolható).
 - **Kerékhang** pörgés közben (mindkét keréken), a League kliens eredeti champion-választó hangjaival: induláskor az ARAM újrasorsolás hangja, minden szeletnél a champion-rács kattanása (lassulva egyre ritkábban), megálláskor a lock-in gomb hangja. A hangerő-csúszka és a némítás erre is vonatkozik.
 - Látványos eredmény: teljes képernyős bemutató, fénysugarak, csillogás, részecske-effekt.
-- **Keret a kerék körül**: bal felül választható a játék 21 szintkerete közül (Piltover, Zaun, Hextech … Örökkévaló), vagy keret nélkül. Mindkét kerékre érvényes, az oldal megjegyzi. A keretek a CommunityDragonról töltődnek; a díszek, amelyek nem férnek ki, oldalt elhalványulnak.
+- **Keret a kerék körül**: bal felül választható a játék 21 szintkerete közül (Piltover, Zaun, Hextech … Örökkévaló), vagy keret nélkül. Mindkét kerékre érvényes, az oldal megjegyzi. A keretek a CommunityDragonról töltődnek, és mindig teljes egészében látszanak (a kerék mérete igazodik hozzájuk).
+- **Kerettéma**: a keret színvilága az egész oldalra átterjed (háttér, dobozok, gombok, szövegek, kerékszeletek, részecskék) – pl. a Noxus kerettel vörös–acélszürke, a Freljorddal jégkék lesz az oldal. A palettákat a keretképek fő színeiből kevertük ki (`themes.js`); keret nélkül és a Hextech keretnél az eredeti színek maradnak.
 
 ### Fun build kerék
 - A kisorsolt champion **fejlécként** megmarad, alatta egy második kerék jelenik meg.
@@ -69,7 +70,7 @@ Bármilyen más statikus szerver is jó, pl. `npx serve .` vagy `python -m http.
 
 Az oldal a **Vercelen** fut, ami össze van kötve ezzel a GitHub-tárolóval: minden `main` ágra feltöltött változás pár percen belül magától élesedik a https://lol-sorsolo.vercel.app/ címen.
 
-Máshol is közzétehető, mert csak ezek a fájlok kellenek hozzá: `index.html`, `style.css`, `i18n.js`, `script.js` (a `serve.ps1` csak helyi teszteléshez kell). Például Netlifyon: húzd rá a mappát a https://app.netlify.com/drop oldalra.
+Máshol is közzétehető, mert csak ezek a fájlok kellenek hozzá: `index.html`, `style.css`, `themes.js`, `i18n.js`, `script.js` (a `serve.ps1` csak helyi teszteléshez kell). Például Netlifyon: húzd rá a mappát a https://app.netlify.com/drop oldalra.
 
 ## Ötletek fogadása (Formspree)
 
@@ -98,6 +99,7 @@ A szabályok mind a `script.js` elején, jól elkülönítve találhatók:
 | Support tárgy és jungle pet a build szerint | `SUPPORT_ITEM`, `JUNGLE_PET` |
 | Egymást kizáró tárgyak | `GROUP_COMPONENTS`, `MANUAL_GROUPS` |
 | Az oldal szövegei (magyar és angol), a buildek angol neve | `i18n.js` |
+| A kerettémák színei (keretenként) | `themes.js` |
 
 ## Felépítés
 
@@ -105,6 +107,7 @@ A szabályok mind a `script.js` elején, jól elkülönítve találhatók:
 index.html   az oldal szerkezete
 style.css    megjelenés (sötét, LoL-stílusú téma, mobilon is)
 i18n.js      az oldal szövegei magyarul és angolul
+themes.js    a kerettémák színei (a <head>-ben töltődik, hogy ne villanjon)
 script.js    adatbetöltés, kerekek, build-összeállítás, előzmények, kedvencek, ötletek
 serve.ps1    kis helyi szerver teszteléshez (Windows PowerShell)
 ```
