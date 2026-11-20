@@ -628,8 +628,7 @@
   // A meccseket a játékos maga jelöli a build kártyán (Győzelem / Vereség), mert a Riot
   // meccsadatai egy statikus weboldalról nem érhetők el. Egy rögzített meccs:
   // { id: a bejegyzés azonosítója, c: champion, l: lane, b: build, s: idézői varázslatok,
-  //   w: győzelem-e, t: időpont }. A feloldott keretek akkor is megmaradnak, ha egy meccset
-  // utólag visszavonnak.
+  //   w: győzelem-e, t: időpont }. A rögzítés végleges, a feloldott keretek megmaradnak.
   const GAMES_KEY = 'lolSorsolo.games';
   const UNLOCK_KEY = 'lolSorsolo.unlocked';
 
@@ -2065,23 +2064,17 @@
     queueUnlocks(fresh);
   }
 
-  // A build kártyán: a látható build meccsének eredménye (egy buildhez egy eredmény).
+  // A build kártyán: a látható build meccsének eredménye. Egy buildhez egy eredmény
+  // tartozik, és a rögzítés végleges (nem vonható vissza, nem írható át).
   function recordGame(win) {
     const entry = history.find(e => e.id === currentEntryId) || favorites.find(e => e.id === currentEntryId);
     if (!entry || !entry.b || !entry.full) return;
-    games = games.filter(g => g.id !== entry.id);
+    if (games.some(g => g.id === entry.id)) return;
     games.push({ id: entry.id, c: entry.c, l: entry.l, b: entry.b, s: entry.full.spells, w: win, t: Date.now() });
     writeGames();
     renderLists();
     updateRegionBanner();
     checkUnlocks();
-  }
-
-  function undoGame() {
-    games = games.filter(g => g.id !== currentEntryId);
-    writeGames();
-    renderLists();
-    updateRegionBanner();
   }
 
   // ---------- Effektek ----------
@@ -3144,7 +3137,6 @@
   $('favBtn').addEventListener('click', () => { if (currentEntryId) toggleFavorite(currentEntryId); });
   $('resultWin').addEventListener('click', () => recordGame(true));
   $('resultLoss').addEventListener('click', () => recordGame(false));
-  $('resultUndo').addEventListener('click', undoGame);
   $('unlockUse').addEventListener('click', () => closeUnlock(true));
   $('unlockClose').addEventListener('click', () => closeUnlock(false));
   $('unlock').addEventListener('click', e => { if (e.target === e.currentTarget) closeUnlock(false); });

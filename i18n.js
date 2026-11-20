@@ -48,7 +48,6 @@ window.LOL_TEXT = {
     'result.loss': 'Vereség',
     'result.doneWin': '✓ Rögzítve: győzelem',
     'result.doneLoss': '✓ Rögzítve: vereség',
-    'result.undo': 'Visszavonás',
     'entry.win': 'Győzelem',
     'entry.loss': 'Vereség',
     'frame.name': lvl => ({
@@ -263,7 +262,6 @@ window.LOL_TEXT = {
     'result.loss': 'Defeat',
     'result.doneWin': '✓ Recorded: victory',
     'result.doneLoss': '✓ Recorded: defeat',
-    'result.undo': 'Undo',
     'entry.win': 'Victory',
     'entry.loss': 'Defeat',
     'frame.name': lvl => ({
