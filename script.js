@@ -35,6 +35,7 @@
   const SOUND_KEY = 'lolSorsolo.sound';
   const VOLUME_KEY = 'lolSorsolo.volume';
   const LANE_KEY = 'lolSorsolo.lane';
+  const FRAME_KEY = 'lolSorsolo.frame';
   const HISTORY_MAX = 10;
   const FAV_KEY = 'lolSorsolo.favorites';
   const FAV_MAX = 30;
@@ -618,6 +619,74 @@
     return buf[0] % max;
   }
 
+  // ---------- Kerék keretek (a játék szintkeretei, CommunityDragon) ----------
+  // Mind a 21 kép 512×512-es, és a közepükön ugyanott, ugyanakkora a kerek lyuk
+  // (FRAME_HOLE, képpontban). A bbox a látható rész széle (minX, maxX, minY, maxY):
+  // ebből számoljuk, mennyi hely kell a kerék körül a szárnyaknak.
+  const FRAME_BASE = `${CDRAGON}rcp-fe-lol-static-assets/global/default/images/uikit/themed-borders/`;
+  const FRAME_HOLE = { cx: 253.5, cy: 239, r: 93.5 };
+  const FRAMES = [
+    [1, 116, 390, 132, 389], [30, 101, 406, 126, 422], [50, 89, 419, 132, 416],
+    [75, 96, 411, 116, 410], [100, 86, 421, 115, 400], [125, 90, 417, 116, 414],
+    [150, 85, 425, 117, 416], [175, 69, 438, 132, 423], [200, 79, 428, 124, 409],
+    [225, 72, 435, 132, 411], [250, 75, 432, 124, 382], [275, 61, 446, 113, 437],
+    [300, 81, 426, 86, 403], [325, 57, 451, 99, 406], [350, 62, 447, 74, 404],
+    [375, 83, 424, 63, 426], [400, 66, 441, 69, 396], [425, 64, 452, 48, 414],
+    [450, 62, 445, 66, 410], [475, 30, 477, 53, 407], [500, 53, 454, 20, 449],
+  ].map(([level, minX, maxX, minY, maxY], i) => ({
+    id: i + 1, level, minX, maxX, minY, maxY, src: `${FRAME_BASE}theme-${i + 1}-border.png`,
+  }));
+  const DEFAULT_FRAME = 3; // Hextech: az oldal arany–kék színeihez illik
+  let frameId = DEFAULT_FRAME;
+  try {
+    const saved = localStorage.getItem(FRAME_KEY);
+    if (saved !== null && (saved === '0' || FRAMES[Number(saved) - 1])) frameId = Number(saved);
+  } catch { /* nem elérhető */ }
+  const currentFrame = () => FRAMES[frameId - 1] || null;
+
+  // A kerék köré illeszti a választott keretet: a keret lyuka pont a kerék széléig ér,
+  // fölötte-alatta helyet hagy a díszeknek, oldalt pedig elhalványítja, ami nem fér ki.
+  function layoutFrame(wrap) {
+    const img = wrap.querySelector('.wheel-frame');
+    const frame = currentFrame();
+    wrap.classList.toggle('has-frame', !!frame);
+    img.hidden = !frame;
+    if (!frame) {
+      wrap.style.marginTop = '';
+      wrap.style.marginBottom = '';
+      return;
+    }
+    if (img.dataset.src !== frame.src) {
+      img.src = frame.src;
+      img.dataset.src = frame.src;
+    }
+    const size = wrap.clientWidth;
+    if (!size) return; // rejtett kerék: majd a megjelenésekor
+    const r = size / 2;
+    const scale = (r * 0.96) / FRAME_HOLE.r; // a keret gyűrűje kicsit rálóg a kerék szélére
+    const cx = FRAME_HOLE.cx * scale;
+    const cy = FRAME_HOLE.cy * scale;
+    img.style.width = `${512 * scale}px`;
+    img.style.left = `${r - cx}px`;
+    img.style.top = `${r - cy}px`;
+
+    const above = (FRAME_HOLE.cy - frame.minY) * scale - r;
+    const below = (frame.maxY - FRAME_HOLE.cy) * scale - r;
+    wrap.style.marginTop = `${Math.max(24, above + 12)}px`;
+    wrap.style.marginBottom = `${Math.max(0, below)}px`;
+
+    const room = wrap.parentElement.clientWidth / 2;
+    const half = Math.max(FRAME_HOLE.cx - frame.minX, frame.maxX - FRAME_HOLE.cx) * scale;
+    if (half > room) {
+      const fade = `linear-gradient(to right, transparent ${cx - room}px, #000 ${cx - room * 0.8}px, #000 ${cx + room * 0.8}px, transparent ${cx + room}px)`;
+      img.style.maskImage = fade;
+      img.style.webkitMaskImage = fade;
+    } else {
+      img.style.maskImage = '';
+      img.style.webkitMaskImage = '';
+    }
+  }
+
   class Wheel {
     // opts: label(item), color(item, i, n), labelLimit, fontScale
     constructor(canvas, opts) {
@@ -639,6 +708,7 @@
     }
 
     resize() {
+      layoutFrame(this.canvas.parentElement);
       const size = this.canvas.clientWidth;
       const dpr = window.devicePixelRatio || 1;
       this.canvas.width = Math.round(size * dpr);
@@ -1688,6 +1758,70 @@
 
     return { start, tick, stop, sync };
   })();
+
+  // ---------- Keretválasztó (bal felül) ----------
+  const frameBtn = $('frameBtn');
+  const framePop = $('framePop');
+  const NO_FRAME_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+  const frameName = f => (f ? t('frame.name', f.level) : t('frame.none'));
+
+  function updateFrameBtn() {
+    const f = currentFrame();
+    const img = $('frameBtnImg');
+    img.hidden = !f;
+    if (f) img.src = f.src;
+    $('frameBtnNone').hidden = !!f;
+    frameBtn.title = `${t('frame.title')}: ${frameName(f)}`;
+    frameBtn.setAttribute('aria-label', frameBtn.title);
+    $('frameList').querySelectorAll('.frame-opt').forEach(b => {
+      b.setAttribute('aria-checked', String(Number(b.dataset.frame) === frameId));
+    });
+  }
+
+  // A 21 keret képe csak a lista első megnyitásakor töltődik le.
+  function renderFrameOptions() {
+    const opts = [null, ...FRAMES].map(f => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'frame-opt';
+      b.setAttribute('role', 'radio');
+      b.dataset.frame = f ? f.id : 0;
+      const pic = document.createElement('span');
+      pic.className = 'frame-opt-pic';
+      if (f) {
+        const img = new Image();
+        img.alt = '';
+        img.src = f.src;
+        pic.append(img);
+      } else {
+        pic.innerHTML = NO_FRAME_ICON;
+      }
+      b.append(pic, textEl('span', frameName(f), 'frame-opt-name'));
+      if (f) b.append(textEl('span', t('frame.level', f.level), 'frame-opt-level'));
+      return b;
+    });
+    $('frameList').replaceChildren(...opts);
+  }
+
+  function setFramePop(open) {
+    if (open && !$('frameList').childElementCount) renderFrameOptions();
+    framePop.hidden = !open;
+    frameBtn.setAttribute('aria-expanded', String(open));
+    if (open) {
+      updateFrameBtn();
+      const sel = $('frameList').querySelector('[aria-checked="true"]');
+      if (sel) sel.focus();
+    }
+  }
+
+  function setFrame(id) {
+    frameId = id;
+    try { localStorage.setItem(FRAME_KEY, String(id)); } catch { /* nem elérhető */ }
+    updateFrameBtn();
+    champWheel.resize();
+    buildWheel.resize();
+  }
 
   // ---------- Effektek ----------
   const fxCanvas = $('fx');
@@ -2773,6 +2907,20 @@
     editor.search = e.target.value;
     renderEditorItems();
   });
+  frameBtn.addEventListener('click', () => setFramePop(framePop.hidden));
+  $('frameList').addEventListener('click', e => {
+    const opt = e.target.closest('.frame-opt');
+    if (opt) setFrame(Number(opt.dataset.frame));
+  });
+  document.addEventListener('click', e => {
+    if (!framePop.hidden && !e.target.closest('.frame-picker')) setFramePop(false);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !framePop.hidden) {
+      setFramePop(false);
+      frameBtn.focus();
+    }
+  });
   window.addEventListener('resize', () => {
     champWheel.resize();
     buildWheel.resize();
@@ -2783,6 +2931,7 @@
   renderRoleButtons();
   renderIdeas();
   updateSoundBtn();
+  updateFrameBtn();
   updateSpinState();
   champWheel.resize();
   resizeFx();

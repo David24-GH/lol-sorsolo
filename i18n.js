@@ -9,6 +9,16 @@ window.LOL_TEXT = {
     'sound.volume': 'Hangerő',
     'sound.off': 'Hang kikapcsolása',
     'sound.on': 'Hang bekapcsolása',
+    'frame.title': 'Keret',
+    'frame.pick': 'Válassz keretet a kerék köré',
+    'frame.none': 'Nincs keret',
+    'frame.level': lvl => `${lvl}. szint`,
+    'frame.name': lvl => ({
+      1: 'Piltover', 30: 'Zaun', 50: 'Hextech', 75: 'Tűz', 100: 'Fényív', 125: 'Átitatott',
+      150: 'Árny-szigetek', 175: 'Shurima', 200: 'Lunari', 225: 'Hódítók', 250: 'Freljord',
+      275: 'Csatagép', 300: 'Ionia', 325: 'Bilgewater', 350: 'Rúna', 375: 'Noxus', 400: 'Égi',
+      425: 'Kerekerdő', 450: 'Az Üresség', 475: 'Vérhold', 500: 'Örökkévaló',
+    })[lvl],
     'header.subtitle': 'Pörgesd meg a kereket, és játssz azzal, akit a sors kioszt!',
 
     'banner.label': 'A te championod',
@@ -176,6 +186,16 @@ window.LOL_TEXT = {
     'sound.volume': 'Volume',
     'sound.off': 'Mute sound',
     'sound.on': 'Unmute sound',
+    'frame.title': 'Border',
+    'frame.pick': 'Choose a border for the wheel',
+    'frame.none': 'No border',
+    'frame.level': lvl => `Level ${lvl}`,
+    'frame.name': lvl => ({
+      1: 'Piltover', 30: 'Zaun', 50: 'Hextech', 75: 'Fire', 100: 'Arclight', 125: 'Infused',
+      150: 'Shadow Isles', 175: 'Shurima', 200: 'Lunari', 225: 'Warring Kingdoms', 250: 'Freljord',
+      275: 'Battlecast', 300: 'Ionia', 325: 'Bilgewater', 350: 'Runic', 375: 'Noxus', 400: 'Celestial',
+      425: 'Elderwood', 450: 'The Void', 475: 'Blood Moon', 500: 'Eternus',
+    })[lvl],
     'header.subtitle': 'Spin the wheel and play whoever fate hands you!',
 
     'banner.label': 'Your champion',

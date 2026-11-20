@@ -15,6 +15,18 @@
 <body>
   <!-- A szövegek fordítása: data-i18n = szöveg, data-i18n-ph = placeholder, data-i18n-aria = aria-label (lásd i18n.js). -->
   <header class="site-header">
+    <!-- Keretválasztó: a játék szintkeretei a kerék körül. -->
+    <div class="frame-picker">
+      <button type="button" class="frame-btn" id="frameBtn" aria-haspopup="true" aria-expanded="false" aria-controls="framePop">
+        <img id="frameBtnImg" alt="" hidden>
+        <svg id="frameBtnNone" viewBox="0 0 24 24" aria-hidden="true" hidden><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="frame-btn-label" data-i18n="frame.title">Keret</span>
+      </button>
+      <div class="frame-pop" id="framePop" hidden>
+        <p class="frame-pop-title" data-i18n="frame.pick">Válassz keretet a kerék köré</p>
+        <div class="frame-list" id="frameList" role="radiogroup" aria-label="Keret" data-i18n-aria="frame.title"></div>
+      </div>
+    </div>
     <div class="header-tools">
       <div class="lang-switch" role="group" aria-label="Nyelv / Language">
         <button type="button" class="lang-btn" data-lang="hu" lang="hu" title="Magyar" aria-label="Magyar" aria-pressed="true">
@@ -82,6 +94,7 @@
       <div class="wheel-wrap">
         <div class="pointer" aria-hidden="true"></div>
         <canvas id="wheel" aria-hidden="true"></canvas>
+        <img class="wheel-frame" alt="" aria-hidden="true" hidden>
         <button class="spin-btn" id="spinBtn" type="button" data-i18n="spin" disabled>PÖRGETÉS</button>
       </div>
 
@@ -100,6 +113,7 @@
       <div class="wheel-wrap">
         <div class="pointer" aria-hidden="true"></div>
         <canvas id="buildWheel" aria-hidden="true"></canvas>
+        <img class="wheel-frame" alt="" aria-hidden="true" hidden>
         <button class="spin-btn" id="buildSpinBtn" type="button" data-i18n="spin">PÖRGETÉS</button>
       </div>
 

@@ -16,6 +16,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 - Sorsoláskor megszólal a champion **angol nyelvű választási hangja**, mint a játékban (kikapcsolható).
 - **Kerékhang** pörgés közben (mindkét keréken), a League kliens eredeti champion-választó hangjaival: induláskor az ARAM újrasorsolás hangja, minden szeletnél a champion-rács kattanása (lassulva egyre ritkábban), megálláskor a lock-in gomb hangja. A hangerő-csúszka és a némítás erre is vonatkozik.
 - Látványos eredmény: teljes képernyős bemutató, fénysugarak, csillogás, részecske-effekt.
+- **Keret a kerék körül**: bal felül választható a játék 21 szintkerete közül (Piltover, Zaun, Hextech … Örökkévaló), vagy keret nélkül. Mindkét kerékre érvényes, az oldal megjegyzi. A keretek a CommunityDragonról töltődnek; a díszek, amelyek nem férnek ki, oldalt elhalványulnak.
 
 ### Fun build kerék
 - A kisorsolt champion **fejlécként** megmarad, alatta egy második kerék jelenik meg.

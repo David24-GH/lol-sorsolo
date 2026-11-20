@@ -366,6 +366,23 @@ body {
   box-shadow: 0 0 0 6px var(--gold-dark), 0 0 0 9px var(--gold), 0 0 40px rgba(10, 200, 185, 0.15);
 }
 
+/* Szintkeret a kerék körül: a kerék kisebb, hogy a keret díszei is elférjenek.
+   A méretet és a helyzetet a script.js (layoutFrame) számolja. */
+.wheel-panel { overflow-x: clip; }
+.wheel-wrap.has-frame { width: min(84%, 440px); }
+.wheel-wrap.has-frame canvas { box-shadow: 0 0 30px rgba(0, 0, 0, 0.6); }
+.wheel-wrap.has-frame .pointer { top: -20px; z-index: 3; }
+
+.wheel-frame {
+  position: absolute;
+  max-width: none;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+}
+
 .pointer {
   position: absolute;
   top: -14px;
@@ -1119,6 +1136,127 @@ body {
 body.lang-switching { cursor: progress; }
 body.lang-switching main { opacity: 0.6; transition: opacity 0.2s; }
 
+/* ---------- Bal felső: keretválasztó ---------- */
+.frame-picker {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 6;
+  text-align: left;
+}
+
+.frame-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px 0 4px;
+  border-radius: 21px;
+  border: 2px solid var(--gold-dark);
+  background: rgba(10, 20, 40, 0.6);
+  color: var(--gold-light);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.frame-btn:hover,
+.frame-btn[aria-expanded="true"] {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(200, 170, 110, 0.4);
+}
+
+.frame-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* A keret képe 512×512, a lényeg középen: kinagyítva fér el a gombban. */
+.frame-btn img {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  transform: scale(1.5) translateY(2%);
+}
+
+.frame-btn svg { width: 34px; height: 34px; padding: 5px; }
+.frame-btn [hidden] { display: none; }
+
+/* Keskenyebb képernyőn csak az ikon látszik, hogy ne lógjon a címre. */
+@media (max-width: 860px) {
+  .frame-btn { padding: 0 4px; }
+  .frame-btn-label { display: none; }
+}
+
+.frame-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(460px, calc(100vw - 24px));
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--gold-dark);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.frame-pop-title {
+  margin: 0 0 10px;
+  color: var(--gold-light);
+  font-weight: 600;
+}
+
+.frame-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.frame-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(10, 20, 40, 0.5);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.frame-opt:hover { border-color: var(--gold-dark); background: rgba(30, 58, 90, 0.4); }
+.frame-opt:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+.frame-opt[aria-checked="true"] {
+  border-color: var(--gold);
+  background: rgba(200, 170, 110, 0.12);
+  box-shadow: 0 0 10px rgba(200, 170, 110, 0.35);
+}
+
+.frame-opt-pic {
+  display: block;
+  width: 76px;
+  height: 76px;
+  overflow: hidden;
+  color: var(--muted);
+}
+
+.frame-opt-pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.25);
+}
+
+.frame-opt-pic svg { width: 100%; height: 100%; padding: 14px; }
+.frame-opt-name { font-size: 0.85rem; font-weight: 600; text-align: center; line-height: 1.2; }
+.frame-opt-level { font-size: 0.75rem; color: var(--muted); }
+
 .sound-control { position: relative; }
 
 .sound-btn {
@@ -1715,6 +1853,7 @@ body.no-scroll { overflow: hidden; }
   .ghost-btn { width: 100%; }
   .site-header { padding-top: 58px; }
   .header-tools { top: 10px; right: 12px; gap: 10px; }
+  .frame-picker { top: 10px; left: 12px; }
   .lang-btn { width: 33px; height: 22px; }
   .sound-btn { width: 38px; height: 38px; padding: 8px; }
 }
