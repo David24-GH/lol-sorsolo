@@ -2981,3 +2981,308 @@ html[data-frame="5"] .wheel-wrap canvas {
   html[data-frame="3"] .step-label { padding-inline: 24px; }
 }
 
+/* ==========================================================================
+   Díszített témák – 6–21. keret. Mindegyik saját, képgenerátorral készült
+   hátteret (bg-<szám>.jpg) és saját ikont kap (--decor-icon: a „Keret” gomb
+   és a panelek díszköve). A formákat a motívumcsalád adja (html[data-decor],
+   themes.js): tüskék, kristályok, levelek, hullámok, sugarak, rúnák.
+   Az ikonok és a szárnyak maszkok, a színüket a téma színei adják.
+   ========================================================================== */
+
+/* ---------- Keretenként: háttér és ikon ---------- */
+html[data-frame="6"] { --decor-bg: url("bg-6.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath d='M-3.5-11h7v2.5h-1.2v5.2l6.2 9.3c1.2 1.9-.1 4-2.3 4h-12.4c-2.2 0-3.5-2.1-2.3-4l6.2-9.3v-5.2h-1.2z'/%3E%3C/svg%3E"); }
+html[data-frame="7"] { --decor-bg: url("bg-7.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath fill-rule='evenodd' d='M0-11c5.5 0 9 4.2 9 9.5V11l-3-2.5-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5V-1.5C-9-6.8-5.5-11 0-11zM-3.5-4.8a1.8 1.8 0 1 0 .01 0zM3.5-4.8a1.8 1.8 0 1 0 .01 0z'/%3E%3C/svg%3E"); }
+html[data-frame="8"] { --decor-bg: url("bg-8.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Ccircle r='5'/%3E%3Cpath d='M0-12l1.6 4.2h-3.2zM0 12l1.6-4.2h-3.2zM-12 0l4.2 1.6v-3.2zM12 0l-4.2 1.6v-3.2z'/%3E%3Cpath d='M0-12l1.6 4.2h-3.2zM0 12l1.6-4.2h-3.2zM-12 0l4.2 1.6v-3.2zM12 0l-4.2 1.6v-3.2z' transform='rotate(45)'/%3E%3C/svg%3E"); }
+html[data-frame="9"] { --decor-bg: url("bg-9.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath d='M4-11A11 11 0 1 0 10 6 8.5 8.5 0 1 1 4-11z'/%3E%3C/svg%3E"); }
+html[data-frame="10"] { --decor-bg: url("bg-10.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath fill-rule='evenodd' d='M0-11a11 11 0 1 0 .01 0zM-3.5-3.5h7v7h-7z'/%3E%3C/svg%3E"); }
+html[data-frame="11"] { --decor-bg: url("bg-11.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath d='M0-11V11M-9.5-5.5l19 11M-9.5 5.5l19-11M-3-9l3 2.5 3-2.5M-3 9l3-2.5 3 2.5' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E"); }
+html[data-frame="12"] { --decor-bg: url("bg-12.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath d='M3-12L-8 2h7l-3 10L9-3H2z'/%3E%3C/svg%3E"); }
+html[data-frame="13"] { --decor-bg: url("bg-13.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath d='M0-11c3.5 4 3.5 10 0 14-3.5-4-3.5-10 0-14zM-11-3c6 0 9.5 3.5 10 8-6 0-9.5-3.5-10-8zM11-3c-6 0-9.5 3.5-10 8 6 0 9.5-3.5 10-8zM-9 7h18v2.5h-18z'/%3E%3C/svg%3E"); }
+html[data-frame="14"] { --decor-bg: url("bg-14.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cg fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cy='-8.5' r='2.5'/%3E%3Cpath d='M0-6V10M-6-2h12M-9 3c1 5 4.5 7 9 7s8-2 9-7'/%3E%3C/g%3E%3C/svg%3E"); }
+html[data-frame="15"] { --decor-bg: url("bg-15.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cg fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M0-11L9 0 0 11-9 0z'/%3E%3Cpath d='M0-6v12M-3-2l3 3 3-3'/%3E%3C/g%3E%3C/svg%3E"); }
+html[data-frame="16"] { --decor-bg: url("bg-16.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath d='M-11 9L-9-7-4.5 1 0-11 4.5 1 9-7 11 9z'/%3E%3C/svg%3E"); }
+html[data-frame="17"] { --decor-bg: url("bg-17.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath d='M0-11l3.2 7.1 7.7.8-5.8 5.2 1.7 7.6L0 5.8l-6.8 3.9 1.7-7.6-5.8-5.2 7.7-.8z'/%3E%3C/svg%3E"); }
+html[data-frame="18"] { --decor-bg: url("bg-18.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath d='M-9 10C-10-2-3-10 10-10 10 3 3 10-9 10z'/%3E%3C/svg%3E"); }
+html[data-frame="19"] { --decor-bg: url("bg-19.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath fill-rule='evenodd' d='M-11 0C-6-7 6-7 11 0 6 7-6 7-11 0zM0-3.5a3.5 3.5 0 1 0 .01 0z'/%3E%3C/svg%3E"); }
+html[data-frame="20"] { --decor-bg: url("bg-20.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Ccircle r='8'/%3E%3Ccircle r='10.8' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E"); }
+html[data-frame="21"] { --decor-bg: url("bg-21.jpg"); --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cpath d='M-11 7l-1-13 6.5 5L0-11l5.5 10L12-6l-1 13zM-11 9h22v2.5h-22z'/%3E%3C/svg%3E"); }
+
+/* ---------- Motívumcsaládok: a címtábla szárnya és a formák ---------- */
+html[data-decor="spikes"] {
+  --decor-wing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 24' preserveAspectRatio='none'%3E%3Cpath d='M0 12H126' stroke='%23000' stroke-width='1.8'/%3E%3Cpath d='M0 7H76M0 17H76' stroke='%23000' stroke-width='1'/%3E%3Cpath d='M128 5l10 7-10 7zM140 3l13 9-13 9zM155 1l15 11-15 11z'/%3E%3C/svg%3E");
+  --r-plate: 2px; --r-btn: 2px; --r-input: 2px; --r-panel: 3px; --r-label: 0;
+  --label-clip: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
+  --label-clip-in: polygon(11px 0, calc(100% - 11px) 0, 100% 50%, calc(100% - 11px) 100%, 11px 100%, 0 50%);
+  --panel-deco:
+    linear-gradient(135deg, var(--gold) 0 7px, transparent 7px) top 6px left 6px / 14px 14px no-repeat,
+    linear-gradient(225deg, var(--gold) 0 7px, transparent 7px) top 6px right 6px / 14px 14px no-repeat,
+    linear-gradient(45deg, var(--gold) 0 7px, transparent 7px) bottom 6px left 6px / 14px 14px no-repeat,
+    linear-gradient(315deg, var(--gold) 0 7px, transparent 7px) bottom 6px right 6px / 14px 14px no-repeat;
+}
+
+html[data-decor="crystal"] {
+  --decor-wing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 24' preserveAspectRatio='none'%3E%3Cpath d='M0 12H128' stroke='%23000' stroke-width='1.6'/%3E%3Cpath d='M0 7H76M0 17H76' stroke='%23000' stroke-width='1'/%3E%3Cpath d='M131 12l5-7 5 7-5 7zM144 12l6-10 6 10-6 10zM160 12l5-6 5 6-5 6z'/%3E%3C/svg%3E");
+  --r-plate: 3px; --r-btn: 3px; --r-input: 3px; --r-panel: 4px; --r-label: 0;
+  --label-clip: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  --label-clip-in: polygon(7px 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 7px);
+  --panel-deco:
+    linear-gradient(var(--gold), var(--gold)) top 8px left 8px / 16px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 8px left 8px / 2px 16px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 8px right 8px / 16px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 8px right 8px / 2px 16px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 8px left 8px / 16px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 8px left 8px / 2px 16px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 8px right 8px / 16px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 8px right 8px / 2px 16px no-repeat;
+}
+
+html[data-decor="leaves"] {
+  --decor-wing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 24' preserveAspectRatio='none'%3E%3Cpath d='M0 12H126' stroke='%23000' stroke-width='1.6'/%3E%3Cpath d='M0 7H76M0 17H76' stroke='%23000' stroke-width='1'/%3E%3Cpath d='M128 12c5-7 13-7 18 0-5 7-13 7-18 0zM150 12c4-6 11-6 15 0-4 6-11 6-15 0z'/%3E%3Ccircle cx='168' cy='12' r='2'/%3E%3C/svg%3E");
+  --r-plate: 16px 4px; --r-btn: 14px 4px; --r-input: 14px 4px; --r-panel: 22px 6px; --r-label: 14px 4px; --r-label-in: 12.5px 2.5px;
+}
+
+html[data-decor="waves"] {
+  --decor-wing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 24' preserveAspectRatio='none'%3E%3Cpath d='M0 12H96c5-6 10-6 15 0s10 6 15 0 10-6 15 0' fill='none' stroke='%23000' stroke-width='1.8'/%3E%3Cpath d='M0 6H70M0 18H70' stroke='%23000' stroke-width='1'/%3E%3Ccircle cx='160' cy='12' r='5'/%3E%3C/svg%3E");
+  --r-plate: 14px; --r-btn: 12px; --r-input: 12px; --r-panel: 16px; --r-label: 12px; --r-label-in: 10.5px;
+}
+
+html[data-decor="rays"] {
+  --decor-wing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 24' preserveAspectRatio='none'%3E%3Cpath d='M0 12H140' stroke='%23000' stroke-width='1.6'/%3E%3Cpath d='M0 7H76M0 17H76' stroke='%23000' stroke-width='1'/%3E%3Ccircle cx='156' cy='12' r='5'/%3E%3Cpath d='M156 1v4M156 19v4M144 12h4M164 12h4M148 4l3 3M161 17l3 3M148 20l3-3M161 7l3-3' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E");
+  --r-plate: 999px; --r-btn: 20px 20px 6px 6px; --r-input: 999px; --r-panel: 26px 26px 10px 10px; --r-label: 999px;
+}
+
+html[data-decor="runes"] {
+  --decor-wing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 24' preserveAspectRatio='none'%3E%3Cpath d='M0 12H128' stroke='%23000' stroke-width='1.6'/%3E%3Cpath d='M0 7H76M0 17H76' stroke='%23000' stroke-width='1'/%3E%3Cpath d='M130 12l5-5 5 5-5 5zM144 12l5-5 5 5-5 5z' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3Cpath d='M158 12l6-7 6 7-6 7z'/%3E%3C/svg%3E");
+  --r-plate: 2px; --r-btn: 2px; --r-input: 2px; --r-panel: 2px; --r-label: 2px;
+  --panel-deco:
+    linear-gradient(var(--blue), var(--blue)) top 7px left 50% / 40% 1px no-repeat,
+    linear-gradient(var(--blue), var(--blue)) bottom 7px left 50% / 40% 1px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 7px left 7px / 7px 7px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 7px right 7px / 7px 7px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 7px left 7px / 7px 7px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 7px right 7px / 7px 7px no-repeat;
+}
+
+/* ---------- Közös szabályok a 6–21. kerethez ---------- */
+html[data-decor] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(var(--bg-rgb), 0.45) 0%, rgba(var(--bg-rgb), 0.05) 40%, rgba(var(--bg-rgb), 0.35) 100%),
+    var(--decor-bg) center bottom / cover no-repeat,
+    var(--bg);
+}
+
+/* Címtábla és két oldalán a családra jellemző szárny (a vége a kiemelőszínű). */
+html[data-decor] .site-header h1 {
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 6px 30px 8px;
+  border: 2px solid var(--gold);
+  border-radius: var(--r-plate);
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.92), rgba(var(--bg-rgb), 0.92));
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--blue-rgb), 0.4),
+    inset 0 0 22px rgba(var(--blue-rgb), 0.15),
+    0 0 22px rgba(var(--blue-rgb), 0.3);
+  color: var(--gold-light);
+  text-shadow: 0 0 12px rgba(var(--blue-rgb), 0.55);
+}
+
+html[data-decor] .site-header h1::before,
+html[data-decor] .site-header h1::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: min(14vw, 170px);
+  height: 24px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, var(--gold) 0 74%, var(--blue) 74%);
+  -webkit-mask: var(--decor-wing) center / 100% 100% no-repeat;
+  mask: var(--decor-wing) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+html[data-decor] .site-header h1::before { right: calc(100% + 4px); transform: translateY(-50%) scaleX(-1); }
+html[data-decor] .site-header h1::after { left: calc(100% + 4px); }
+
+html[data-decor] .subtitle { margin-top: 10px; }
+
+/* Szakaszcímek: a család formájú, fémszegélyű tábla. */
+html[data-decor] .step-label {
+  position: relative;
+  isolation: isolate;
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 4px 24px;
+  border-radius: var(--r-label);
+  background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+  clip-path: var(--label-clip, none);
+  font-weight: 700;
+}
+
+html[data-decor] .step-label::before {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  z-index: -1;
+  border-radius: var(--r-label-in, var(--r-label));
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.95), var(--bg));
+  clip-path: var(--label-clip-in, none);
+}
+
+/* Lane gombok: fémkeret belső vonallal; a kiválasztott a kiemelőszínben izzik. */
+html[data-decor] .lane-btn {
+  border: 2px solid var(--gold);
+  border-radius: var(--r-btn);
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.92));
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 0 3px rgba(var(--gold-rgb), 0.3),
+    inset 0 0 10px rgba(0, 0, 0, 0.6),
+    0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+html[data-decor] .lane-buttons .lane-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  color: #fff;
+  background: radial-gradient(circle at 50% 40%, rgba(var(--blue-rgb), 0.35), rgba(var(--bg-rgb), 0.92) 75%);
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.85), inset 0 0 14px rgba(var(--blue-rgb), 0.45), 0 0 18px rgba(var(--blue-rgb), 0.75);
+}
+
+html[data-decor] .lane-buttons .lane-btn[aria-pressed="true"] img {
+  filter: drop-shadow(0 0 6px rgba(var(--blue-rgb), 0.9)) brightness(1.15);
+}
+
+/* Szerepkör gombok: fémgyűrű, belül halvány kiemelőszínű gyűrű. */
+html[data-decor] .role-btn {
+  border: 2px solid var(--gold);
+  background: radial-gradient(circle, rgba(var(--steel-rgb), 0.5), rgba(var(--bg-rgb), 0.95) 72%);
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 0 3px rgba(var(--blue-rgb), 0.4),
+    0 0 0 3px rgba(var(--bg-rgb), 0.5),
+    0 0 0 4px rgba(var(--gold-rgb), 0.3),
+    0 4px 10px rgba(0, 0, 0, 0.55);
+}
+
+html[data-decor] .role-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.85), inset 0 0 14px rgba(var(--blue-rgb), 0.55), 0 0 16px rgba(var(--blue-rgb), 0.8);
+}
+
+/* Kereső: fémkeret belső vonallal. */
+html[data-decor] .search-box input {
+  border: 2px solid var(--gold);
+  border-radius: var(--r-input);
+  padding-inline: 16px;
+  background: linear-gradient(180deg, rgba(var(--bg-rgb), 0.92), rgba(var(--bg2-rgb), 0.88));
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.9), inset 0 0 0 3px rgba(var(--gold-rgb), 0.28), 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+html[data-decor] .search-box input:focus {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.9), 0 0 14px rgba(var(--blue-rgb), 0.6);
+}
+
+/* „Keret” gomb: a keret saját ikonja. */
+html[data-decor] .frame-btn {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.9));
+}
+
+html[data-decor] .frame-btn img,
+html[data-decor] .frame-btn svg { display: none; }
+
+html[data-decor] .frame-btn::before {
+  content: '';
+  width: 26px;
+  height: 26px;
+  margin-left: 5px;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold) 70%, var(--blue));
+  -webkit-mask: var(--decor-icon) center / contain no-repeat;
+  mask: var(--decor-icon) center / contain no-repeat;
+}
+
+/* Panelek: kettős fémkeret, a családra jellemző sarokdíszek, fent-lent a keret ikonja. */
+html[data-decor] :is(.result, .history),
+html[data-decor] .banner-content {
+  border: 2px solid var(--gold);
+  border-radius: var(--r-panel);
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--blue-rgb), 0.28),
+    inset 0 0 30px rgba(var(--blue-rgb), 0.1),
+    0 0 24px rgba(var(--blue-rgb), 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+html[data-decor] :is(.result, .history) {
+  position: relative;
+  overflow: visible;
+  background: var(--panel-deco, none), linear-gradient(180deg, rgba(var(--bg2-rgb), 0.9), rgba(var(--bg-rgb), 0.93));
+}
+
+html[data-decor] :is(.result, .history)::before,
+html[data-decor] :is(.result, .history)::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, var(--gold-light), var(--blue) 60%);
+  -webkit-mask: var(--decor-icon) center / contain no-repeat;
+  mask: var(--decor-icon) center / contain no-repeat;
+  pointer-events: none;
+}
+
+html[data-decor] :is(.result, .history)::before { top: -10px; }
+html[data-decor] :is(.result, .history)::after { bottom: -10px; }
+
+html[data-decor] .history-entry { border-radius: var(--r-btn); }
+
+/* A „kizárva” felirat kiemelve; a háttér előtti szövegek sötét árnyékot kapnak. */
+html[data-decor] .ban-note { color: var(--blue); font-weight: 700; }
+
+html[data-decor] :is(.count, .ticker, .subtitle, .stage-title, .search-hint) {
+  color: var(--text);
+  text-shadow: 0 1px 3px #000, 0 0 10px rgba(0, 0, 0, 0.9), 0 0 18px rgba(0, 0, 0, 0.75);
+}
+
+/* Fülek és előzmény-kártyák. */
+html[data-decor] .tab[aria-selected="true"] {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.85));
+  box-shadow: 0 0 8px rgba(var(--blue-rgb), 0.3);
+}
+
+html[data-decor] .history-entry {
+  border-color: rgba(var(--gold-rgb), 0.4);
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.85), rgba(var(--bg-rgb), 0.9));
+}
+
+html[data-decor] .history-entry:is(:hover, [aria-current="true"]) {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(var(--blue-rgb), 0.35);
+}
+
+/* Ragyogás a kerék mögött (árnyékként, hogy ne okozzon görgetést). */
+html[data-decor] .wheel-wrap canvas {
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), 0 0 90px 30px rgba(var(--blue-rgb), 0.22);
+}
+
+/* Keskeny képernyőn a címtábla szárnyai nem férnek el. */
+@media (max-width: 700px) {
+  html[data-decor] .site-header h1::before,
+  html[data-decor] .site-header h1::after { display: none; }
+  html[data-decor] .site-header h1 { padding: 6px 16px 8px; }
+  html[data-decor] .step-label { padding-inline: 18px; font-size: 0.72rem; letter-spacing: 0.04em; }
+}
+

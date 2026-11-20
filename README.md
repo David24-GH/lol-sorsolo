@@ -21,6 +21,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 - **Zaun téma**: a Zaun keretnél az oldal saját dizájnt is kap – zauni városkép mérgező zöld füsttel a háttérben (`zaun-bg.jpg`, képgenerátorral készült), csöves címtábla, nyílvégű fém címkék, szegecselt sárgaréz gombok, sarokvasas panelek, fogaskerekes „Keret” gomb (`style.css`, „Zaun téma”).
 - **Piltover téma**: a Piltover keretnél a Haladás Városa éjjel a háttérben (`piltover-bg.jpg`, képgenerátorral készült), art deco címtábla arany szárnyakkal és hextech kristállyal, levágott sarkú címkék, sarokdíszes arany gombok és panelek, kék hextech izzás (`style.css`, „Piltover téma”).
 - **Hextech, Tűz és Fényív téma**: ezek is saját, képgenerátorral készült hátteret és stílust kapnak – Hextech: bronz gépezet, hatszögek, kék energiacsíkok (`hextech-bg.jpg`); Tűz: kovácsolt vas, lángnyelvek, parázsló izzás (`tuz-bg.jpg`); Fényív: fehér arany ívek, fénykapu alakú gombok és panelek (`fenyiv-bg.jpg`).
+- **A többi 16 keret** (Átitatott … Örökkévaló) szintén saját, képgenerátorral készült hátteret (`bg-6.jpg` … `bg-21.jpg`) és saját ikont kap (pl. hold, hópehely, horgony, korona). A díszítésük motívumcsaládokból áll – tüskék, kristályok, levelek, hullámok, sugarak, rúnák –, ezek adják a címtábla szárnyait, a címkék, gombok és panelek formáját (`themes.js`: `DECOR`, `style.css`: „Díszített témák – 6–21”).
 
 ### Fun build kerék
 - A kisorsolt champion **fejlécként** megmarad, alatta egy második kerék jelenik meg.

@@ -47,7 +47,7 @@
     // 15 Rúna: mélykék, cián
     15: { bg: '#04050f', bg2: '#0a0d1f', panel: '#10142b', border: '#222a4a', gold: '#8d9fcc', goldLight: '#dfe5f6', goldDark: '#2a3264', accent: '#0ab6e7', text: '#b9c3e0', muted: '#8a8ea3' },
     // 16 Noxus: vérvörös és acélszürke
-    16: { bg: '#0b0606', bg2: '#170d0c', panel: '#201312', border: '#3a2523', gold: '#d9493b', goldLight: '#efe3e0', goldDark: '#5c1d18', accent: '#b9b3b1', text: '#d9c3be', muted: '#958a88' },
+    16: { bg: '#0b0606', bg2: '#170d0c', panel: '#201312', border: '#3a2523', gold: '#c2bcb9', goldLight: '#f2eeec', goldDark: '#5a5452', accent: '#e0362b', text: '#ddd0cc', muted: '#958a88' },
     // 17 Égi: éjkék-lila, rózsaezüst, cián
     17: { bg: '#08060f', bg2: '#120e1f', panel: '#1a152b', border: '#2f2846', gold: '#d1b0bf', goldLight: '#f3e6ee', goldDark: '#4a4775', accent: '#4fc3e8', text: '#d6c1cf', muted: '#928ca3' },
     // 18 Kerekerdő: szilvaszín fa, cián szemek
@@ -58,6 +58,13 @@
     20: { bg: '#0d0304', bg2: '#1a0709', panel: '#240c0f', border: '#401a1e', gold: '#e9bc89', goldLight: '#f8e6d2', goldDark: '#80060f', accent: '#e0395e', text: '#e6c4a8', muted: '#9a8a8b' },
     // 21 Örökkévaló: arany és indigó
     21: { bg: '#06050f', bg2: '#0e0c20', panel: '#15122d', border: '#29234a', gold: '#d9b98f', goldLight: '#f5ead9', goldDark: '#764d25', accent: '#6c7cf0', text: '#dccbb2', muted: '#8f8ca3' },
+  };
+
+  // A 6–21. keret díszítése motívumcsaládokból áll (style.css, „Díszített témák – 6–21”):
+  // tüskék, kristályok, levelek, hullámok, sugarak, rúnák. Mindegyik saját hátteret és ikont is kap.
+  const DECOR = {
+    6: 'runes', 7: 'waves', 8: 'rays', 9: 'crystal', 10: 'leaves', 11: 'crystal', 12: 'spikes', 13: 'leaves',
+    14: 'waves', 15: 'runes', 16: 'spikes', 17: 'rays', 18: 'leaves', 19: 'runes', 20: 'spikes', 21: 'rays',
   };
 
   const rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
@@ -80,8 +87,11 @@
     const p = palette(id);
     window.LOL_THEME = p;
     // Egyes témáknak saját háttere és díszítése is van a style.css-ben
-    // (html[data-frame="1"] – Piltover, "2" – Zaun, "3" – Hextech, "4" – Tűz, "5" – Fényív).
+    // (html[data-frame="1"] – Piltover, "2" – Zaun, "3" – Hextech, "4" – Tűz, "5" – Fényív,
+    // a 6–21. keretnél html[data-decor] a motívumcsaláddal).
     document.documentElement.dataset.frame = String(THEMES[id] ? id : 0);
+    if (DECOR[id]) document.documentElement.dataset.decor = DECOR[id];
+    else delete document.documentElement.dataset.decor;
     const s = document.documentElement.style;
     const vars = {
       '--bg': p.bg, '--bg-2': p.bg2, '--panel': p.panel, '--border': p.border,
