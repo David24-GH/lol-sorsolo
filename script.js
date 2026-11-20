@@ -2526,6 +2526,8 @@
     favBtn.querySelector('.star').textContent = fav ? '★' : '☆';
     favBtn.querySelector('.fav-label').textContent = fav ? t('fav.is') : t('fav.add');
 
+    updateWinLoss();
+
     // Meccs eredménye a látható buildhez: ha még nincs rögzítve, a két gomb látszik.
     const game = current && games.find(g => g.id === current.id);
     $('resultBox').hidden = !current || !current.full;
@@ -2536,6 +2538,22 @@
       $('resultDone').classList.toggle('is-win', game.w);
     }
     dropStaleTip();
+  }
+
+  // Bal fent: győzelmek, vereségek és a győzelmi arány a rögzített meccsekből
+  // (a gyűrű zöld része a győzelmi arány, mint a LoL meccstörténetében).
+  function updateWinLoss() {
+    const wins = games.filter(g => g.w).length;
+    const losses = games.length - wins;
+    const rate = games.length ? Math.round((wins / games.length) * 100) : null;
+    $('wlWins').textContent = t('wl.w', wins);
+    $('wlLosses').textContent = t('wl.l', losses);
+    $('wlRate').textContent = rate === null ? '–' : `${rate}%`;
+    const box = $('wlCounter');
+    box.style.setProperty('--wr', `${rate === null ? 0 : rate}%`);
+    box.classList.toggle('is-empty', rate === null);
+    box.title = t('wl.title', wins, losses, rate === null ? '–' : `${rate}%`);
+    box.setAttribute('aria-label', box.title);
   }
 
   // Egy bejegyzés törlése az előzményekből (a kedvencekben lévő másolata megmarad).
@@ -3220,6 +3238,7 @@
   renderIdeas();
   updateSoundBtn();
   updateFrameBtn();
+  updateWinLoss();
   updateSpinState();
   champWheel.resize();
   resizeFx();

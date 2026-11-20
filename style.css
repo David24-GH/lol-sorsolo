@@ -1149,14 +1149,55 @@ body {
 body.lang-switching { cursor: progress; }
 body.lang-switching main { opacity: 0.6; transition: opacity 0.2s; }
 
-/* ---------- Bal felső: keretválasztó ---------- */
+/* ---------- Bal felső: keretválasztó és győzelem/vereség számláló ---------- */
 .frame-picker {
   position: absolute;
   top: 16px;
   left: 16px;
   z-index: 6;
+  display: flex;
+  flex-direction: column; /* a számláló a gomb alatt, hogy ne lógjon a címre */
+  align-items: flex-start;
+  gap: 8px;
   text-align: left;
 }
+
+@media (max-width: 600px) {
+  .frame-picker { flex-direction: row; align-items: center; }
+}
+
+/* Győzelem / vereség: gyűrű a győzelmi aránnyal (zöld = győzelem, piros = vereség). */
+.wl {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 12px 0 4px;
+  border: 2px solid var(--gold-dark);
+  border-radius: 21px;
+  background: rgba(var(--bg2-rgb), 0.6);
+  cursor: default;
+}
+
+.wl-ring {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--bg-2) 0 58%, transparent 59%),
+    conic-gradient(#5fd47a 0 var(--wr, 0%), #e05555 var(--wr, 0%) 100%);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+.wl.is-empty .wl-ring { background: radial-gradient(circle, var(--bg-2) 0 58%, transparent 59%), rgba(var(--gold-rgb), 0.25); }
+
+.wl-text { display: flex; gap: 6px; font-size: 0.88rem; line-height: 1; }
+.wl-w { color: #7fe39a; }
+.wl-l { color: #f08585; }
 
 .frame-btn {
   display: flex;

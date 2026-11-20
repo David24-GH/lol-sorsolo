@@ -48,6 +48,9 @@ window.LOL_TEXT = {
     'result.loss': 'Vereség',
     'result.doneWin': '✓ Rögzítve: győzelem',
     'result.doneLoss': '✓ Rögzítve: vereség',
+    'wl.w': n => `${n}Gy`,
+    'wl.l': n => `${n}V`,
+    'wl.title': (w, l, r) => `Győzelmek: ${w} · Vereségek: ${l} · Győzelmi arány: ${r}`,
     'entry.win': 'Győzelem',
     'entry.loss': 'Vereség',
     'frame.name': lvl => ({
@@ -262,6 +265,9 @@ window.LOL_TEXT = {
     'result.loss': 'Defeat',
     'result.doneWin': '✓ Recorded: victory',
     'result.doneLoss': '✓ Recorded: defeat',
+    'wl.w': n => `${n}W`,
+    'wl.l': n => `${n}L`,
+    'wl.title': (w, l, r) => `Wins: ${w} · Losses: ${l} · Win rate: ${r}`,
     'entry.win': 'Victory',
     'entry.loss': 'Defeat',
     'frame.name': lvl => ({
