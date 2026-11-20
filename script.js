@@ -644,47 +644,55 @@
   } catch { /* nem elérhető */ }
   const currentFrame = () => FRAMES[frameId - 1] || null;
 
-  // A kerék köré illeszti a választott keretet: a keret lyuka pont a kerék széléig ér,
-  // fölötte-alatta helyet hagy a díszeknek, oldalt pedig elhalványítja, ami nem fér ki.
+  // A keret gyűrűje ennyivel lóg rá a kerék szélére (a lyuk sugara / a kerék sugara).
+  const FRAME_OVERLAP = 0.96;
+  // A keretképek csak 512 pixelesek: ennél jobban nem nagyítjuk fel őket, hogy élesek maradjanak.
+  const FRAME_MAX_ZOOM = 1.6;
+
+  // A kerék köré illeszti a választott keretet. A keret mindig teljes egészében látszik:
+  // a kerék mérete igazodik hozzá, hogy a díszekkel együtt elférjen a helyén és a képernyőn.
   function layoutFrame(wrap) {
-    const img = wrap.querySelector('.wheel-frame');
+    const el = wrap.querySelector('.wheel-frame');
     const frame = currentFrame();
     wrap.classList.toggle('has-frame', !!frame);
-    img.hidden = !frame;
+    el.hidden = !frame;
     if (!frame) {
+      wrap.style.width = '';
       wrap.style.marginTop = '';
       wrap.style.marginBottom = '';
       return;
     }
-    if (img.dataset.src !== frame.src) {
-      img.src = frame.src;
-      img.dataset.src = frame.src;
-    }
-    const size = wrap.clientWidth;
-    if (!size) return; // rejtett kerék: majd a megjelenésekor
-    const r = size / 2;
-    const scale = (r * 0.96) / FRAME_HOLE.r; // a keret gyűrűje kicsit rálóg a kerék szélére
-    const cx = FRAME_HOLE.cx * scale;
-    const cy = FRAME_HOLE.cy * scale;
-    img.style.width = `${512 * scale}px`;
-    img.style.left = `${r - cx}px`;
-    img.style.top = `${r - cy}px`;
+    el.style.backgroundImage = `url("${frame.src}")`;
+    const panel = wrap.parentElement;
+    if (!panel.clientWidth) return; // rejtett kerék: majd a megjelenésekor
 
+    // Szélességben a hasáb (mobilon a képernyő széléig), magasságban a képernyő 90%-a fér.
+    const pageW = document.documentElement.clientWidth;
+    const roomW = Math.min(panel.clientWidth + 24, pageW - 8);
+    const roomH = window.innerHeight * 0.9;
+    const halfW = Math.max(FRAME_HOLE.cx - frame.minX, frame.maxX - FRAME_HOLE.cx);
+    const k = FRAME_OVERLAP / FRAME_HOLE.r; // kép-képpont → kerék-sugár arány
+    const r = Math.floor(Math.min(
+      220,
+      roomW / 2 / (halfW * k),
+      roomH / ((frame.maxY - frame.minY) * k),
+      FRAME_MAX_ZOOM / k,
+    ));
+    const scale = r * k;
+    wrap.style.width = `${r * 2}px`;
+    // Csak a kép látható része (bbox) kap helyet, így az átlátszó szél nem lóg ki az oldalból.
+    el.style.width = `${(frame.maxX - frame.minX) * scale}px`;
+    el.style.height = `${(frame.maxY - frame.minY) * scale}px`;
+    el.style.left = `${r - (FRAME_HOLE.cx - frame.minX) * scale}px`;
+    el.style.top = `${r - (FRAME_HOLE.cy - frame.minY) * scale}px`;
+    el.style.backgroundSize = `${512 * scale}px`;
+    el.style.backgroundPosition = `${-frame.minX * scale}px ${-frame.minY * scale}px`;
+
+    // Fölötte és alatta hely a díszeknek, hogy ne lógjanak a szűrőkre és a feliratra.
     const above = (FRAME_HOLE.cy - frame.minY) * scale - r;
     const below = (frame.maxY - FRAME_HOLE.cy) * scale - r;
     wrap.style.marginTop = `${Math.max(24, above + 12)}px`;
     wrap.style.marginBottom = `${Math.max(0, below)}px`;
-
-    const room = wrap.parentElement.clientWidth / 2;
-    const half = Math.max(FRAME_HOLE.cx - frame.minX, frame.maxX - FRAME_HOLE.cx) * scale;
-    if (half > room) {
-      const fade = `linear-gradient(to right, transparent ${cx - room}px, #000 ${cx - room * 0.8}px, #000 ${cx + room * 0.8}px, transparent ${cx + room}px)`;
-      img.style.maskImage = fade;
-      img.style.webkitMaskImage = fade;
-    } else {
-      img.style.maskImage = '';
-      img.style.webkitMaskImage = '';
-    }
   }
 
   class Wheel {

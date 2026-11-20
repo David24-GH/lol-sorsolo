@@ -366,19 +366,22 @@ body {
   box-shadow: 0 0 0 6px var(--gold-dark), 0 0 0 9px var(--gold), 0 0 40px rgba(10, 200, 185, 0.15);
 }
 
-/* Szintkeret a kerék körül: a kerék kisebb, hogy a keret díszei is elférjenek.
+/* Szintkeret a kerék körül: a kerék kisebb, hogy a keret teljes egészében elférjen.
    A méretet és a helyzetet a script.js (layoutFrame) számolja. */
-.wheel-panel { overflow-x: clip; }
-.wheel-wrap.has-frame { width: min(84%, 440px); }
+.wheel-wrap { container-type: inline-size; }
 .wheel-wrap.has-frame canvas { box-shadow: 0 0 30px rgba(0, 0, 0, 0.6); }
-.wheel-wrap.has-frame .pointer { top: -20px; z-index: 3; }
+.wheel-wrap.has-frame .pointer {
+  top: calc(-1 * clamp(10px, 4.5cqw, 20px));
+  z-index: 3;
+  border-left-width: clamp(9px, 4cqw, 18px);
+  border-right-width: clamp(9px, 4cqw, 18px);
+  border-top-width: clamp(18px, 8cqw, 36px);
+}
 
 .wheel-frame {
   position: absolute;
-  max-width: none;
-  height: auto;
+  background-repeat: no-repeat;
   pointer-events: none;
-  user-select: none;
   z-index: 1;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
 }
@@ -411,6 +414,7 @@ body {
   font: inherit;
   font-weight: 700;
   font-size: clamp(0.75rem, 2.4vw, 1.05rem);
+  font-size: clamp(0.55rem, 4.2cqw, 1.05rem); /* a kerék méretéhez igazodik */
   letter-spacing: 0.08em;
   cursor: pointer;
   z-index: 2;
