@@ -705,6 +705,19 @@
     return Math.min(v, ch.n);
   }
 
+  // Kihívás kerék: amíg egy régiós keret zárva van, a választóban rákattintva a champion
+  // kerékre csak az adott régió championjai kerülnek (könnyebb teljesíteni a kihívást).
+  // A keret feloldásakor magától kikapcsol, utána a kerék a szokásos módon működik.
+  const REGION_WHEEL_KEY = 'lolSorsolo.regionWheel';
+  const regionOf = id => (CHALLENGES[id] && CHALLENGES[id].region) || null;
+  const canRegionWheel = id => !!regionOf(id) && !isUnlocked(id);
+  let regionFrame = 0;
+  try {
+    const saved = Number(localStorage.getItem(REGION_WHEEL_KEY));
+    if (canRegionWheel(saved)) regionFrame = saved;
+  } catch { /* nem elérhető */ }
+  const inRegionWheel = c => !regionFrame || CHAMP_REGION.get(c.id) === regionOf(regionFrame);
+
   // Keret nélkül indul; a mentett keret csak akkor marad, ha már fel van oldva.
   const DEFAULT_FRAME = 0;
   let frameId = DEFAULT_FRAME;
@@ -1218,8 +1231,11 @@
   function applyFilter() {
     $('roleButtons').classList.toggle('has-selection', activeRoles.size > 0);
     const bans = lane ? LANE_BANS[lane] : new Set();
-    const playable = champions.filter(c => !bans.has(c.id));
-    const banned = champions.filter(c => bans.has(c.id));
+    // Kihívás keréknél csak az adott régió championjai.
+    const candidates = champions.filter(inRegionWheel);
+    const playable = candidates.filter(c => !bans.has(c.id));
+    const banned = candidates.filter(c => bans.has(c.id));
+    updateRegionBanner();
     let labels = '';
     if (activeRoles.size === 0) {
       pool = playable;
@@ -1232,6 +1248,26 @@
     if (banned.length) countEl.append(' · ', banNoteEl(banned, LANE_BY_ID.get(lane).label));
     champWheel.setItems(pool);
     updateSpinState();
+  }
+
+  // A kihívás kerék sávja a kerék fölött: melyik régió, és hol tart a kihívás.
+  function updateRegionBanner() {
+    const box = $('regionWheel');
+    const f = regionFrame && FRAMES[regionFrame - 1];
+    box.hidden = !f;
+    if (!f) return;
+    $('regionWheelImg').src = f.src;
+    $('regionWheelTitle').textContent = t('region.title', frameName(f));
+    $('regionWheelDesc').textContent = t('region.desc', challengeText(f.id), challengeProgress(f.id), CHALLENGES[f.id].n);
+  }
+
+  // Kihívás kerék be- (keret azonosító) vagy kikapcsolása (0).
+  function setRegionWheel(id) {
+    if (champWheel.spinning) return;
+    regionFrame = canRegionWheel(id) ? id : 0;
+    try { localStorage.setItem(REGION_WHEEL_KEY, String(regionFrame)); } catch { /* nem elérhető */ }
+    applyFilter();
+    if (regionFrame) $('regionWheel').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
   }
 
   // "X kizárva…" felirat: ha fölé viszik az egeret (vagy rákoppintanak), felugrik a lista
@@ -1901,7 +1937,14 @@
         b.append(textEl('span', challengeText(f.id), 'frame-opt-ch'));
         if (locked) {
           b.classList.add('is-locked');
-          b.setAttribute('aria-disabled', 'true');
+          // Zárt régiós keret: rákattintva bekapcsol a kihívás kereke.
+          if (canRegionWheel(f.id)) {
+            b.classList.add('is-region');
+            b.classList.toggle('is-region-on', regionFrame === f.id);
+            b.append(textEl('span', regionFrame === f.id ? t('region.on') : t('region.hint'), 'frame-opt-region'));
+          } else {
+            b.setAttribute('aria-disabled', 'true');
+          }
           const lock = document.createElement('span');
           lock.className = 'frame-lock';
           lock.innerHTML = LOCK_ICON;
@@ -2014,6 +2057,9 @@
     }
     if (!fresh.length) return;
     writeUnlocked();
+    // Feloldás után a kihívás kerék kikapcsol, a kerék a szokásos módon működik tovább.
+    if (regionFrame && unlocked.has(regionFrame)) setRegionWheel(0);
+    else updateRegionBanner();
     queueUnlocks(fresh);
   }
 
@@ -2025,6 +2071,7 @@
     games.push({ id: entry.id, c: entry.c, l: entry.l, b: entry.b, s: entry.full.spells, w: win, t: Date.now() });
     writeGames();
     renderLists();
+    updateRegionBanner();
     checkUnlocks();
   }
 
@@ -2032,6 +2079,7 @@
     games = games.filter(g => g.id !== currentEntryId);
     writeGames();
     renderLists();
+    updateRegionBanner();
   }
 
   // ---------- Effektek ----------
@@ -3145,8 +3193,17 @@
   frameBtn.addEventListener('click', () => setFramePop(framePop.hidden));
   $('frameList').addEventListener('click', e => {
     const opt = e.target.closest('.frame-opt');
-    if (opt) setFrame(Number(opt.dataset.frame));
+    if (!opt) return;
+    const id = Number(opt.dataset.frame);
+    if (canRegionWheel(id)) {
+      // Zárt régiós keret: a kihívás kerék be-, újrakattintva kikapcsolása.
+      setRegionWheel(regionFrame === id ? 0 : id);
+      setFramePop(false);
+    } else {
+      setFrame(id);
+    }
   });
+  $('regionWheelExit').addEventListener('click', () => setRegionWheel(0));
   document.addEventListener('click', e => {
     if (!framePop.hidden && !e.target.closest('.frame-picker')) setFramePop(false);
   });

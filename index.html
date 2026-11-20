@@ -94,6 +94,16 @@
         <p class="count" id="champCount" data-i18n="count.loading">Championok betöltése…</p>
       </div>
 
+      <!-- Kihívás kerék: egy zárt régiós keretnél csak a régió championjai vannak a keréken. -->
+      <div class="region-wheel" id="regionWheel" hidden>
+        <img id="regionWheelImg" alt="">
+        <div class="region-wheel-text">
+          <strong id="regionWheelTitle"></strong>
+          <span id="regionWheelDesc"></span>
+        </div>
+        <button type="button" class="region-wheel-exit" id="regionWheelExit" aria-label="Kilépés a kihívás kerékből" data-i18n-aria="region.exit" title="Kilépés a kihívás kerékből">✕</button>
+      </div>
+
       <div class="wheel-wrap">
         <div class="pointer" aria-hidden="true"></div>
         <canvas id="wheel" aria-hidden="true"></canvas>

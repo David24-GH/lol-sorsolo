@@ -1278,6 +1278,58 @@ body.lang-switching main { opacity: 0.6; transition: opacity 0.2s; }
 
 .frame-opt.is-locked { cursor: not-allowed; }
 .frame-opt.is-locked:hover { border-color: var(--border); background: rgba(var(--bg2-rgb), 0.5); }
+
+/* Zárt régiós keret: kattintható, bekapcsolja a kihívás kereket. */
+.frame-opt.is-locked.is-region { cursor: pointer; }
+.frame-opt.is-locked.is-region:hover { border-color: var(--gold-dark); background: rgba(var(--steel-rgb), 0.4); }
+.frame-opt.is-region-on { border-color: var(--blue); box-shadow: 0 0 10px rgba(var(--blue-rgb), 0.45); }
+.frame-opt-region { font-size: 0.66rem; font-weight: 700; color: var(--gold); }
+.frame-opt.is-region-on .frame-opt-region { color: var(--blue); }
+
+/* Kihívás kerék sáv a kerék fölött. */
+.region-wheel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+  margin: 18px auto 0;
+  padding: 8px 10px 8px 8px;
+  border: 1.5px solid var(--blue);
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(var(--blue-rgb), 0.16), rgba(var(--bg-rgb), 0.85));
+  box-shadow: 0 0 16px rgba(var(--blue-rgb), 0.25);
+  text-align: left;
+}
+
+.region-wheel[hidden] { display: none; }
+
+.region-wheel img {
+  flex: none;
+  width: 54px;
+  height: 54px;
+  object-fit: cover;
+  transform: scale(1.3);
+  filter: grayscale(1) brightness(0.7);
+}
+
+.region-wheel-text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.region-wheel-text strong { color: var(--gold-light); font-size: 0.95rem; }
+.region-wheel-text span { color: var(--text); font-size: 0.78rem; line-height: 1.35; }
+
+.region-wheel-exit {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--gold-dark);
+  border-radius: 50%;
+  background: rgba(var(--bg-rgb), 0.6);
+  color: var(--gold-light);
+  font: inherit;
+  cursor: pointer;
+}
+
+.region-wheel-exit:hover { border-color: var(--gold); background: rgba(var(--steel-rgb), 0.5); }
+.region-wheel-exit:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .frame-opt.is-locked .frame-opt-pic img { filter: grayscale(1) brightness(0.55); }
 .frame-opt.is-locked .frame-opt-name { color: var(--muted); }
 
