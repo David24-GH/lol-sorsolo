@@ -659,17 +659,19 @@
   const CHAMP_REGION = new Map(Object.entries(REGION_CHAMPS).flatMap(([r, ids]) => ids.map(id => [id, r])));
 
   // Keretenként a kihívás: mit számol, és hány kell belőle (n). A szövegük: i18n.js, 'ch.<keret>'.
+  // Csak a megnyert meccsek számítanak, kivéve a kezdő Hextech kihívást (played: bármilyen
+  // lejátszott meccs) és az Örökkévalót (a többi keret feloldása).
   const CHALLENGES = {
     1: { region: 'piltover', n: 10 },
     2: { region: 'zaun', n: 10 },
-    3: { n: 5 }, // bármilyen lejátszott meccs – a kezdő kihívás
+    3: { played: true, n: 5 }, // a kezdő kihívás
     4: { spell: 'SummonerDot', n: 10 },
     5: { lane: 'support', n: 10 },
     6: { builds: ['ap', 'aponhit', 'aptank'], n: 10 },
     7: { region: 'shadow-isles', n: 10 },
     8: { region: 'shurima', n: 10 },
     9: { region: 'mount-targon', n: 5 }, // csak 7 targoni champion van
-    10: { wins: true, n: 10 },
+    10: { n: 10 }, // bármilyen győzelem
     11: { region: 'freljord', n: 10 },
     12: { builds: ['tank', 'heartsteel', 'aptank'], n: 10 },
     13: { region: 'ionia', n: 10 },
@@ -691,17 +693,17 @@
   function challengeProgress(id) {
     const ch = CHALLENGES[id];
     const champTags = c => (champions.find(x => x.id === c) || {}).tags || [];
+    const pool = ch.played ? games : games.filter(g => g.w); // alapból csak a győzelmek
     let v;
-    if (ch.region) v = games.filter(g => CHAMP_REGION.get(g.c) === ch.region).length;
-    else if (ch.spell) v = games.filter(g => (g.s || []).includes(ch.spell)).length;
-    else if (ch.lane) v = games.filter(g => g.l === ch.lane).length;
-    else if (ch.builds) v = games.filter(g => ch.builds.includes(g.b)).length;
-    else if (ch.wins) v = games.filter(g => g.w).length;
-    else if (ch.uniqueBuilds) v = new Set(games.map(g => g.b)).size;
-    else if (ch.uniqueChamps) v = new Set(games.map(g => g.c)).size;
-    else if (ch.tag) v = games.filter(g => champTags(g.c).includes(ch.tag)).length;
+    if (ch.region) v = pool.filter(g => CHAMP_REGION.get(g.c) === ch.region).length;
+    else if (ch.spell) v = pool.filter(g => (g.s || []).includes(ch.spell)).length;
+    else if (ch.lane) v = pool.filter(g => g.l === ch.lane).length;
+    else if (ch.builds) v = pool.filter(g => ch.builds.includes(g.b)).length;
+    else if (ch.uniqueBuilds) v = new Set(pool.map(g => g.b)).size;
+    else if (ch.uniqueChamps) v = new Set(pool.map(g => g.c)).size;
+    else if (ch.tag) v = pool.filter(g => champTags(g.c).includes(ch.tag)).length;
     else if (ch.frames) v = FRAMES.filter(f => f.id !== id && unlocked.has(f.id)).length;
-    else v = games.length;
+    else v = pool.length;
     return Math.min(v, ch.n);
   }
 
