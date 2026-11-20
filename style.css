@@ -1964,10 +1964,10 @@ body.no-scroll { overflow: hidden; }
 .history-items img[data-item-id] { cursor: help; }
 
 /* ==========================================================================
-   Zaun téma (a Zaun keret kiválasztásakor), letisztult változat:
-   sötét háttér izzó zöld fényívekkel, vékony kettős sárgaréz keretek
-   díszkővel, a kiválasztott gombok zölden izzanak. A színek a themes.js
-   2-es témájából jönnek (--gold = sárgaréz, --blue = vegyi zöld).
+   Zaun téma (a Zaun keret kiválasztásakor), a zaun-minta alapján:
+   zauni városkép mérgező zöld füsttel (zaun-bg.jpg), csöves címtábla,
+   nyílvégű fém címkék, szegecselt sárgaréz gombok, sarokvasas panelek.
+   A színek a themes.js 2-es témájából jönnek (--gold = sárgaréz, --blue = vegyi zöld).
    ========================================================================== */
 html[data-frame="2"] body::before {
   content: '';
@@ -1976,55 +1976,199 @@ html[data-frame="2"] body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(var(--bg-rgb), 0.55) 0%, rgba(var(--bg-rgb), 0) 35%),
+    linear-gradient(180deg, rgba(var(--bg-rgb), 0.45) 0%, rgba(var(--bg-rgb), 0) 40%),
     url("zaun-bg.jpg") center bottom / cover no-repeat,
     var(--bg);
 }
 
-/* Cím: arany színátmenet, fölötte vékony vonal díszkővel. */
+/* Címtábla: sárgaréz keretes tábla, két oldalán csövekkel. */
 html[data-frame="2"] .site-header h1 {
-  background: linear-gradient(180deg, var(--gold-light) 10%, var(--gold) 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: none;
-  filter: drop-shadow(0 0 14px rgba(var(--gold-rgb), 0.3));
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 6px 30px 8px;
+  border: 2px solid var(--gold-dark);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.95), rgba(var(--bg-rgb), 0.95));
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--gold-rgb), 0.5),
+    inset 0 0 22px rgba(var(--blue-rgb), 0.18),
+    0 0 20px rgba(var(--blue-rgb), 0.25);
+  color: var(--gold-light);
+  text-shadow: 0 0 12px rgba(var(--gold-rgb), 0.45);
 }
 
-html[data-frame="2"] .site-header h1::before {
+html[data-frame="2"] .site-header h1::before,
+html[data-frame="2"] .site-header h1::after {
   content: '';
-  display: block;
-  width: min(60%, 600px);
-  height: 14px;
-  margin: 0 auto 10px;
+  position: absolute;
+  top: 50%;
+  width: min(14vw, 150px);
+  height: 10px;
+  transform: translateY(-50%);
+  border-radius: 5px;
+  /* cső: hengeres fény, két illesztőgyűrűvel */
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Crect x='3' y='3' width='8' height='8' transform='rotate(45 7 7)' fill='%23081005' stroke='%23d2b56e' stroke-width='1.6'/%3E%3C/svg%3E") center / 14px 14px no-repeat,
-    linear-gradient(90deg, transparent, var(--gold) 20%, var(--gold) 80%, transparent) center / 100% 1px no-repeat;
-  -webkit-background-clip: border-box;
-  background-clip: border-box;
+    linear-gradient(90deg, transparent 18%, rgba(0, 0, 0, 0.45) 18% 21%, transparent 21% 79%, rgba(0, 0, 0, 0.45) 79% 82%, transparent 82%),
+    linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 40%, var(--gold-dark) 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
 }
 
-html[data-frame="2"] .subtitle { color: var(--text); font-style: italic; }
+html[data-frame="2"] .site-header h1::before { right: calc(100% + 2px); }
+html[data-frame="2"] .site-header h1::after { left: calc(100% + 2px); }
 
-/* Keretezett dobozok: kettős sárgaréz vonal, belül zöld derengés, fent és lent díszkő. */
+html[data-frame="2"] .subtitle { margin-top: 10px; color: var(--text); }
+
+/* Szakaszcímek: nyílvégű fém címke. */
+html[data-frame="2"] .step-label {
+  position: relative;
+  isolation: isolate;
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 4px 26px;
+  background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%);
+  font-weight: 700;
+}
+
+html[data-frame="2"] .step-label::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.95), var(--bg));
+  clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 50%, calc(100% - 13px) 100%, 13px 100%, 0 50%);
+}
+
+/* Lane gombok: vastag sárgaréz keret, sarokszegecsek; a kiválasztott zölden izzik. */
+html[data-frame="2"] .lane-btn {
+  border-color: var(--gold);
+  border-radius: 6px;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 6px 6px, var(--gold) 1.6px, transparent 2.6px),
+    radial-gradient(circle at calc(100% - 6px) 6px, var(--gold) 1.6px, transparent 2.6px),
+    radial-gradient(circle at 6px calc(100% - 6px), var(--gold) 1.6px, transparent 2.6px),
+    radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), var(--gold) 1.6px, transparent 2.6px),
+    linear-gradient(180deg, rgba(var(--steel-rgb), 0.4), rgba(var(--bg-rgb), 0.92));
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 0 3px rgba(var(--gold-rgb), 0.45),
+    inset 0 0 12px rgba(0, 0, 0, 0.7),
+    0 3px 8px rgba(0, 0, 0, 0.55);
+}
+
+html[data-frame="2"] .lane-buttons .lane-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  color: #fff;
+  background:
+    radial-gradient(circle at 6px 6px, var(--blue) 1.6px, transparent 2.6px),
+    radial-gradient(circle at calc(100% - 6px) 6px, var(--blue) 1.6px, transparent 2.6px),
+    radial-gradient(circle at 6px calc(100% - 6px), var(--blue) 1.6px, transparent 2.6px),
+    radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), var(--blue) 1.6px, transparent 2.6px),
+    radial-gradient(circle at 50% 40%, rgba(var(--blue-rgb), 0.35), rgba(var(--bg-rgb), 0.92) 75%);
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 0 3px rgba(var(--blue-rgb), 0.6),
+    inset 0 0 16px rgba(var(--blue-rgb), 0.4),
+    0 0 18px rgba(var(--blue-rgb), 0.75);
+}
+
+html[data-frame="2"] .lane-buttons .lane-btn[aria-pressed="true"] img {
+  filter: drop-shadow(0 0 6px rgba(var(--blue-rgb), 0.9)) brightness(1.15);
+}
+
+/* Szerepkör gombok: díszes, kettős sárgaréz gyűrű. */
+html[data-frame="2"] .role-btn {
+  border: 3px solid var(--gold);
+  background: radial-gradient(circle, rgba(var(--steel-rgb), 0.45), rgba(var(--bg-rgb), 0.95) 72%);
+  box-shadow:
+    0 0 0 2px rgba(var(--bg-rgb), 0.9),
+    0 0 0 3px rgba(var(--gold-rgb), 0.55),
+    inset 0 0 0 2px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 0 3px rgba(var(--gold-rgb), 0.35),
+    inset 0 0 10px rgba(0, 0, 0, 0.7),
+    0 4px 10px rgba(0, 0, 0, 0.6);
+}
+
+html[data-frame="2"] .role-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  box-shadow:
+    0 0 0 2px rgba(var(--bg-rgb), 0.9),
+    0 0 0 3px rgba(var(--blue-rgb), 0.6),
+    inset 0 0 12px rgba(var(--blue-rgb), 0.45),
+    0 0 16px rgba(var(--blue-rgb), 0.7);
+}
+
+/* Kereső: sárgaréz keretes fémtábla, besüllyesztett mezővel. */
+html[data-frame="2"] .search-box input {
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(var(--bg-rgb), 0.95), rgba(var(--bg2-rgb), 0.9));
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 3px rgba(var(--gold-rgb), 0.35),
+    inset 0 3px 10px rgba(0, 0, 0, 0.7),
+    0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="2"] .search-box input:focus {
+  border-color: var(--blue);
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--bg-rgb), 0.9),
+    inset 0 3px 10px rgba(0, 0, 0, 0.7),
+    0 0 14px rgba(var(--blue-rgb), 0.5);
+}
+
+/* „Keret” gomb: fogaskerék ikon a keret képe helyett. */
+html[data-frame="2"] .frame-btn {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.5), rgba(var(--bg-rgb), 0.9));
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.85), inset 0 0 0 3px rgba(var(--gold-rgb), 0.4);
+}
+
+html[data-frame="2"] .frame-btn img,
+html[data-frame="2"] .frame-btn svg { display: none; }
+
+html[data-frame="2"] .frame-btn::before {
+  content: '';
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cg fill='%23d2b56e'%3E%3Ccircle r='7.2'/%3E%3Crect x='-2' y='-11' width='4' height='5' rx='1'/%3E%3Crect x='-2' y='-11' width='4' height='5' rx='1' transform='rotate(45)'/%3E%3Crect x='-2' y='-11' width='4' height='5' rx='1' transform='rotate(90)'/%3E%3Crect x='-2' y='-11' width='4' height='5' rx='1' transform='rotate(135)'/%3E%3Crect x='-2' y='-11' width='4' height='5' rx='1' transform='rotate(180)'/%3E%3Crect x='-2' y='-11' width='4' height='5' rx='1' transform='rotate(225)'/%3E%3Crect x='-2' y='-11' width='4' height='5' rx='1' transform='rotate(270)'/%3E%3Crect x='-2' y='-11' width='4' height='5' rx='1' transform='rotate(315)'/%3E%3C/g%3E%3Ccircle r='3' fill='%23081005'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(var(--gold-rgb), 0.4));
+}
+
+/* Panelek: kettős sárgaréz keret, sarokvasak, belül zöld derengés, fent-lent díszkő. */
 html[data-frame="2"] .result,
 html[data-frame="2"] .history,
 html[data-frame="2"] .banner-content {
   border: 2px solid var(--gold-dark);
-  border-radius: 14px;
+  border-radius: 10px;
   box-shadow:
     inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
-    inset 0 0 0 4px rgba(var(--gold-rgb), 0.4),
-    inset 0 0 30px rgba(var(--blue-rgb), 0.10),
-    0 0 24px rgba(var(--blue-rgb), 0.14),
-    0 8px 24px rgba(0, 0, 0, 0.5);
+    inset 0 0 0 4px rgba(var(--gold-rgb), 0.45),
+    inset 0 0 30px rgba(var(--blue-rgb), 0.12),
+    0 0 24px rgba(var(--blue-rgb), 0.18),
+    0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
 html[data-frame="2"] .result,
 html[data-frame="2"] .history {
   position: relative;
   overflow: visible;
-  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.9), rgba(var(--bg-rgb), 0.92));
+  background:
+    linear-gradient(var(--gold), var(--gold)) top 7px left 7px / 22px 3px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 7px left 7px / 3px 22px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 7px right 7px / 22px 3px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 7px right 7px / 3px 22px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 7px left 7px / 22px 3px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 7px left 7px / 3px 22px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 7px right 7px / 22px 3px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 7px right 7px / 3px 22px no-repeat,
+    linear-gradient(180deg, rgba(var(--bg2-rgb), 0.93), rgba(var(--bg-rgb), 0.95));
 }
 
 html[data-frame="2"] .result::before,
@@ -2038,8 +2182,8 @@ html[data-frame="2"] .history::after {
   height: 10px;
   transform: translateX(-50%) rotate(45deg);
   border: 2px solid var(--gold);
-  background: var(--bg-2);
-  box-shadow: 0 0 8px rgba(var(--gold-rgb), 0.5);
+  background: radial-gradient(circle, var(--blue) 0 30%, var(--bg-2) 70%);
+  box-shadow: 0 0 10px rgba(var(--blue-rgb), 0.7);
   pointer-events: none;
 }
 
@@ -2048,77 +2192,35 @@ html[data-frame="2"] .history::before { top: -7px; }
 html[data-frame="2"] .result::after,
 html[data-frame="2"] .history::after { bottom: -7px; }
 
-/* Szerepkör-szűrő: halvány kupola mögötte. */
-html[data-frame="2"] .filters {
-  padding: 16px 12px 12px;
-  border-radius: 50% 50% 18px 18px / 60px 60px 18px 18px;
-  background: radial-gradient(ellipse at 50% 30%, rgba(var(--bg2-rgb), 0.75), rgba(var(--bg-rgb), 0.35) 70%, transparent);
-  box-shadow: inset 0 1px 0 rgba(var(--gold-rgb), 0.18);
-}
-
-/* Lane gombok: sárgaréz keret, a kiválasztott zölden izzik. */
-html[data-frame="2"] .lane-btn {
-  border-color: rgba(var(--gold-rgb), 0.7);
-  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.3), rgba(var(--bg-rgb), 0.85));
-  box-shadow: inset 0 0 0 1px rgba(var(--bg-rgb), 0.8), inset 0 0 10px rgba(0, 0, 0, 0.6);
-  color: var(--text);
-}
-
-html[data-frame="2"] .lane-buttons .lane-btn[aria-pressed="true"] {
-  border-color: var(--blue);
-  color: #fff;
-  background: radial-gradient(circle at 50% 40%, rgba(var(--blue-rgb), 0.3), rgba(var(--bg-rgb), 0.9) 75%);
-  box-shadow: 0 0 16px rgba(var(--blue-rgb), 0.7), inset 0 0 14px rgba(var(--blue-rgb), 0.4);
-}
-
-html[data-frame="2"] .lane-buttons .lane-btn[aria-pressed="true"] img {
-  filter: drop-shadow(0 0 6px rgba(var(--blue-rgb), 0.9)) brightness(1.15);
-}
-
-/* Szerepkör gombok: sárgaréz gyűrű. */
-html[data-frame="2"] .role-btn {
-  border-color: rgba(var(--gold-rgb), 0.8);
-  background: radial-gradient(circle, rgba(var(--steel-rgb), 0.35), rgba(var(--bg-rgb), 0.9) 75%);
-  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.85), inset 0 0 0 3px rgba(var(--gold-rgb), 0.28);
-}
-
-html[data-frame="2"] .role-btn[aria-pressed="true"] {
-  border-color: var(--blue);
-  box-shadow: 0 0 14px rgba(var(--blue-rgb), 0.7), inset 0 0 12px rgba(var(--blue-rgb), 0.4);
-}
-
-/* Keresőmező és a többi szövegmező: sárgaréz keret, besüllyesztett sötét mező. */
-html[data-frame="2"] .search-box input {
-  border-color: rgba(var(--gold-rgb), 0.75);
-  border-radius: 10px;
-  background: rgba(var(--bg-rgb), 0.85);
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
-}
-
-html[data-frame="2"] .search-box input:focus {
-  border-color: var(--blue);
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(var(--blue-rgb), 0.45);
-}
-
-/* A „kizárva” felirat zölden kiemelve. */
+/* A „kizárva” felirat zölden kiemelve; a háttér előtti szövegek sötét árnyékot kapnak. */
 html[data-frame="2"] .ban-note { color: var(--blue); font-weight: 700; }
+
+html[data-frame="2"] .count,
+html[data-frame="2"] .ticker,
+html[data-frame="2"] .subtitle,
+html[data-frame="2"] .stage-title,
+html[data-frame="2"] .search-hint {
+  color: var(--text);
+  text-shadow: 0 1px 3px #000, 0 0 10px #000, 0 0 18px rgba(0, 0, 0, 0.8);
+}
 
 /* Fülek és előzmény-kártyák sárgaréz kerettel. */
 html[data-frame="2"] .tab[aria-selected="true"] {
   border-color: var(--gold);
-  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.45), rgba(var(--bg-rgb), 0.8));
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.5), rgba(var(--bg-rgb), 0.85));
+  box-shadow: 0 0 8px rgba(var(--blue-rgb), 0.25);
 }
 
 html[data-frame="2"] .history-entry {
-  border-color: rgba(var(--gold-rgb), 0.4);
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.85), rgba(var(--bg-rgb), 0.9));
+  border-color: rgba(var(--gold-rgb), 0.45);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.85), rgba(var(--bg-rgb), 0.92));
 }
 
 html[data-frame="2"] .history-entry:hover,
 html[data-frame="2"] .history-entry[aria-current="true"] {
   border-color: var(--gold);
-  box-shadow: 0 0 12px rgba(var(--blue-rgb), 0.25);
+  box-shadow: 0 0 12px rgba(var(--blue-rgb), 0.3);
 }
 
 /* A kerék mögött zöld ragyogás. */
@@ -2128,5 +2230,14 @@ html[data-frame="2"] .wheel-wrap::before {
   inset: -30%;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(circle, rgba(var(--blue-rgb), 0.28), rgba(var(--blue-rgb), 0.07) 45%, transparent 68%);
+  background: radial-gradient(circle, rgba(var(--blue-rgb), 0.3), rgba(var(--blue-rgb), 0.08) 45%, transparent 68%);
 }
+
+/* Keskeny képernyőn a címtábla csövei nem férnek el. */
+@media (max-width: 700px) {
+  html[data-frame="2"] .site-header h1::before,
+  html[data-frame="2"] .site-header h1::after { display: none; }
+  html[data-frame="2"] .site-header h1 { padding: 6px 16px 8px; }
+  html[data-frame="2"] .step-label { padding: 4px 18px; font-size: 0.72rem; letter-spacing: 0.04em; }
+}
+
