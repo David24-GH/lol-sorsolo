@@ -8,7 +8,7 @@
 //   text, muted – szövegszínek
 // Az oldal betöltésekor (a <head>-ben) rögtön alkalmazza a mentett témát, így nem villan.
 (function () {
-  // Az oldal eredeti színei: keret nélkül és a Hextech keretnél (ehhez készült az oldal).
+  // Az oldal eredeti színei: keret nélkül.
   const BASE = {
     bg: '#010a13', bg2: '#0a1428', panel: '#0f1d33', border: '#1e2d45',
     gold: '#c8aa6e', goldLight: '#f0e6d2', goldDark: '#785a28', accent: '#0ac8b9',
@@ -20,12 +20,12 @@
     1: { bg: '#050a18', bg2: '#0b1630', panel: '#101e3a', border: '#2a3b62', gold: '#dcc58f', goldLight: '#f4f1e6', goldDark: '#6f6346', accent: '#4cc3ff', text: '#d9dde6', muted: '#94a0b8' },
     // 2 Zaun: sárgaréz és vegyi-zöld izzás (saját háttere és díszítése is van: style.css, „Zaun téma”)
     2: { bg: '#030602', bg2: '#081005', panel: '#0d1608', border: '#2c3a18', gold: '#d2b56e', goldLight: '#f3e9c8', goldDark: '#7a6630', accent: '#9be22d', text: '#ddd5b0', muted: '#9aa184' },
-    // 3 Hextech: bronz és kék – az oldal eredeti színei
-    3: BASE,
-    // 4 Tűz: izzó narancs és arany
-    4: { bg: '#0d0503', bg2: '#1a0b06', panel: '#241009', border: '#3d1d10', gold: '#f2a64a', goldLight: '#fde3b8', goldDark: '#8a3f14', accent: '#ff5a2a', text: '#e9c28e', muted: '#9a8a80' },
-    // 5 Fényív: fehér arany, halvány türkiz
-    5: { bg: '#080b0e', bg2: '#10161b', panel: '#172027', border: '#2a3640', gold: '#d8c08a', goldLight: '#f4f2df', goldDark: '#7b4924', accent: '#8fd3d6', text: '#d6cfb3', muted: '#8f979c' },
+    // 3 Hextech: bronz és hextech kék (saját háttere és díszítése is van: style.css, „Hextech téma”)
+    3: { bg: '#020a16', bg2: '#081830', panel: '#0d2140', border: '#22395e', gold: '#d9a865', goldLight: '#f6e4c4', goldDark: '#7a4e2c', accent: '#2fb8ff', text: '#dfd0b0', muted: '#8e9aae' },
+    // 4 Tűz: izzó narancs és arany, kovácsolt vas (saját háttere és díszítése is van: style.css, „Tűz téma”)
+    4: { bg: '#0d0503', bg2: '#1a0b06', panel: '#241009', border: '#3d1d10', gold: '#f2a64a', goldLight: '#fde3b8', goldDark: '#8a3f14', accent: '#ff5a2a', text: '#ecc896', muted: '#a3918a' },
+    // 5 Fényív: fehér arany fény, alkonyi éjkék (saját háttere és díszítése is van: style.css, „Fényív téma”)
+    5: { bg: '#070c1a', bg2: '#0e1630', panel: '#141f3d', border: '#2e3d66', gold: '#e9cf8f', goldLight: '#fffaf0', goldDark: '#8a7340', accent: '#9fe6ff', text: '#e8e3d4', muted: '#9ea7bc' },
     // 6 Átitatott: vörösréz és bíbor
     6: { bg: '#0d040a', bg2: '#1a0a15', panel: '#24101e', border: '#3d1c33', gold: '#daa476', goldLight: '#f6dfcb', goldDark: '#6b2716', accent: '#e02aae', text: '#e0bca0', muted: '#9a8a92' },
     // 7 Árny-szigetek: kísérteties kékeszöld
@@ -80,7 +80,7 @@
     const p = palette(id);
     window.LOL_THEME = p;
     // Egyes témáknak saját háttere és díszítése is van a style.css-ben
-    // (html[data-frame="1"] – Piltover, html[data-frame="2"] – Zaun).
+    // (html[data-frame="1"] – Piltover, "2" – Zaun, "3" – Hextech, "4" – Tűz, "5" – Fényív).
     document.documentElement.dataset.frame = String(THEMES[id] ? id : 0);
     const s = document.documentElement.style;
     const vars = {

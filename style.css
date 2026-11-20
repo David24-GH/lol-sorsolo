@@ -2491,3 +2491,493 @@ html[data-frame="1"] .wheel-wrap canvas {
   html[data-frame="1"] .step-label { padding: 4px 16px; font-size: 0.72rem; letter-spacing: 0.04em; }
 }
 
+/* ==========================================================================
+   Hextech (3), Tűz (4) és Fényív (5) téma – közös rész. Mindegyik saját,
+   képgenerátorral készült hátteret kap (--decor-bg), saját „Keret” ikont
+   (--decor-icon) és díszkövet a panelek tetején-alján (--decor-gem).
+   A formák témánként lent, a színek a themes.js 3–5. témájából jönnek.
+   ========================================================================== */
+html[data-frame="3"] {
+  --decor-bg: url("hextech-bg.jpg");
+  --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-13 -13 26 26'%3E%3Cpath d='M0-12L10.4-6V6L0 12-10.4 6V-6Z' fill='none' stroke='%23d9a865' stroke-width='1.6'/%3E%3Cpath d='M0-6.5L5.6-3.2V3.2L0 6.5-5.6 3.2V-3.2Z' fill='%232fb8ff' stroke='%23f6e4c4' stroke-width='.8'/%3E%3C/svg%3E");
+  --decor-gem: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 16'%3E%3Cpath d='M7 1l6 3.5v7L7 15 1 11.5v-7z' fill='%232fb8ff' stroke='%23f6e4c4' stroke-width='1.2'/%3E%3C/svg%3E");
+}
+
+html[data-frame="4"] {
+  --decor-bg: url("tuz-bg.jpg");
+  --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -13 24 26'%3E%3Cpath d='M0 12C-7 12-9 5-6 0-4 4-2 4-2 1-2-4 2-8 1-12 6-8 9-3 8 3 7 8 4 12 0 12Z' fill='%23f2a64a' stroke='%23fde3b8' stroke-width='1'/%3E%3Cpath d='M0 11C-3 11-4 7-2 4-1 6 1 6 1 3 3 5 4 8 3 9 2 11 1 11 0 11Z' fill='%23ff5a2a'/%3E%3C/svg%3E");
+  --decor-gem: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 16'%3E%3Cpath d='M7 1l6 7-6 7-6-7z' fill='%23ff5a2a' stroke='%23fde3b8' stroke-width='1.2'/%3E%3C/svg%3E");
+}
+
+html[data-frame="5"] {
+  --decor-bg: url("fenyiv-bg.jpg");
+  --decor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-13 -13 26 26'%3E%3Ccircle r='11.5' fill='none' stroke='%23e9cf8f' stroke-width='1.2'/%3E%3Cpath d='M0-6L1.3-1.3 6 0 1.3 1.3 0 6-1.3 1.3-6 0-1.3-1.3Z' fill='%23e9cf8f' transform='rotate(45)'/%3E%3Cpath d='M0-9.5L2-2 9.5 0 2 2 0 9.5-2 2-9.5 0-2-2Z' fill='%23fffaf0'/%3E%3C/svg%3E");
+  --decor-gem: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-8 -8 16 16'%3E%3Cpath d='M0-7.5L1.8-1.8 7.5 0 1.8 1.8 0 7.5-1.8 1.8-7.5 0-1.8-1.8Z' fill='%23fffaf0' stroke='%23e9cf8f' stroke-width='.8'/%3E%3C/svg%3E");
+}
+
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(var(--bg-rgb), 0.4) 0%, rgba(var(--bg-rgb), 0) 40%, rgba(var(--bg-rgb), 0.3) 100%),
+    var(--decor-bg) center bottom / cover no-repeat,
+    var(--bg);
+}
+
+/* „Keret” gomb: a téma saját ikonja a keret képe helyett. */
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .frame-btn {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.9));
+}
+
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .frame-btn img,
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .frame-btn svg { display: none; }
+
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .frame-btn::before {
+  content: '';
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  background: var(--decor-icon) center / contain no-repeat;
+  filter: drop-shadow(0 0 5px rgba(var(--blue-rgb), 0.7));
+}
+
+/* Panelek közös része: díszkő fent és lent középen. */
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) :is(.result, .history) {
+  position: relative;
+  overflow: visible;
+}
+
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) :is(.result, .history)::before,
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) :is(.result, .history)::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 14px;
+  height: 16px;
+  transform: translateX(-50%);
+  background: var(--decor-gem) center / contain no-repeat;
+  filter: drop-shadow(0 0 6px rgba(var(--blue-rgb), 0.9));
+  pointer-events: none;
+}
+
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) :is(.result, .history)::before { top: -9px; }
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) :is(.result, .history)::after { bottom: -9px; }
+
+/* A „kizárva” felirat kiemelve; a háttér előtti szövegek sötét árnyékot kapnak. */
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .ban-note { color: var(--blue); font-weight: 700; }
+
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) :is(.count, .ticker, .subtitle, .stage-title, .search-hint) {
+  color: var(--text);
+  text-shadow: 0 1px 3px #000, 0 0 10px rgba(0, 0, 0, 0.9), 0 0 18px rgba(0, 0, 0, 0.75);
+}
+
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .subtitle { margin-top: 10px; }
+
+/* Fülek és előzmény-kártyák. */
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .tab[aria-selected="true"] {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.85));
+  box-shadow: 0 0 8px rgba(var(--blue-rgb), 0.3);
+}
+
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .history-entry {
+  border-color: rgba(var(--gold-rgb), 0.4);
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.85), rgba(var(--bg-rgb), 0.9));
+}
+
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .history-entry:is(:hover, [aria-current="true"]) {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(var(--blue-rgb), 0.35);
+}
+
+/* Ragyogás a kerék mögött (árnyékként, hogy ne okozzon görgetést). */
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .wheel-wrap canvas {
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), 0 0 90px 30px rgba(var(--blue-rgb), 0.22);
+}
+
+/* A kiválasztott lane / szerepkör ikonja izzik. */
+:is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .lane-buttons .lane-btn[aria-pressed="true"] img {
+  filter: drop-shadow(0 0 6px rgba(var(--blue-rgb), 0.9)) brightness(1.15);
+}
+
+/* ---------- Hextech téma (3): bronz gépezet, hatszögek, kék hextech energia ---------- */
+html[data-frame="3"] .site-header h1 {
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 6px 30px 8px;
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.92), rgba(var(--bg-rgb), 0.92));
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--blue-rgb), 0.45),
+    inset 0 -6px 18px rgba(var(--blue-rgb), 0.18),
+    0 0 22px rgba(var(--blue-rgb), 0.3);
+  color: var(--gold-light);
+  text-shadow: 0 0 12px rgba(var(--blue-rgb), 0.5);
+}
+
+html[data-frame="3"] .site-header h1::before,
+html[data-frame="3"] .site-header h1::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: min(14vw, 170px);
+  height: 24px;
+  transform: translateY(-50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 24' preserveAspectRatio='none'%3E%3Cpath d='M0 12H122' stroke='%23d9a865' stroke-width='1.6'/%3E%3Cpath d='M0 7H70M0 17H70' stroke='%23d9a865' stroke-width='1' opacity='.6'/%3E%3Cg transform='translate(134 12)' fill='%23d9a865'%3E%3Ccircle r='6'/%3E%3Crect x='-1.6' y='-9' width='3.2' height='4'/%3E%3Crect x='-1.6' y='-9' width='3.2' height='4' transform='rotate(60)'/%3E%3Crect x='-1.6' y='-9' width='3.2' height='4' transform='rotate(120)'/%3E%3Crect x='-1.6' y='-9' width='3.2' height='4' transform='rotate(180)'/%3E%3Crect x='-1.6' y='-9' width='3.2' height='4' transform='rotate(240)'/%3E%3Crect x='-1.6' y='-9' width='3.2' height='4' transform='rotate(300)'/%3E%3Ccircle r='2.4' fill='%23081830'/%3E%3C/g%3E%3Cpath d='M158 3l7 4.5v9l-7 4.5-7-4.5v-9z' fill='%232fb8ff' stroke='%23f6e4c4' stroke-width='1.2'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 0 5px rgba(var(--blue-rgb), 0.55));
+  pointer-events: none;
+}
+
+html[data-frame="3"] .site-header h1::before { right: calc(100% + 4px); transform: translateY(-50%) scaleX(-1); }
+html[data-frame="3"] .site-header h1::after { left: calc(100% + 4px); }
+
+/* Címkék: lekerekített bronz tábla, két végén hatszögletű hextech kristály. */
+html[data-frame="3"] .step-label {
+  position: relative;
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 4px 28px;
+  border: 1.5px solid var(--gold);
+  border-radius: 999px;
+  background:
+    var(--decor-gem) left 9px center / 9px 10px no-repeat,
+    var(--decor-gem) right 9px center / 9px 10px no-repeat,
+    linear-gradient(180deg, rgba(var(--steel-rgb), 0.95), var(--bg));
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.85), inset 0 0 0 3px rgba(var(--blue-rgb), 0.3), 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-weight: 700;
+}
+
+/* Lane gombok: bronz keret, alul kék energiacsík; a kiválasztottnál felizzik. */
+html[data-frame="3"] .lane-btn {
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  color: var(--text);
+  background:
+    linear-gradient(90deg, transparent 15%, rgba(var(--blue-rgb), 0.45) 50%, transparent 85%) bottom 3px center / 100% 2px no-repeat,
+    linear-gradient(180deg, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.92));
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.85), inset 0 0 0 3px rgba(var(--gold-rgb), 0.3), 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="3"] .lane-buttons .lane-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  color: #fff;
+  background:
+    linear-gradient(90deg, transparent 5%, var(--blue) 50%, transparent 95%) bottom 3px center / 100% 3px no-repeat,
+    radial-gradient(circle at 50% 40%, rgba(var(--blue-rgb), 0.35), rgba(var(--bg-rgb), 0.92) 75%);
+  box-shadow: inset 0 0 14px rgba(var(--blue-rgb), 0.45), 0 0 18px rgba(var(--blue-rgb), 0.75);
+}
+
+/* Szerepkör gombok: bronz gyűrű, belül halványan izzó kék gyűrű. */
+html[data-frame="3"] .role-btn {
+  border: 2.5px solid var(--gold);
+  background: radial-gradient(circle, rgba(var(--steel-rgb), 0.5), rgba(var(--bg-rgb), 0.95) 72%);
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 0 3.5px rgba(var(--blue-rgb), 0.45),
+    inset 0 0 12px rgba(var(--blue-rgb), 0.18),
+    0 4px 10px rgba(0, 0, 0, 0.55);
+}
+
+html[data-frame="3"] .role-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.85), inset 0 0 14px rgba(var(--blue-rgb), 0.55), 0 0 16px rgba(var(--blue-rgb), 0.8);
+}
+
+html[data-frame="3"] .search-box input {
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(var(--bg-rgb), 0.92), rgba(var(--bg2-rgb), 0.88));
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.9), inset 0 0 0 3px rgba(var(--blue-rgb), 0.3), 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+html[data-frame="3"] .search-box input:focus {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.9), 0 0 14px rgba(var(--blue-rgb), 0.6);
+}
+
+/* Panelek: bronz keret, a sarkokban hatszögletű csavarfejek. */
+html[data-frame="3"] :is(.result, .history),
+html[data-frame="3"] .banner-content {
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--blue-rgb), 0.3),
+    inset 0 0 30px rgba(var(--blue-rgb), 0.1),
+    0 0 24px rgba(var(--blue-rgb), 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="3"] :is(.result, .history) {
+  --bolt: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 11'%3E%3Cpath d='M5 .5l4.3 2.5v5L5 10.5.7 8V3z' fill='%23d9a865'/%3E%3Ccircle cx='5' cy='5.5' r='1.6' fill='%23081830'/%3E%3C/svg%3E");
+  background:
+    var(--bolt) top 7px left 7px / 10px 11px no-repeat,
+    var(--bolt) top 7px right 7px / 10px 11px no-repeat,
+    var(--bolt) bottom 7px left 7px / 10px 11px no-repeat,
+    var(--bolt) bottom 7px right 7px / 10px 11px no-repeat,
+    linear-gradient(180deg, rgba(var(--bg2-rgb), 0.9), rgba(var(--bg-rgb), 0.93));
+}
+
+html[data-frame="3"] .history-entry { border-radius: 8px; }
+
+/* ---------- Tűz téma (4): kovácsolt vas, izzó parázs, lángnyelvek ---------- */
+html[data-frame="4"] .site-header h1 {
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 6px 30px 8px;
+  border: 2px solid var(--gold-dark);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.95), rgba(var(--bg-rgb), 0.95));
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--blue-rgb), 0.55),
+    inset 0 -10px 22px rgba(var(--blue-rgb), 0.25),
+    0 0 24px rgba(var(--blue-rgb), 0.35);
+  color: var(--gold-light);
+  text-shadow: 0 0 14px rgba(var(--gold-rgb), 0.7);
+}
+
+html[data-frame="4"] .site-header h1::before,
+html[data-frame="4"] .site-header h1::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: min(14vw, 170px);
+  height: 30px;
+  transform: translateY(-62%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 30' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%238a3f14'/%3E%3Cstop offset='1' stop-color='%23ffb347'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 20H128' stroke='url(%23g)' stroke-width='2'/%3E%3Cpath d='M0 15H90' stroke='%23f2a64a' stroke-width='1' opacity='.5'/%3E%3Cpath d='M112 20c-4-5 1-9 3-13 1 5 6 7 4 13z' fill='%23ff5a2a'/%3E%3Cpath d='M126 20c-5-6 0-12 4-17 1 7 8 9 5 17z' fill='%23f2a64a'/%3E%3Cpath d='M141 20c-6-7 0-14 5-20 1 8 10 11 6 20z' fill='%23ffd27a'/%3E%3Cpath d='M160 16l6 4-6 4-6-4z' fill='%23ff5a2a' stroke='%23fde3b8' stroke-width='1'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 0 6px rgba(var(--blue-rgb), 0.7));
+  pointer-events: none;
+}
+
+html[data-frame="4"] .site-header h1::before { right: calc(100% + 4px); transform: translateY(-62%) scaleX(-1); }
+html[data-frame="4"] .site-header h1::after { left: calc(100% + 4px); }
+
+/* Címkék: lefelé szűkülő, izzó szélű vastábla. */
+html[data-frame="4"] .step-label {
+  position: relative;
+  isolation: isolate;
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 4px 26px;
+  background: linear-gradient(90deg, var(--gold-dark), var(--blue) 50%, var(--gold-dark));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 12px 100%);
+  font-weight: 700;
+}
+
+html[data-frame="4"] .step-label::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.95), var(--bg));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 100%, 11px 100%);
+}
+
+/* Lane gombok: sötét vas, alul parázsló izzás; a kiválasztott lángol. */
+html[data-frame="4"] .lane-btn {
+  border: 2px solid var(--gold-dark);
+  border-radius: 4px;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 50% 120%, rgba(var(--blue-rgb), 0.35), transparent 60%),
+    linear-gradient(180deg, rgba(var(--steel-rgb), 0.5), rgba(var(--bg-rgb), 0.95));
+  box-shadow: inset 0 0 0 1px rgba(var(--gold-rgb), 0.25), inset 0 0 10px rgba(0, 0, 0, 0.7), 0 3px 10px rgba(0, 0, 0, 0.55);
+}
+
+html[data-frame="4"] .lane-buttons .lane-btn[aria-pressed="true"] {
+  border-color: var(--gold);
+  color: #fff;
+  background:
+    radial-gradient(ellipse at 50% 110%, rgba(var(--blue-rgb), 0.75), rgba(var(--gold-rgb), 0.15) 55%, transparent 80%),
+    linear-gradient(180deg, rgba(var(--steel-rgb), 0.6), rgba(var(--bg-rgb), 0.95));
+  box-shadow: inset 0 0 14px rgba(var(--blue-rgb), 0.45), 0 0 18px rgba(var(--blue-rgb), 0.8);
+}
+
+/* Szerepkör gombok: vasgyűrű, belül parázsló perem. */
+html[data-frame="4"] .role-btn {
+  border: 2.5px solid var(--gold-dark);
+  background: radial-gradient(circle, rgba(var(--steel-rgb), 0.5), rgba(var(--bg-rgb), 0.95) 72%);
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 0 3px rgba(var(--blue-rgb), 0.5),
+    inset 0 -6px 12px rgba(var(--blue-rgb), 0.3),
+    0 4px 10px rgba(0, 0, 0, 0.6);
+}
+
+html[data-frame="4"] .role-btn[aria-pressed="true"] {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 14px rgba(var(--blue-rgb), 0.6), 0 0 16px rgba(var(--blue-rgb), 0.85);
+}
+
+html[data-frame="4"] .search-box input {
+  border: 2px solid var(--gold-dark);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(var(--bg-rgb), 0.95), rgba(var(--bg2-rgb), 0.9));
+  box-shadow: inset 0 0 0 1px rgba(var(--blue-rgb), 0.45), inset 0 3px 10px rgba(0, 0, 0, 0.7), 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="4"] .search-box input:focus {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px rgba(var(--blue-rgb), 0.6), 0 0 14px rgba(var(--blue-rgb), 0.6);
+}
+
+/* Panelek: kovácsolt vas, izzó belső perem, parázsló sarkok. */
+html[data-frame="4"] :is(.result, .history),
+html[data-frame="4"] .banner-content {
+  border: 2px solid var(--gold-dark);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--blue-rgb), 0.4),
+    inset 0 -14px 30px rgba(var(--blue-rgb), 0.12),
+    0 0 26px rgba(var(--blue-rgb), 0.25),
+    0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+html[data-frame="4"] :is(.result, .history) {
+  background:
+    radial-gradient(circle at 0 0, rgba(var(--blue-rgb), 0.35), transparent 28px),
+    radial-gradient(circle at 100% 0, rgba(var(--blue-rgb), 0.35), transparent 28px),
+    radial-gradient(circle at 0 100%, rgba(var(--blue-rgb), 0.35), transparent 28px),
+    radial-gradient(circle at 100% 100%, rgba(var(--blue-rgb), 0.35), transparent 28px),
+    linear-gradient(180deg, rgba(var(--bg2-rgb), 0.92), rgba(var(--bg-rgb), 0.95));
+}
+
+html[data-frame="4"] .history-entry { border-radius: 4px; }
+
+/* ---------- Fényív téma (5): sugárzó fehér arany, ívek és fényudvar ---------- */
+html[data-frame="5"] .site-header h1 {
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 26px 10px 2px;
+  color: var(--gold-light);
+  text-shadow: 0 0 16px rgba(var(--gold-rgb), 0.8), 0 0 34px rgba(var(--blue-rgb), 0.35), 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Fölötte fényív csillaggal, alatta vékony vonal. */
+html[data-frame="5"] .site-header h1::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: min(80vw, 420px);
+  height: 42px;
+  transform: translateX(-50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 40' preserveAspectRatio='none'%3E%3Cpath d='M30 39A220 220 0 0 1 270 39' fill='none' stroke='%23e9cf8f' stroke-width='1.4'/%3E%3Cpath d='M60 39A180 180 0 0 1 240 39' fill='none' stroke='%23e9cf8f' stroke-width='.8' opacity='.5'/%3E%3Cpath d='M150 0L152.5 7.5 160 10 152.5 12.5 150 20 147.5 12.5 140 10 147.5 7.5Z' fill='%23fffaf0'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 0 6px rgba(var(--gold-rgb), 0.8));
+  pointer-events: none;
+}
+
+html[data-frame="5"] .site-header h1::after {
+  content: '';
+  display: block;
+  width: 70%;
+  height: 1px;
+  margin: 6px auto 0;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  box-shadow: 0 0 8px rgba(var(--gold-rgb), 0.8);
+}
+
+/* Címkék: lekerekített, áttetsző fénytábla vékony arany szegéllyel. */
+html[data-frame="5"] .step-label {
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 4px 22px;
+  border: 1px solid rgba(var(--gold-rgb), 0.8);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.75), rgba(var(--bg-rgb), 0.85));
+  box-shadow: 0 0 12px rgba(var(--gold-rgb), 0.3), inset 0 1px 0 rgba(var(--gold-light-rgb), 0.25);
+  font-weight: 700;
+}
+
+/* Lane gombok: ív alakú teteje, mint egy fénykapu; a kiválasztott sugárzik. */
+html[data-frame="5"] .lane-btn {
+  border: 1.5px solid rgba(var(--gold-rgb), 0.85);
+  border-radius: 24px 24px 6px 6px;
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.6), rgba(var(--bg-rgb), 0.9));
+  box-shadow: inset 0 1px 0 rgba(var(--gold-light-rgb), 0.3), 0 0 10px rgba(var(--gold-rgb), 0.15), 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="5"] .lane-buttons .lane-btn[aria-pressed="true"] {
+  border-color: var(--gold-light);
+  color: #fff;
+  background: radial-gradient(circle at 50% 30%, rgba(var(--gold-light-rgb), 0.35), rgba(var(--blue-rgb), 0.12) 55%, rgba(var(--bg-rgb), 0.9) 85%);
+  box-shadow: inset 0 0 14px rgba(var(--gold-light-rgb), 0.35), 0 0 20px rgba(var(--gold-rgb), 0.75);
+}
+
+/* Szerepkör gombok: vékony arany gyűrű, körülötte fényudvar. */
+html[data-frame="5"] .role-btn {
+  border: 1.5px solid var(--gold);
+  background: radial-gradient(circle, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.92) 72%);
+  box-shadow:
+    0 0 0 4px rgba(var(--bg-rgb), 0.35),
+    0 0 0 5px rgba(var(--gold-rgb), 0.35),
+    0 0 14px rgba(var(--gold-rgb), 0.3),
+    inset 0 1px 0 rgba(var(--gold-light-rgb), 0.3);
+}
+
+html[data-frame="5"] .role-btn[aria-pressed="true"] {
+  border-color: var(--gold-light);
+  box-shadow: 0 0 0 4px rgba(var(--bg-rgb), 0.35), 0 0 0 5px rgba(var(--gold-light-rgb), 0.6), 0 0 20px rgba(var(--gold-rgb), 0.8);
+}
+
+html[data-frame="5"] .search-box input {
+  border: 1.5px solid rgba(var(--gold-rgb), 0.85);
+  border-radius: 999px;
+  padding-inline: 18px;
+  background: linear-gradient(180deg, rgba(var(--bg-rgb), 0.9), rgba(var(--bg2-rgb), 0.85));
+  box-shadow: 0 0 12px rgba(var(--gold-rgb), 0.2), inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="5"] .search-box input:focus {
+  border-color: var(--gold-light);
+  box-shadow: 0 0 16px rgba(var(--gold-rgb), 0.6), inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Panelek: ívelt tetejű fénykapu, vékony kettős arany szegély. */
+html[data-frame="5"] :is(.result, .history),
+html[data-frame="5"] .banner-content {
+  border: 1.5px solid rgba(var(--gold-rgb), 0.9);
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 0 4px rgba(var(--gold-rgb), 0.3),
+    inset 0 20px 40px -20px rgba(var(--gold-light-rgb), 0.18),
+    0 0 26px rgba(var(--gold-rgb), 0.22),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="5"] :is(.result, .history) {
+  border-radius: 28px 28px 10px 10px;
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.88), rgba(var(--bg-rgb), 0.92));
+}
+
+html[data-frame="5"] :is(.result, .history)::before,
+html[data-frame="5"] :is(.result, .history)::after { filter: drop-shadow(0 0 6px rgba(var(--gold-rgb), 1)); }
+
+html[data-frame="5"] .banner-content { border-radius: 16px; }
+html[data-frame="5"] .history-entry { border-radius: 12px; }
+
+html[data-frame="5"] .wheel-wrap canvas {
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), 0 0 90px 30px rgba(var(--gold-rgb), 0.25);
+}
+
+/* Keskeny képernyőn a címtábla szárnyai nem férnek el. */
+@media (max-width: 700px) {
+  :is(html[data-frame="3"], html[data-frame="4"]) .site-header h1::before,
+  :is(html[data-frame="3"], html[data-frame="4"]) .site-header h1::after { display: none; }
+  :is(html[data-frame="3"], html[data-frame="4"]) .site-header h1 { padding: 6px 16px 8px; }
+  :is(html[data-frame="3"], html[data-frame="4"], html[data-frame="5"]) .step-label { padding-inline: 18px; font-size: 0.72rem; letter-spacing: 0.04em; }
+  html[data-frame="3"] .step-label { padding-inline: 24px; }
+}
+

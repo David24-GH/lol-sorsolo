@@ -20,6 +20,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 - **Kerettéma**: a keret színvilága az egész oldalra átterjed (háttér, dobozok, gombok, szövegek, kerékszeletek, részecskék) – pl. a Noxus kerettel vörös–acélszürke, a Freljorddal jégkék lesz az oldal. A palettákat a keretképek fő színeiből kevertük ki (`themes.js`); keret nélkül és a Hextech keretnél az eredeti színek maradnak.
 - **Zaun téma**: a Zaun keretnél az oldal saját dizájnt is kap – zauni városkép mérgező zöld füsttel a háttérben (`zaun-bg.jpg`, képgenerátorral készült), csöves címtábla, nyílvégű fém címkék, szegecselt sárgaréz gombok, sarokvasas panelek, fogaskerekes „Keret” gomb (`style.css`, „Zaun téma”).
 - **Piltover téma**: a Piltover keretnél a Haladás Városa éjjel a háttérben (`piltover-bg.jpg`, képgenerátorral készült), art deco címtábla arany szárnyakkal és hextech kristállyal, levágott sarkú címkék, sarokdíszes arany gombok és panelek, kék hextech izzás (`style.css`, „Piltover téma”).
+- **Hextech, Tűz és Fényív téma**: ezek is saját, képgenerátorral készült hátteret és stílust kapnak – Hextech: bronz gépezet, hatszögek, kék energiacsíkok (`hextech-bg.jpg`); Tűz: kovácsolt vas, lángnyelvek, parázsló izzás (`tuz-bg.jpg`); Fényív: fehér arany ívek, fénykapu alakú gombok és panelek (`fenyiv-bg.jpg`).
 
 ### Fun build kerék
 - A kisorsolt champion **fejlécként** megmarad, alatta egy második kerék jelenik meg.
