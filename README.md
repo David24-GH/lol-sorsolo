@@ -18,6 +18,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 - Látványos eredmény: teljes képernyős bemutató, fénysugarak, csillogás, részecske-effekt.
 - **Keret a kerék körül**: bal felül választható a játék 21 szintkerete közül (Piltover, Zaun, Hextech … Örökkévaló), vagy keret nélkül. Mindkét kerékre érvényes, az oldal megjegyzi. A keretek a CommunityDragonról töltődnek, és mindig teljes egészében látszanak (a kerék mérete igazodik hozzájuk).
 - **Kerettéma**: a keret színvilága az egész oldalra átterjed (háttér, dobozok, gombok, szövegek, kerékszeletek, részecskék) – pl. a Noxus kerettel vörös–acélszürke, a Freljorddal jégkék lesz az oldal. A palettákat a keretképek fő színeiből kevertük ki (`themes.js`); keret nélkül és a Hextech keretnél az eredeti színek maradnak.
+- **Zaun téma**: a Zaun keretnél az oldal saját dizájnt is kap – izzó zöld fényíves háttér (`zaun-bg.jpg`, képgenerátorral készült), vékony kettős sárgaréz keretek díszkövekkel, zölden izzó kiválasztott gombok (`style.css`, „Zaun téma”).
 
 ### Fun build kerék
 - A kisorsolt champion **fejlécként** megmarad, alatta egy második kerék jelenik meg.

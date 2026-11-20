@@ -18,8 +18,8 @@
   const THEMES = {
     // 1 Piltover: ezüstös acél, acélkék
     1: { bg: '#06090d', bg2: '#0e141c', panel: '#151d28', border: '#27313f', gold: '#bdb7a8', goldLight: '#eeede8', goldDark: '#5e574f', accent: '#6fa8d0', text: '#cbc6b8', muted: '#8b9099' },
-    // 2 Zaun: olajzöld sárgaréz, mérgező zöld
-    2: { bg: '#070904', bg2: '#10140a', panel: '#171d10', border: '#2b3320', gold: '#bcc27e', goldLight: '#eef2cf', goldDark: '#5c5730', accent: '#86d41e', text: '#c9ca9b', muted: '#8d9180' },
+    // 2 Zaun: sárgaréz és vegyi-zöld izzás (saját háttere és díszítése is van: style.css, „Zaun téma”)
+    2: { bg: '#030602', bg2: '#081005', panel: '#0d1608', border: '#2c3a18', gold: '#d2b56e', goldLight: '#f3e9c8', goldDark: '#7a6630', accent: '#9be22d', text: '#ddd5b0', muted: '#9aa184' },
     // 3 Hextech: bronz és kék – az oldal eredeti színei
     3: BASE,
     // 4 Tűz: izzó narancs és arany
@@ -79,6 +79,8 @@
   function apply(id) {
     const p = palette(id);
     window.LOL_THEME = p;
+    // Egyes témáknak saját háttere és díszítése is van a style.css-ben (html[data-frame="2"] – Zaun).
+    document.documentElement.dataset.frame = String(THEMES[id] ? id : 0);
     const s = document.documentElement.style;
     const vars = {
       '--bg': p.bg, '--bg-2': p.bg2, '--panel': p.panel, '--border': p.border,

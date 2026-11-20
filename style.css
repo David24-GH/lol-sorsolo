@@ -1962,3 +1962,171 @@ body.no-scroll { overflow: hidden; }
 .item-list li[data-item-id]:hover,
 .item-list li[data-item-id]:focus-visible { background: rgba(var(--gold-rgb), 0.08); outline: none; }
 .history-items img[data-item-id] { cursor: help; }
+
+/* ==========================================================================
+   Zaun téma (a Zaun keret kiválasztásakor), letisztult változat:
+   sötét háttér izzó zöld fényívekkel, vékony kettős sárgaréz keretek
+   díszkővel, a kiválasztott gombok zölden izzanak. A színek a themes.js
+   2-es témájából jönnek (--gold = sárgaréz, --blue = vegyi zöld).
+   ========================================================================== */
+html[data-frame="2"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(var(--bg-rgb), 0.55) 0%, rgba(var(--bg-rgb), 0) 35%),
+    url("zaun-bg.jpg") center bottom / cover no-repeat,
+    var(--bg);
+}
+
+/* Cím: arany színátmenet, fölötte vékony vonal díszkővel. */
+html[data-frame="2"] .site-header h1 {
+  background: linear-gradient(180deg, var(--gold-light) 10%, var(--gold) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 14px rgba(var(--gold-rgb), 0.3));
+}
+
+html[data-frame="2"] .site-header h1::before {
+  content: '';
+  display: block;
+  width: min(60%, 600px);
+  height: 14px;
+  margin: 0 auto 10px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Crect x='3' y='3' width='8' height='8' transform='rotate(45 7 7)' fill='%23081005' stroke='%23d2b56e' stroke-width='1.6'/%3E%3C/svg%3E") center / 14px 14px no-repeat,
+    linear-gradient(90deg, transparent, var(--gold) 20%, var(--gold) 80%, transparent) center / 100% 1px no-repeat;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+}
+
+html[data-frame="2"] .subtitle { color: var(--text); font-style: italic; }
+
+/* Keretezett dobozok: kettős sárgaréz vonal, belül zöld derengés, fent és lent díszkő. */
+html[data-frame="2"] .result,
+html[data-frame="2"] .history,
+html[data-frame="2"] .banner-content {
+  border: 2px solid var(--gold-dark);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--gold-rgb), 0.4),
+    inset 0 0 30px rgba(var(--blue-rgb), 0.10),
+    0 0 24px rgba(var(--blue-rgb), 0.14),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="2"] .result,
+html[data-frame="2"] .history {
+  position: relative;
+  overflow: visible;
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.9), rgba(var(--bg-rgb), 0.92));
+}
+
+html[data-frame="2"] .result::before,
+html[data-frame="2"] .history::before,
+html[data-frame="2"] .result::after,
+html[data-frame="2"] .history::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translateX(-50%) rotate(45deg);
+  border: 2px solid var(--gold);
+  background: var(--bg-2);
+  box-shadow: 0 0 8px rgba(var(--gold-rgb), 0.5);
+  pointer-events: none;
+}
+
+html[data-frame="2"] .result::before,
+html[data-frame="2"] .history::before { top: -7px; }
+html[data-frame="2"] .result::after,
+html[data-frame="2"] .history::after { bottom: -7px; }
+
+/* Szerepkör-szűrő: halvány kupola mögötte. */
+html[data-frame="2"] .filters {
+  padding: 16px 12px 12px;
+  border-radius: 50% 50% 18px 18px / 60px 60px 18px 18px;
+  background: radial-gradient(ellipse at 50% 30%, rgba(var(--bg2-rgb), 0.75), rgba(var(--bg-rgb), 0.35) 70%, transparent);
+  box-shadow: inset 0 1px 0 rgba(var(--gold-rgb), 0.18);
+}
+
+/* Lane gombok: sárgaréz keret, a kiválasztott zölden izzik. */
+html[data-frame="2"] .lane-btn {
+  border-color: rgba(var(--gold-rgb), 0.7);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.3), rgba(var(--bg-rgb), 0.85));
+  box-shadow: inset 0 0 0 1px rgba(var(--bg-rgb), 0.8), inset 0 0 10px rgba(0, 0, 0, 0.6);
+  color: var(--text);
+}
+
+html[data-frame="2"] .lane-buttons .lane-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  color: #fff;
+  background: radial-gradient(circle at 50% 40%, rgba(var(--blue-rgb), 0.3), rgba(var(--bg-rgb), 0.9) 75%);
+  box-shadow: 0 0 16px rgba(var(--blue-rgb), 0.7), inset 0 0 14px rgba(var(--blue-rgb), 0.4);
+}
+
+html[data-frame="2"] .lane-buttons .lane-btn[aria-pressed="true"] img {
+  filter: drop-shadow(0 0 6px rgba(var(--blue-rgb), 0.9)) brightness(1.15);
+}
+
+/* Szerepkör gombok: sárgaréz gyűrű. */
+html[data-frame="2"] .role-btn {
+  border-color: rgba(var(--gold-rgb), 0.8);
+  background: radial-gradient(circle, rgba(var(--steel-rgb), 0.35), rgba(var(--bg-rgb), 0.9) 75%);
+  box-shadow: inset 0 0 0 2px rgba(var(--bg-rgb), 0.85), inset 0 0 0 3px rgba(var(--gold-rgb), 0.28);
+}
+
+html[data-frame="2"] .role-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  box-shadow: 0 0 14px rgba(var(--blue-rgb), 0.7), inset 0 0 12px rgba(var(--blue-rgb), 0.4);
+}
+
+/* Keresőmező és a többi szövegmező: sárgaréz keret, besüllyesztett sötét mező. */
+html[data-frame="2"] .search-box input {
+  border-color: rgba(var(--gold-rgb), 0.75);
+  border-radius: 10px;
+  background: rgba(var(--bg-rgb), 0.85);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+html[data-frame="2"] .search-box input:focus {
+  border-color: var(--blue);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(var(--blue-rgb), 0.45);
+}
+
+/* A „kizárva” felirat zölden kiemelve. */
+html[data-frame="2"] .ban-note { color: var(--blue); font-weight: 700; }
+
+/* Fülek és előzmény-kártyák sárgaréz kerettel. */
+html[data-frame="2"] .tab[aria-selected="true"] {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.45), rgba(var(--bg-rgb), 0.8));
+}
+
+html[data-frame="2"] .history-entry {
+  border-color: rgba(var(--gold-rgb), 0.4);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.85), rgba(var(--bg-rgb), 0.9));
+}
+
+html[data-frame="2"] .history-entry:hover,
+html[data-frame="2"] .history-entry[aria-current="true"] {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(var(--blue-rgb), 0.25);
+}
+
+/* A kerék mögött zöld ragyogás. */
+html[data-frame="2"] .wheel-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(var(--blue-rgb), 0.28), rgba(var(--blue-rgb), 0.07) 45%, transparent 68%);
+}
