@@ -26,6 +26,7 @@
       </button>
       <div class="frame-pop" id="framePop" hidden>
         <p class="frame-pop-title" data-i18n="frame.pick">Válassz keretet a kerék köré</p>
+        <p class="frame-pop-info" id="frameInfo"></p>
         <div class="frame-list" id="frameList" role="radiogroup" aria-label="Keret" data-i18n-aria="frame.title"></div>
       </div>
     </div>
@@ -137,6 +138,21 @@
           </div>
           <h2 id="buildName"></h2>
           <p class="build-desc" id="buildDesc"></p>
+
+          <!-- Meccs eredménye: ezzel halad a játékos a keret-kihívásokban (script.js: recordGame). -->
+          <div class="result-box" id="resultBox" hidden>
+            <div id="resultAsk">
+              <p class="result-q" data-i18n="result.q">Lejátszottad ezt a buildet? Jelöld az eredményt, és haladsz a keret-kihívásokban.</p>
+              <div class="result-btns">
+                <button type="button" class="result-btn is-win" id="resultWin" data-i18n="result.win">Győzelem</button>
+                <button type="button" class="result-btn" id="resultLoss" data-i18n="result.loss">Vereség</button>
+              </div>
+            </div>
+            <div class="result-done" id="resultDone" hidden>
+              <span id="resultDoneText"></span>
+              <button type="button" class="link-btn" id="resultUndo" data-i18n="result.undo">Visszavonás</button>
+            </div>
+          </div>
 
           <h3 class="build-section" data-i18n="sec.spells">Idézői varázslatok</h3>
           <div class="spell-row" id="buildSpells"></div>
@@ -330,6 +346,9 @@
   </div>
 
   <canvas class="fx" id="fx" aria-hidden="true"></canvas>
+
+  <!-- Rövid üzenet alul, pl. új keret feloldásakor. -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="i18n.js"></script>
   <script src="script.js"></script>

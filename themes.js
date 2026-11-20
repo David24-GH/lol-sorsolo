@@ -112,10 +112,13 @@
   window.lolThemeMix = mix;
   window.applyLolTheme = apply;
 
-  let id = 3; // alapból a Hextech keret (script.js: DEFAULT_FRAME)
+  // Alapból keret nélkül (script.js: DEFAULT_FRAME). A mentett keret témája csak akkor
+  // töltődik be, ha a keret már fel van oldva (script.js: „Keret-kihívások”).
+  let id = 0;
   try {
-    const saved = localStorage.getItem('lolSorsolo.frame');
-    if (saved !== null) id = Number(saved);
+    const saved = Number(localStorage.getItem('lolSorsolo.frame'));
+    const unlocked = JSON.parse(localStorage.getItem('lolSorsolo.unlocked') || '[]');
+    if (saved && Array.isArray(unlocked) && unlocked.map(Number).includes(saved)) id = saved;
   } catch { /* nem elérhető */ }
   apply(id);
 })();

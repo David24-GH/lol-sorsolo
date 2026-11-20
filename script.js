@@ -623,11 +623,94 @@
   ].map(([level, minX, maxX, minY, maxY], i) => ({
     id: i + 1, level, minX, maxX, minY, maxY, src: `${FRAME_BASE}theme-${i + 1}-border.png`,
   }));
-  const DEFAULT_FRAME = 3; // Hextech: az oldal arany–kék színeihez illik
+  // ---------- Keret-kihívások ----------
+  // A keretek alapból zárva vannak: mindegyik egy kihívás teljesítésével oldódik fel.
+  // A meccseket a játékos maga jelöli a build kártyán (Győzelem / Vereség), mert a Riot
+  // meccsadatai egy statikus weboldalról nem érhetők el. Egy rögzített meccs:
+  // { id: a bejegyzés azonosítója, c: champion, l: lane, b: build, s: idézői varázslatok,
+  //   w: győzelem-e, t: időpont }. A feloldott keretek akkor is megmaradnak, ha egy meccset
+  // utólag visszavonnak.
+  const GAMES_KEY = 'lolSorsolo.games';
+  const UNLOCK_KEY = 'lolSorsolo.unlocked';
+
+  const readJson = (key, fallback) => {
+    try {
+      const v = JSON.parse(localStorage.getItem(key));
+      return Array.isArray(v) ? v : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  // A championok régiója a Riot hivatalos Universe oldala alapján (universe.leagueoflegends.com).
+  // Az itt nem szereplő (pl. új) championok egyik régiós kihívásba sem számítanak bele.
+  const REGION_CHAMPS = {
+    piltover: ['Caitlyn', 'Camille', 'Ezreal', 'Heimerdinger', 'Jayce', 'Orianna', 'Seraphine', 'Vi'],
+    zaun: ['Blitzcrank', 'DrMundo', 'Ekko', 'Janna', 'Jinx', 'Renata', 'Singed', 'Twitch', 'Urgot', 'Viktor', 'Warwick', 'Zac', 'Zeri', 'Ziggs'],
+    'shadow-isles': ['Elise', 'Gwen', 'Hecarim', 'Kalista', 'Karthus', 'Maokai', 'Thresh', 'Vex', 'Viego', 'Yorick'],
+    shurima: ['Akshan', 'Amumu', 'Azir', 'KSante', 'Naafiri', 'Nasus', 'Rammus', 'Renekton', 'Sivir', 'Taliyah', 'Xerath'],
+    'mount-targon': ['Aphelios', 'Diana', 'Leona', 'Pantheon', 'Soraka', 'Taric', 'Zoe'],
+    freljord: ['Anivia', 'Ashe', 'Aurora', 'Braum', 'Gnar', 'Gragas', 'Lissandra', 'Nunu', 'Olaf', 'Ornn', 'Sejuani', 'Trundle', 'Tryndamere', 'Udyr', 'Volibear'],
+    ionia: ['Ahri', 'Akali', 'Hwei', 'Irelia', 'Ivern', 'Jhin', 'Karma', 'Kayn', 'Kennen', 'LeeSin', 'Lillia', 'MasterYi', 'MonkeyKing', 'Rakan', 'Sett', 'Shen', 'Syndra', 'Varus', 'Xayah', 'Yasuo', 'Yone', 'Yunara', 'Zed'],
+    bilgewater: ['Gangplank', 'Graves', 'Illaoi', 'MissFortune', 'Nautilus', 'Nilah', 'Pyke', 'TwistedFate'],
+    noxus: ['Ambessa', 'Briar', 'Cassiopeia', 'Darius', 'Draven', 'Katarina', 'Kled', 'Leblanc', 'Mel', 'Mordekaiser', 'Rell', 'Riven', 'Samira', 'Sion', 'Swain', 'Talon', 'Vladimir'],
+    void: ['Belveth', 'Chogath', 'Kaisa', 'Kassadin', 'Khazix', 'KogMaw', 'Malzahar', 'RekSai', 'Velkoz'],
+  };
+  const CHAMP_REGION = new Map(Object.entries(REGION_CHAMPS).flatMap(([r, ids]) => ids.map(id => [id, r])));
+
+  // Keretenként a kihívás: mit számol, és hány kell belőle (n). A szövegük: i18n.js, 'ch.<keret>'.
+  const CHALLENGES = {
+    1: { region: 'piltover', n: 10 },
+    2: { region: 'zaun', n: 10 },
+    3: { n: 5 }, // bármilyen lejátszott meccs – a kezdő kihívás
+    4: { spell: 'SummonerDot', n: 10 },
+    5: { lane: 'support', n: 10 },
+    6: { builds: ['ap', 'aponhit', 'aptank'], n: 10 },
+    7: { region: 'shadow-isles', n: 10 },
+    8: { region: 'shurima', n: 10 },
+    9: { region: 'mount-targon', n: 5 }, // csak 7 targoni champion van
+    10: { wins: true, n: 10 },
+    11: { region: 'freljord', n: 10 },
+    12: { builds: ['tank', 'heartsteel', 'aptank'], n: 10 },
+    13: { region: 'ionia', n: 10 },
+    14: { region: 'bilgewater', n: 10 },
+    15: { uniqueBuilds: true, n: 8 },
+    16: { region: 'noxus', n: 10 },
+    17: { uniqueChamps: true, n: 25 },
+    18: { lane: 'jungle', n: 10 },
+    19: { region: 'void', n: 10 },
+    20: { tag: 'Assassin', n: 10 },
+    21: { frames: true, n: 20 }, // az összes többi keret
+  };
+
+  let games = readJson(GAMES_KEY, []).filter(g => g && g.id && g.c);
+  const unlocked = new Set(readJson(UNLOCK_KEY, []).map(Number));
+  const isUnlocked = id => id === 0 || unlocked.has(id);
+
+  // Hol tart a játékos az adott keret kihívásában (legfeljebb n).
+  function challengeProgress(id) {
+    const ch = CHALLENGES[id];
+    const champTags = c => (champions.find(x => x.id === c) || {}).tags || [];
+    let v;
+    if (ch.region) v = games.filter(g => CHAMP_REGION.get(g.c) === ch.region).length;
+    else if (ch.spell) v = games.filter(g => (g.s || []).includes(ch.spell)).length;
+    else if (ch.lane) v = games.filter(g => g.l === ch.lane).length;
+    else if (ch.builds) v = games.filter(g => ch.builds.includes(g.b)).length;
+    else if (ch.wins) v = games.filter(g => g.w).length;
+    else if (ch.uniqueBuilds) v = new Set(games.map(g => g.b)).size;
+    else if (ch.uniqueChamps) v = new Set(games.map(g => g.c)).size;
+    else if (ch.tag) v = games.filter(g => champTags(g.c).includes(ch.tag)).length;
+    else if (ch.frames) v = FRAMES.filter(f => f.id !== id && unlocked.has(f.id)).length;
+    else v = games.length;
+    return Math.min(v, ch.n);
+  }
+
+  // Keret nélkül indul; a mentett keret csak akkor marad, ha már fel van oldva.
+  const DEFAULT_FRAME = 0;
   let frameId = DEFAULT_FRAME;
   try {
-    const saved = localStorage.getItem(FRAME_KEY);
-    if (saved !== null && (saved === '0' || FRAMES[Number(saved) - 1])) frameId = Number(saved);
+    const saved = Number(localStorage.getItem(FRAME_KEY));
+    if (FRAMES[saved - 1] && isUnlocked(saved)) frameId = saved;
   } catch { /* nem elérhető */ }
   const currentFrame = () => FRAMES[frameId - 1] || null;
 
@@ -963,6 +1046,7 @@
       $('versionInfo').textContent = t('version', version, champions.length);
       applyFilter();
       renderLists();
+      checkUnlocks();
       resumeAfterLanguageSwitch();
     } catch (err) {
       console.error(err);
@@ -1776,7 +1860,16 @@
     });
   }
 
-  // A 21 keret képe csak a lista első megnyitásakor töltődik le.
+  const LOCK_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>';
+
+  // A kihívás szövege (a Tűz keretnél a Gyújtás neve a választott nyelven).
+  const challengeText = id => {
+    const spell = CHALLENGES[id].spell && spellData.get(CHALLENGES[id].spell);
+    return t(`ch.${id}`, CHALLENGES[id].n, spell ? spell.name : '');
+  };
+
+  // A lista minden megnyitáskor újraépül, hogy a haladás friss legyen
+  // (a keretek képeit a böngésző már a gyorsítótárból adja).
   function renderFrameOptions() {
     const opts = [null, ...FRAMES].map(f => {
       const b = document.createElement('button');
@@ -1784,6 +1877,7 @@
       b.className = 'frame-opt';
       b.setAttribute('role', 'radio');
       b.dataset.frame = f ? f.id : 0;
+      const locked = f && !isUnlocked(f.id);
       const pic = document.createElement('span');
       pic.className = 'frame-opt-pic';
       if (f) {
@@ -1795,14 +1889,35 @@
         pic.innerHTML = NO_FRAME_ICON;
       }
       b.append(pic, textEl('span', frameName(f), 'frame-opt-name'));
-      if (f) b.append(textEl('span', t('frame.level', f.level), 'frame-opt-level'));
+      if (f) {
+        const done = challengeProgress(f.id);
+        const need = CHALLENGES[f.id].n;
+        b.append(textEl('span', challengeText(f.id), 'frame-opt-ch'));
+        if (locked) {
+          b.classList.add('is-locked');
+          b.setAttribute('aria-disabled', 'true');
+          const lock = document.createElement('span');
+          lock.className = 'frame-lock';
+          lock.innerHTML = LOCK_ICON;
+          pic.append(lock);
+          const bar = document.createElement('span');
+          bar.className = 'frame-progress';
+          bar.style.setProperty('--p', `${(done / need) * 100}%`);
+          bar.append(textEl('span', `${done}/${need}`));
+          b.append(bar);
+        } else {
+          b.append(textEl('span', `✓ ${t('frame.unlocked')}`, 'frame-opt-done'));
+        }
+        b.title = `${frameName(f)} – ${challengeText(f.id)}${locked ? ` (${done}/${need})` : ''}`;
+      }
       return b;
     });
     $('frameList').replaceChildren(...opts);
+    $('frameInfo').textContent = t('frame.info', unlocked.size, FRAMES.length, games.length);
   }
 
   function setFramePop(open) {
-    if (open && !$('frameList').childElementCount) renderFrameOptions();
+    if (open) renderFrameOptions();
     framePop.hidden = !open;
     frameBtn.setAttribute('aria-expanded', String(open));
     if (open) {
@@ -1813,12 +1928,67 @@
   }
 
   function setFrame(id) {
+    if (!isUnlocked(id)) return; // zárt keret: előbb a kihívást kell teljesíteni
     frameId = id;
     try { localStorage.setItem(FRAME_KEY, String(id)); } catch { /* nem elérhető */ }
     window.applyLolTheme(id); // a keret színvilága az egész oldalra
     updateFrameBtn();
     champWheel.resize();
     buildWheel.resize();
+  }
+
+  // ---------- Meccsek rögzítése és a keretek feloldása ----------
+  const writeGames = () => { try { localStorage.setItem(GAMES_KEY, JSON.stringify(games)); } catch { /* nem elérhető */ } };
+  const writeUnlocked = () => { try { localStorage.setItem(UNLOCK_KEY, JSON.stringify([...unlocked])); } catch { /* nem elérhető */ } };
+
+  // Rövid felugró üzenet alul (pl. új keret feloldásakor).
+  let toastTimer = null;
+  function showToast(msg) {
+    const el = $('toast');
+    el.textContent = msg;
+    el.hidden = false;
+    requestAnimationFrame(() => el.classList.add('show'));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => { el.hidden = true; }, 300);
+    }, 5000);
+  }
+
+  // Feloldja azokat a kereteket, amelyek kihívása teljesült. Kétszer fut végig, mert az
+  // Örökkévaló keret a többi feloldásától függ.
+  function checkUnlocks() {
+    if (!champions.length) return; // az orgyilkos kihívásnak kellenek a champion adatok
+    const fresh = [];
+    for (let pass = 0; pass < 2; pass++) {
+      for (const f of FRAMES) {
+        if (!unlocked.has(f.id) && challengeProgress(f.id) >= CHALLENGES[f.id].n) {
+          unlocked.add(f.id);
+          fresh.push(f);
+        }
+      }
+    }
+    if (!fresh.length) return;
+    writeUnlocked();
+    showToast(t('unlock.toast', fresh.map(f => frameName(f)).join(', ')));
+    if (!framePop.hidden) renderFrameOptions();
+  }
+
+  // A build kártyán: a látható build meccsének eredménye (egy buildhez egy eredmény).
+  function recordGame(win) {
+    const entry = history.find(e => e.id === currentEntryId) || favorites.find(e => e.id === currentEntryId);
+    if (!entry || !entry.b || !entry.full) return;
+    games = games.filter(g => g.id !== entry.id);
+    games.push({ id: entry.id, c: entry.c, l: entry.l, b: entry.b, s: entry.full.spells, w: win, t: Date.now() });
+    writeGames();
+    renderLists();
+    checkUnlocks();
+  }
+
+  function undoGame() {
+    games = games.filter(g => g.id !== currentEntryId);
+    writeGames();
+    renderLists();
   }
 
   // ---------- Effektek ----------
@@ -2269,6 +2439,16 @@
     favBtn.setAttribute('aria-pressed', String(!!fav));
     favBtn.querySelector('.star').textContent = fav ? '★' : '☆';
     favBtn.querySelector('.fav-label').textContent = fav ? t('fav.is') : t('fav.add');
+
+    // Meccs eredménye a látható buildhez: ha még nincs rögzítve, a két gomb látszik.
+    const game = current && games.find(g => g.id === current.id);
+    $('resultBox').hidden = !current || !current.full;
+    $('resultAsk').hidden = !!game;
+    $('resultDone').hidden = !game;
+    if (game) {
+      $('resultDoneText').textContent = game.w ? t('result.doneWin') : t('result.doneLoss');
+      $('resultDone').classList.toggle('is-win', game.w);
+    }
     dropStaleTip();
   }
 
@@ -2300,6 +2480,8 @@
     const l = LANE_BY_ID.get(e.l);
     const details = [l && l.label, build ? build.name : t('entry.noBuild')].filter(Boolean);
     text.appendChild(textEl('small', details.join(' · ')));
+    const game = games.find(g => g.id === e.id);
+    if (game) text.appendChild(textEl('em', game.w ? t('entry.win') : t('entry.loss'), game.w ? 'entry-res is-win' : 'entry-res'));
     head.append(img, text);
     btn.appendChild(head);
 
@@ -2867,6 +3049,9 @@
   $('ideaForm').addEventListener('submit', submitIdea);
   $('ideaText').addEventListener('input', updateIdeaCounter);
   $('favBtn').addEventListener('click', () => { if (currentEntryId) toggleFavorite(currentEntryId); });
+  $('resultWin').addEventListener('click', () => recordGame(true));
+  $('resultLoss').addEventListener('click', () => recordGame(false));
+  $('resultUndo').addEventListener('click', undoGame);
   $('clearHistory').addEventListener('click', () => {
     history = [];
     writeHistory(history);
