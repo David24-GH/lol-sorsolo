@@ -1837,7 +1837,13 @@
       if (master) master.gain.setTargetAtTime(level(), ctx.currentTime, 0.02);
     }
 
-    return { start, tick, stop, sync };
+    // Keret feloldása: a lock-in hang, amikor kinyílik a lakat.
+    function unlock() {
+      if (!soundOn || !ensure()) return;
+      play('lockin', 1);
+    }
+
+    return { start, tick, stop, sync, unlock };
   })();
 
   // ---------- Keretválasztó (bal felül) ----------
@@ -1941,18 +1947,56 @@
   const writeGames = () => { try { localStorage.setItem(GAMES_KEY, JSON.stringify(games)); } catch { /* nem elérhető */ } };
   const writeUnlocked = () => { try { localStorage.setItem(UNLOCK_KEY, JSON.stringify([...unlocked])); } catch { /* nem elérhető */ } };
 
-  // Rövid felugró üzenet alul (pl. új keret feloldásakor).
-  let toastTimer = null;
-  function showToast(msg) {
-    const el = $('toast');
-    el.textContent = msg;
+  // Új keret feloldása: teljes képernyős animáció. A lakat kinyílik és lehull, a keret
+  // szürkéből színessé válik a saját témaszínében (style.css: „Feloldási animáció”).
+  // Ha egyszerre több keret oldódik fel, egymás után jönnek.
+  const UNLOCK_POP_MS = 1550; // ekkor nyílik ki a lakat (a CSS időzítéséhez igazítva)
+  const unlockQueue = [];
+  let unlockShown = null;
+
+  function queueUnlocks(frames) {
+    unlockQueue.push(...frames);
+    if (!unlockShown) showNextUnlock();
+  }
+
+  function showNextUnlock() {
+    const f = unlockQueue.shift();
+    if (!f) return;
+    unlockShown = f;
+    hideItemTip();
+    setFramePop(false);
+    const el = $('unlock');
+    const p = window.lolThemePalette(f.id);
+    el.style.setProperty('--u-gold', p.gold);
+    el.style.setProperty('--u-light', p.goldLight);
+    el.style.setProperty('--u-accent', p.accent);
+    $('unlockImg').src = f.src;
+    $('unlockTitle').textContent = frameName(f);
+    $('unlockCh').textContent = `✓ ${challengeText(f.id)}`;
     el.hidden = false;
-    requestAnimationFrame(() => el.classList.add('show'));
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      el.classList.remove('show');
-      setTimeout(() => { el.hidden = true; }, 300);
-    }, 5000);
+    el.classList.remove('play');
+    void el.offsetWidth; // újraindítja az animációt
+    el.classList.add('play');
+    document.body.classList.add('no-scroll');
+    setTimeout(() => {
+      if (unlockShown !== f) return;
+      spinSfx.unlock();
+      const r = $('unlockImg').getBoundingClientRect();
+      burst(r.left + r.width / 2, r.top + r.height * 0.47, 140, 12);
+    }, reducedMotion ? 0 : UNLOCK_POP_MS);
+    setTimeout(() => { if (unlockShown === f) $('unlockUse').focus(); }, reducedMotion ? 0 : 2600);
+  }
+
+  function closeUnlock(use) {
+    const f = unlockShown;
+    if (!f) return;
+    unlockShown = null;
+    const el = $('unlock');
+    el.hidden = true;
+    el.classList.remove('play');
+    document.body.classList.remove('no-scroll');
+    if (use) setFrame(f.id);
+    setTimeout(showNextUnlock, 300);
   }
 
   // Feloldja azokat a kereteket, amelyek kihívása teljesült. Kétszer fut végig, mert az
@@ -1970,8 +2014,7 @@
     }
     if (!fresh.length) return;
     writeUnlocked();
-    showToast(t('unlock.toast', fresh.map(f => frameName(f)).join(', ')));
-    if (!framePop.hidden) renderFrameOptions();
+    queueUnlocks(fresh);
   }
 
   // A build kártyán: a látható build meccsének eredménye (egy buildhez egy eredmény).
@@ -3052,6 +3095,9 @@
   $('resultWin').addEventListener('click', () => recordGame(true));
   $('resultLoss').addEventListener('click', () => recordGame(false));
   $('resultUndo').addEventListener('click', undoGame);
+  $('unlockUse').addEventListener('click', () => closeUnlock(true));
+  $('unlockClose').addEventListener('click', () => closeUnlock(false));
+  $('unlock').addEventListener('click', e => { if (e.target === e.currentTarget) closeUnlock(false); });
   $('clearHistory').addEventListener('click', () => {
     history = [];
     writeHistory(history);
@@ -3105,7 +3151,9 @@
     if (!framePop.hidden && !e.target.closest('.frame-picker')) setFramePop(false);
   });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && !framePop.hidden) {
+    if (e.key === 'Escape' && unlockShown) {
+      closeUnlock(false);
+    } else if (e.key === 'Escape' && !framePop.hidden) {
       setFramePop(false);
       frameBtn.focus();
     }

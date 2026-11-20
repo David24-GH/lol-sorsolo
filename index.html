@@ -347,8 +347,28 @@
 
   <canvas class="fx" id="fx" aria-hidden="true"></canvas>
 
-  <!-- Rövid üzenet alul, pl. új keret feloldásakor. -->
-  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <!-- Új keret feloldása: teljes képernyős animáció (kinyíló lakat, szürkéből színessé váló keret). -->
+  <div class="unlock" id="unlock" role="dialog" aria-modal="true" aria-labelledby="unlockTitle" hidden>
+    <div class="unlock-rays" aria-hidden="true"></div>
+    <div class="unlock-stage">
+      <div class="unlock-frame">
+        <img id="unlockImg" alt="">
+        <svg class="unlock-lock" viewBox="0 0 64 84" aria-hidden="true">
+          <path class="unlock-shackle" d="M17 40V26a15 15 0 0 1 30 0v14" fill="none" stroke-width="7" stroke-linecap="round"/>
+          <rect class="unlock-body" x="7" y="38" width="50" height="40" rx="8"/>
+          <circle class="unlock-key" cx="32" cy="55" r="5"/>
+          <rect class="unlock-key" x="29.5" y="57" width="5" height="11" rx="2"/>
+        </svg>
+      </div>
+      <p class="unlock-label" data-i18n="unlock.label">Új keret feloldva!</p>
+      <h2 class="unlock-title" id="unlockTitle"></h2>
+      <p class="unlock-ch" id="unlockCh"></p>
+      <div class="unlock-actions">
+        <button type="button" class="unlock-btn" id="unlockUse" data-i18n="unlock.use">Használom</button>
+        <button type="button" class="unlock-btn is-ghost" id="unlockClose" data-i18n="unlock.close">Bezárás</button>
+      </div>
+    </div>
+  </div>
 
   <script src="i18n.js"></script>
   <script src="script.js"></script>

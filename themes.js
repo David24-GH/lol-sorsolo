@@ -111,6 +111,7 @@
   window.lolThemeRgba = (hex, a) => `rgba(${rgb(hex).join(', ')}, ${a})`;
   window.lolThemeMix = mix;
   window.applyLolTheme = apply;
+  window.lolThemePalette = palette; // a feloldási animáció a feloldott keret színeit használja
 
   // Alapból keret nélkül (script.js: DEFAULT_FRAME). A mentett keret témája csak akkor
   // töltődik be, ha a keret már fel van oldva (script.js: „Keret-kihívások”).
