@@ -423,7 +423,7 @@ body {
   font: inherit;
   font-weight: 700;
   font-size: clamp(0.75rem, 2.4vw, 1.05rem);
-  font-size: clamp(0.55rem, 4.2cqw, 1.05rem); /* a kerék méretéhez igazodik */
+  font-size: clamp(0.5rem, 3.5cqw, 1.05rem); /* a kerék méretéhez igazodik */
   letter-spacing: 0.08em;
   cursor: pointer;
   z-index: 2;
@@ -2223,14 +2223,9 @@ html[data-frame="2"] .history-entry[aria-current="true"] {
   box-shadow: 0 0 12px rgba(var(--blue-rgb), 0.3);
 }
 
-/* A kerék mögött zöld ragyogás. */
-html[data-frame="2"] .wheel-wrap::before {
-  content: '';
-  position: absolute;
-  inset: -30%;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(circle, rgba(var(--blue-rgb), 0.3), rgba(var(--blue-rgb), 0.08) 45%, transparent 68%);
+/* A kerék mögött zöld ragyogás (árnyékként, hogy keskeny képernyőn se okozzon görgetést). */
+html[data-frame="2"] .wheel-wrap canvas {
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), 0 0 90px 30px rgba(var(--blue-rgb), 0.25);
 }
 
 /* Keskeny képernyőn a címtábla csövei nem férnek el. */
@@ -2239,5 +2234,260 @@ html[data-frame="2"] .wheel-wrap::before {
   html[data-frame="2"] .site-header h1::after { display: none; }
   html[data-frame="2"] .site-header h1 { padding: 6px 16px 8px; }
   html[data-frame="2"] .step-label { padding: 4px 18px; font-size: 0.72rem; letter-spacing: 0.04em; }
+}
+
+/* ==========================================================================
+   Piltover téma (a Piltover keret kiválasztásakor): a Haladás Városa éjjel
+   (piltover-bg.jpg, képgenerátorral készült), art deco címtábla arany
+   szárnyakkal és hextech kristállyal, levágott sarkú címkék, sarokdíszes
+   gombok és panelek, kék hextech izzás. A színek a themes.js 1-es témájából
+   jönnek (--gold = pezsgőarany, --blue = hextech kék).
+   ========================================================================== */
+html[data-frame="1"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(var(--bg-rgb), 0.35) 0%, rgba(var(--bg-rgb), 0) 40%, rgba(var(--bg-rgb), 0.25) 100%),
+    url("piltover-bg.jpg") center bottom / cover no-repeat,
+    var(--bg);
+}
+
+/* Címtábla: kettős arany keret, két oldalán art deco szárny hextech kristállyal. */
+html[data-frame="1"] .site-header h1 {
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 6px 30px 8px;
+  border: 1.5px solid var(--gold);
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.92), rgba(var(--bg-rgb), 0.92));
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--gold-rgb), 0.45),
+    inset 0 0 22px rgba(var(--blue-rgb), 0.15),
+    0 0 22px rgba(var(--blue-rgb), 0.25);
+  color: var(--gold-light);
+  text-shadow: 0 0 12px rgba(var(--blue-rgb), 0.45);
+}
+
+html[data-frame="1"] .site-header h1::before,
+html[data-frame="1"] .site-header h1::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: min(14vw, 160px);
+  height: 20px;
+  transform: translateY(-50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 20' preserveAspectRatio='none'%3E%3Cpath d='M0 10H138' stroke='%23dcc58f' stroke-width='1.6'/%3E%3Cpath d='M0 5.5H96M0 14.5H96' stroke='%23dcc58f' stroke-width='1' opacity='.7'/%3E%3Cpath d='M8 3v14M14 4.5v11M20 6v8' stroke='%23dcc58f' stroke-width='1.6'/%3E%3Cpath d='M149 2l8 8-8 8-8-8z' fill='%234cc3ff' stroke='%23f4f1e6' stroke-width='1.2'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 0 6px rgba(var(--blue-rgb), 0.6));
+  pointer-events: none;
+}
+
+html[data-frame="1"] .site-header h1::before { right: calc(100% + 4px); transform: translateY(-50%) scaleX(-1); }
+html[data-frame="1"] .site-header h1::after { left: calc(100% + 4px); }
+
+html[data-frame="1"] .subtitle { margin-top: 10px; }
+
+/* Szakaszcímek: levágott sarkú, arany szegélyű art deco tábla. */
+html[data-frame="1"] .step-label {
+  position: relative;
+  isolation: isolate;
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 4px 22px;
+  background: var(--gold);
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  font-weight: 700;
+}
+
+html[data-frame="1"] .step-label::before {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.95), var(--bg));
+  clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 7px);
+}
+
+/* Lane gombok: vékony arany keret, belső sarokdíszek; a kiválasztott hextech kéken izzik. */
+html[data-frame="1"] .lane-btn {
+  border: 1.5px solid var(--gold);
+  border-radius: 3px;
+  color: var(--text);
+  background:
+    linear-gradient(var(--gold), var(--gold)) top 4px left 4px / 9px 1.5px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 4px left 4px / 1.5px 9px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 4px right 4px / 9px 1.5px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 4px right 4px / 1.5px 9px no-repeat,
+    linear-gradient(180deg, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.92));
+  box-shadow: inset 0 1px 0 rgba(var(--gold-light-rgb), 0.15), 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="1"] .lane-buttons .lane-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  color: #fff;
+  background:
+    linear-gradient(var(--blue), var(--blue)) top 4px left 4px / 9px 1.5px no-repeat,
+    linear-gradient(var(--blue), var(--blue)) top 4px left 4px / 1.5px 9px no-repeat,
+    linear-gradient(var(--blue), var(--blue)) bottom 4px right 4px / 9px 1.5px no-repeat,
+    linear-gradient(var(--blue), var(--blue)) bottom 4px right 4px / 1.5px 9px no-repeat,
+    radial-gradient(circle at 50% 40%, rgba(var(--blue-rgb), 0.35), rgba(var(--bg-rgb), 0.92) 75%);
+  box-shadow: inset 0 0 14px rgba(var(--blue-rgb), 0.4), 0 0 18px rgba(var(--blue-rgb), 0.7);
+}
+
+html[data-frame="1"] .lane-buttons .lane-btn[aria-pressed="true"] img {
+  filter: drop-shadow(0 0 6px rgba(var(--blue-rgb), 0.9)) brightness(1.15);
+}
+
+/* Szerepkör gombok: arany gyűrű, belül vékony kék hextech gyűrű. */
+html[data-frame="1"] .role-btn {
+  border: 2px solid var(--gold);
+  background: radial-gradient(circle, rgba(var(--steel-rgb), 0.5), rgba(var(--bg-rgb), 0.95) 72%);
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 0 4px rgba(var(--blue-rgb), 0.35),
+    0 0 0 3px rgba(var(--bg-rgb), 0.6),
+    0 0 0 4px rgba(var(--gold-rgb), 0.35),
+    0 4px 10px rgba(0, 0, 0, 0.55);
+}
+
+html[data-frame="1"] .role-btn[aria-pressed="true"] {
+  border-color: var(--blue);
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.85),
+    inset 0 0 12px rgba(var(--blue-rgb), 0.5),
+    0 0 16px rgba(var(--blue-rgb), 0.75);
+}
+
+/* Kereső: vékony arany keret belső vonallal. */
+html[data-frame="1"] .search-box input {
+  border: 1.5px solid var(--gold);
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(var(--bg-rgb), 0.92), rgba(var(--bg2-rgb), 0.88));
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--gold-rgb), 0.3),
+    0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+html[data-frame="1"] .search-box input:focus {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 3px rgba(var(--bg-rgb), 0.9), 0 0 14px rgba(var(--blue-rgb), 0.55);
+}
+
+/* „Keret” gomb: hextech kristály ikon a keret képe helyett. */
+html[data-frame="1"] .frame-btn {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.9));
+}
+
+html[data-frame="1"] .frame-btn img,
+html[data-frame="1"] .frame-btn svg { display: none; }
+
+html[data-frame="1"] .frame-btn::before {
+  content: '';
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-13 -13 26 26'%3E%3Ccircle r='12' fill='none' stroke='%23dcc58f' stroke-width='1.2'/%3E%3Cpath d='M0 -9.5L6.5 -2.5L0 9.5L-6.5 -2.5Z' fill='%234cc3ff' stroke='%23f4f1e6' stroke-width='1'/%3E%3Cpath d='M-6.5 -2.5H6.5M0 -9.5L-2.5 -2.5L0 9.5L2.5 -2.5Z' fill='none' stroke='%23f4f1e6' stroke-width='0.7' opacity='.8'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 5px rgba(var(--blue-rgb), 0.7));
+}
+
+/* Panelek: kettős arany keret, art deco sarokdíszek, fent-lent kék kristály. */
+html[data-frame="1"] .result,
+html[data-frame="1"] .history,
+html[data-frame="1"] .banner-content {
+  border: 1.5px solid var(--gold);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 3px rgba(var(--bg-rgb), 0.9),
+    inset 0 0 0 4px rgba(var(--gold-rgb), 0.35),
+    inset 0 0 30px rgba(var(--blue-rgb), 0.10),
+    0 0 24px rgba(var(--blue-rgb), 0.18),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+html[data-frame="1"] .result,
+html[data-frame="1"] .history {
+  position: relative;
+  overflow: visible;
+  background:
+    linear-gradient(var(--gold), var(--gold)) top 8px left 8px / 18px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 8px left 8px / 2px 18px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 8px right 8px / 18px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top 8px right 8px / 2px 18px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 8px left 8px / 18px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 8px left 8px / 2px 18px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 8px right 8px / 18px 2px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom 8px right 8px / 2px 18px no-repeat,
+    linear-gradient(180deg, rgba(var(--bg2-rgb), 0.9), rgba(var(--bg-rgb), 0.93));
+}
+
+html[data-frame="1"] .result::before,
+html[data-frame="1"] .history::before,
+html[data-frame="1"] .result::after,
+html[data-frame="1"] .history::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translateX(-50%) rotate(45deg);
+  border: 1.5px solid var(--gold-light);
+  background: var(--blue);
+  box-shadow: 0 0 10px rgba(var(--blue-rgb), 0.9);
+  pointer-events: none;
+}
+
+html[data-frame="1"] .result::before,
+html[data-frame="1"] .history::before { top: -6px; }
+html[data-frame="1"] .result::after,
+html[data-frame="1"] .history::after { bottom: -6px; }
+
+/* A „kizárva” felirat kéken kiemelve; a háttér előtti szövegek sötét árnyékot kapnak. */
+html[data-frame="1"] .ban-note { color: var(--blue); font-weight: 700; }
+
+html[data-frame="1"] .count,
+html[data-frame="1"] .ticker,
+html[data-frame="1"] .subtitle,
+html[data-frame="1"] .stage-title,
+html[data-frame="1"] .search-hint {
+  color: var(--text);
+  text-shadow: 0 1px 3px #000, 0 0 10px rgba(0, 0, 0, 0.9), 0 0 18px rgba(0, 0, 0, 0.7);
+}
+
+/* Fülek és előzmény-kártyák arany kerettel. */
+html[data-frame="1"] .tab[aria-selected="true"] {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(var(--steel-rgb), 0.55), rgba(var(--bg-rgb), 0.85));
+  box-shadow: 0 0 8px rgba(var(--blue-rgb), 0.3);
+}
+
+html[data-frame="1"] .history-entry {
+  border-color: rgba(var(--gold-rgb), 0.4);
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(var(--bg2-rgb), 0.85), rgba(var(--bg-rgb), 0.9));
+}
+
+html[data-frame="1"] .history-entry:hover,
+html[data-frame="1"] .history-entry[aria-current="true"] {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(var(--blue-rgb), 0.35);
+}
+
+/* A kerék mögött kék hextech ragyogás (árnyékként, hogy keskeny képernyőn se okozzon görgetést). */
+html[data-frame="1"] .wheel-wrap canvas {
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), 0 0 90px 30px rgba(var(--blue-rgb), 0.22);
+}
+
+/* Keskeny képernyőn a címtábla szárnyai nem férnek el. */
+@media (max-width: 700px) {
+  html[data-frame="1"] .site-header h1::before,
+  html[data-frame="1"] .site-header h1::after { display: none; }
+  html[data-frame="1"] .site-header h1 { padding: 6px 16px 8px; }
+  html[data-frame="1"] .step-label { padding: 4px 16px; font-size: 0.72rem; letter-spacing: 0.04em; }
 }
 
