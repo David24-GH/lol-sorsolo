@@ -21,7 +21,7 @@ Tisztán statikus weboldal (HTML + CSS + JavaScript): nincs build lépés, nincs
 
 ### Fun build kerék
 - A kisorsolt champion **fejlécként** megmarad, alatta egy második kerék jelenik meg.
-- 14 build típus: Teljes AP, AP on-hit, AP tank, Lethality, Kritikus csapás, On-hit, Bruiser, Teljes tank, HP-halmozás, Vámpír, Enchanter, Mana-halmozás, Mozgási sebesség, Képesség-gyorsítás.
+- 13 build típus: Teljes AP, AP on-hit, AP tank, Lethality, Kritikus csapás, On-hit, Bruiser, Teljes tank, HP-halmozás, Vámpír, Enchanter, Mozgási sebesség, Képesség-gyorsítás.
 - Minden champion **csak olyan buildet kap, amivel játszható** – a Riot adataiból (sebzéstípus, szerepkör, harctávolság) számolva, kézi javításokkal.
 
 ### Teljes build a lane szerint

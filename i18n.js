@@ -370,7 +370,6 @@ window.LOL_BUILD_TEXT = {
     heartsteel: ['HP stacking', 'Heartsteel and Warmog: grow huge and hit with your own health.'],
     lifesteal: ['Vampire', "Lifesteal from everything: as long as you're hitting, you're not dying."],
     enchanter: ['Enchanter', 'Shields and heals: your team becomes your weapon.'],
-    tear: ['Mana stacking', 'Built around Tear items: slow to come online, but huge in the end.'],
     ms: ['Movement speed', "Nobody catches you: you're the fastest one on the map."],
     haste: ['Ability haste', 'Barely any cooldowns: one ability after another.'],
   },

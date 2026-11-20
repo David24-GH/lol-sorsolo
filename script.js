@@ -165,6 +165,9 @@
     Warwick: ['onhit', 'ap'], XinZhao: ['crit'], Yasuo: ['ap'],
     Yone: ['ap'], Yorick: ['ap', 'aptank'], Yunara: ['ap'], Zaahen: ['crit'], Zac: ['crit'],
     Zeri: ['ap'],
+    // A Mana-halmozás kivétele után ezeknek csak a Teljes AP maradt: egy ismert második build.
+    Ahri: ['aponhit'], AurelionSol: ['aptank'], Cassiopeia: ['aptank'], Karthus: ['aponhit'],
+    Leblanc: ['lethality'], Syndra: ['haste'], Veigar: ['aptank'], Vex: ['haste'],
   };
   // Alapból tiltott lane-ek, ahol a champion csak a közösségi fun buildjével (EXTRA_BUILDS)
   // játszható: itt a kerekén csak az a build jelenik meg (pl. ADC Soraka csak kritikus).
@@ -339,24 +342,6 @@
       ok: p => p.has('Support') && p.magic >= 5,
     },
     {
-      id: 'tear', name: 'Mana-halmozás', color: '#2a5f9e',
-      desc: 'Könnycsepp-tárgyakra építesz: lassan éled, de a végén hatalmas.',
-      // Csak manát adó tárgyak, és nem pótol más tárgyakkal (onlyPool). A Könnycsepp-tárgyakból
-      // (Arkangyal, Manamún, Közelgő tél) egyszerre csak egy lehet, AD-s mana-tárgy pedig csak
-      // a Manamún van, ezért ez a build csak a varázserős, manát használó championoknak jár.
-      // Az első tárgy mindig a Korok pálcája, a második a Könnycseppből épülő tárgy.
-      pool: {
-        ap: [6657, 3003, 6655, 3118, 2503, 2522, 3110],
-        ad: [6657, 3003, 6655, 3118, 2503, 2522, 3110],
-        tank: [6657, 3119, 3110, 3118, 2503, 6655, 2522],
-      },
-      onlyPool: true,
-      boots: { ap: [3020], ad: [3020], tank: [3047] },
-      keystones: { ap: ['ArcaneComet', 'PhaseRush'], ad: ['ArcaneComet', 'PhaseRush'], tank: ['GraspOfTheUndying', 'ArcaneComet'] },
-      shards: { ap: [5007, 5008, 5001], ad: [5007, 5008, 5001], tank: [5007, 5001, 5013] },
-      ok: p => p.mana && p.ap,
-    },
-    {
       id: 'ms', name: 'Mozgási sebesség', color: '#1f7a9e',
       desc: 'Senki nem ér utol: te leszel a leggyorsabb a pályán.',
       // Holtak vértje mindig benne van az extra futásért.
@@ -429,7 +414,7 @@
   const SUPPORT_ITEM = {
     tank: 3869, heartsteel: 3869, aptank: 3869,
     enchanter: [3870, 3876], ms: 3876,
-    ap: 3871, aponhit: 3871, tear: 3871,
+    ap: 3871, aponhit: 3871,
     lethality: 3877, crit: 3877, onhit: 3877, lifesteal: 3877, bruiser: 3877,
   };
   const SUPPORT_BY_KIND = { ap: 3871, ad: 3877, tank: 3869 };
